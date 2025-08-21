@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { TradingController } from '@/controllers/TradingController';
 import { authenticate, requirePermission } from '@/middleware/auth';
-import { validate, tradingSchemas, commonSchemas } from '@/middleware/validation';
+import { validate } from '@/middleware/inputValidation';
+import { tradingSchemas, commonSchemas } from '@/middleware/validation';
 import { tradingRateLimit } from '@/middleware/rateLimiter';
 import { Permission } from '@/types/auth';
 

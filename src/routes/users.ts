@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { UserController } from '@/controllers/UserController';
 import { authenticate, adminOnly } from '@/middleware/auth';
-import { validate, userSchemas, commonSchemas } from '@/middleware/validation';
+import { validate } from '@/middleware/inputValidation';
+import { userSchemas, commonSchemas } from '@/middleware/validation';
 import { adminRateLimit } from '@/middleware/rateLimiter';
 
 const router = Router();

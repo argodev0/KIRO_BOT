@@ -1,7 +1,8 @@
 import { Router } from 'express';
 import { GridController } from '@/controllers/GridController';
 import { authenticate, requirePermission } from '@/middleware/auth';
-import { validate, gridSchemas, commonSchemas } from '@/middleware/validation';
+import { validate } from '@/middleware/inputValidation';
+import { gridSchemas, commonSchemas } from '@/middleware/validation';
 import { tradingRateLimit } from '@/middleware/rateLimiter';
 import { Permission } from '@/types/auth';
 

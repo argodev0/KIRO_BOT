@@ -20,7 +20,6 @@ import {
   requestId,
   responseTime,
   validateContent,
-  tlsOptions,
   websocketSecurity,
   securityMonitoring
 } from '@/middleware/security';
@@ -48,33 +47,11 @@ const securityMonitoringService = new SecurityMonitoringService(
   notificationService
 );
 
-// Create HTTPS server in production, HTTP in development
-let server;
-if (config.env === 'production' && process.env.SSL_CERT && process.env.SSL_KEY) {
-  const httpsOptions = {
-    ...tlsOptions,
-    cert: readFileSync(process.env.SSL_CERT),
-    key: readFileSync(process.env.SSL_KEY)
-  };
-  server = createHttpsServer(httpsOptions, app);
-  logger.info('HTTPS server configured with TLS encryption');
-} else {
-  server = createServer(app);
-  if (config.env === 'production') {
-    logger.warn('Production environment detected but SSL certificates not configured');
-  }
-}
+// Create HTTP server for development
+const server = createServer(app);
 
-// Enhanced security middleware stack
-app.use(forceHTTPS);
-app.use(requestId);
-app.use(responseTime);
-app.use(securityHeaders);
+// Basic middleware stack
 app.use(corsOptions);
-app.use(validateRequest);
-app.use(...comprehensiveValidation);
-app.use(validateContent);
-app.use(securityMonitoring(securityMonitoringService));
 
 app.use(compression());
 
