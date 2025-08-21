@@ -1,0 +1,277 @@
+# Trading Bot Production Alert Rules
+
+groups:
+  - name: trading-bot.critical
+    interval: 30s
+    rules:
+      # Application Health
+      - alert: TradingBotDown
+        expr: up{job="trading-bot-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: trading-bot
+        annotations:
+          summary: "Trading Bot application is down"
+          description: "Trading Bot backend has been down for more than 1 minute"
+          runbook_url: "https://docs.yourdomain.com/runbooks/trading-bot-down"
+
+      - alert: TradingBotHighErrorRate
+        expr: rate(http_requests_total{job="trading-bot-backend",status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: trading-bot
+        annotations:
+          summary: "High error rate in Trading Bot"
+          description: "Error rate is {{ $value }} errors per second"
+
+      # Trading Specific Alerts
+      - alert: TradingExecutionFailure
+        expr: rate(trading_execution_failures_total[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          service: trading
+        annotations:
+          summary: "High trading execution failure rate"
+          description: "Trading execution failure rate is {{ $value }} per second"
+
+      - alert: RiskLimitViolation
+        expr: risk_limit_violations_total > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: risk-management
+        annotations:
+          summary: "Risk limit violation detected"
+          description: "Risk management system has detected a limit violation"
+
+      - alert: EmergencyStopTriggered
+        expr: emergency_stop_triggered == 1
+        for: 0s
+        labels:
+          severity: critical
+          service: risk-management
+        annotations:
+          summary: "Emergency stop has been triggered"
+          description: "Trading has been halted due to emergency conditions"
+
+      # Exchange Connectivity
+      - alert: ExchangeConnectionLost
+        expr: exchange_connection_status == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: exchange
+        annotations:
+          summary: "Exchange connection lost"
+          description: "Connection to {{ $labels.exchange }} has been lost"
+
+      - alert: ExchangeAPIRateLimitHit
+        expr: rate(exchange_api_rate_limit_hits_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: exchange
+        annotations:
+          summary: "Exchange API rate limit being hit frequently"
+          description: "Rate limit hits for {{ $labels.exchange }}: {{ $value }} per second"
+
+  - name: trading-bot.performance
+    interval: 60s
+    rules:
+      # Performance Metrics
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job="trading-bot-backend"}[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: trading-bot
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "High CPU usage"
+          description: "CPU usage is {{ $value }}%"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk space is {{ $value }}% full"
+
+      # Signal Generation Performance
+      - alert: SignalGenerationSlow
+        expr: histogram_quantile(0.95, rate(signal_generation_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          service: signal-engine
+        annotations:
+          summary: "Signal generation is slow"
+          description: "95th percentile signal generation time is {{ $value }}s"
+
+      - alert: LowSignalConfidence
+        expr: avg(signal_confidence_score) < 0.6
+        for: 10m
+        labels:
+          severity: warning
+          service: signal-engine
+        annotations:
+          summary: "Low average signal confidence"
+          description: "Average signal confidence is {{ $value }}"
+
+  - name: trading-bot.database
+    interval: 60s
+    rules:
+      # Database Health
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is not responding"
+
+      - alert: PostgreSQLHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "High PostgreSQL connection usage"
+          description: "Connection usage is {{ $value | humanizePercentage }}"
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_database_tup_returned[5m]) / rate(pg_stat_database_tup_fetched[5m]) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+        annotations:
+          summary: "PostgreSQL slow queries detected"
+          description: "Query efficiency is low: {{ $value }}"
+
+      # Redis Health
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache is not responding"
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: cache
+        annotations:
+          summary: "Redis high memory usage"
+          description: "Redis memory usage is {{ $value | humanizePercentage }}"
+
+  - name: trading-bot.security
+    interval: 30s
+    rules:
+      # Security Alerts
+      - alert: SuspiciousLoginActivity
+        expr: rate(auth_failed_attempts_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "Suspicious login activity detected"
+          description: "Failed login attempts: {{ $value }} per second"
+
+      - alert: UnauthorizedAPIAccess
+        expr: rate(http_requests_total{status="401"}[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "High rate of unauthorized API access"
+          description: "Unauthorized requests: {{ $value }} per second"
+
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+          service: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value | humanizeDuration }}"
+
+  - name: trading-bot.business
+    interval: 300s
+    rules:
+      # Business Logic Alerts
+      - alert: NoTradingSignalsGenerated
+        expr: rate(trading_signals_generated_total[1h]) == 0
+        for: 30m
+        labels:
+          severity: warning
+          service: signal-engine
+        annotations:
+          summary: "No trading signals generated"
+          description: "No trading signals have been generated in the last hour"
+
+      - alert: HighDrawdown
+        expr: portfolio_drawdown_percent > 15
+        for: 5m
+        labels:
+          severity: critical
+          service: risk-management
+        annotations:
+          summary: "High portfolio drawdown"
+          description: "Portfolio drawdown is {{ $value }}%"
+
+      - alert: UnusualTradingVolume
+        expr: rate(trades_executed_total[1h]) > 100 or rate(trades_executed_total[1h]) < 1
+        for: 15m
+        labels:
+          severity: warning
+          service: trading
+        annotations:
+          summary: "Unusual trading volume"
+          description: "Trading volume is {{ $value }} trades per hour"
+
+      - alert: GridStrategyUnderperforming
+        expr: grid_strategy_profit_percent < -5
+        for: 1h
+        labels:
+          severity: warning
+          service: grid-strategy
+        annotations:
+          summary: "Grid strategy underperforming"
+          description: "Grid strategy profit is {{ $value }}%"

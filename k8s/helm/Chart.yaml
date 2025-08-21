@@ -1,0 +1,38 @@
+apiVersion: v2
+name: trading-bot
+description: AI Crypto Trading Bot & WebApp Helm Chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - trading
+  - cryptocurrency
+  - ai
+  - bot
+home: https://github.com/your-org/trading-bot
+sources:
+  - https://github.com/your-org/trading-bot
+maintainers:
+  - name: Trading Bot Team
+    email: team@tradingbot.com
+dependencies:
+  - name: postgresql
+    version: 12.x.x
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+  - name: redis
+    version: 17.x.x
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: rabbitmq
+    version: 11.x.x
+    repository: https://charts.bitnami.com/bitnami
+    condition: rabbitmq.enabled
+  - name: prometheus
+    version: 23.x.x
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: monitoring.prometheus.enabled
+  - name: grafana
+    version: 6.x.x
+    repository: https://grafana.github.io/helm-charts
+    condition: monitoring.grafana.enabled

@@ -1,0 +1,124 @@
+{
+  "rabbit_version": "3.12.0",
+  "rabbitmq_version": "3.12.0",
+  "product_name": "RabbitMQ",
+  "product_version": "3.12.0",
+  "users": [
+    {
+      "name": "guest",
+      "password_hash": "IKqKwYfQKwYf8qkKwYfQKwYf8qkKwYfQ",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [],
+  "parameters": [],
+  "global_parameters": [
+    {
+      "name": "cluster_name",
+      "value": "trading-bot-cluster"
+    }
+  ],
+  "policies": [],
+  "queues": [
+    {
+      "name": "market_data",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 300000,
+        "x-max-length": 10000
+      }
+    },
+    {
+      "name": "trading_signals",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 600000,
+        "x-max-length": 5000
+      }
+    },
+    {
+      "name": "trade_executions",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 3600000,
+        "x-max-length": 1000
+      }
+    },
+    {
+      "name": "notifications",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-message-ttl": 86400000,
+        "x-max-length": 1000
+      }
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "trading_exchange",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "bindings": [
+    {
+      "source": "trading_exchange",
+      "vhost": "/",
+      "destination": "market_data",
+      "destination_type": "queue",
+      "routing_key": "market.data.*",
+      "arguments": {}
+    },
+    {
+      "source": "trading_exchange",
+      "vhost": "/",
+      "destination": "trading_signals",
+      "destination_type": "queue",
+      "routing_key": "signal.*",
+      "arguments": {}
+    },
+    {
+      "source": "trading_exchange",
+      "vhost": "/",
+      "destination": "trade_executions",
+      "destination_type": "queue",
+      "routing_key": "trade.*",
+      "arguments": {}
+    },
+    {
+      "source": "trading_exchange",
+      "vhost": "/",
+      "destination": "notifications",
+      "destination_type": "queue",
+      "routing_key": "notification.*",
+      "arguments": {}
+    }
+  ]
+}

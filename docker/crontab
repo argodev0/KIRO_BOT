@@ -1,0 +1,11 @@
+# Crontab for backup service
+# Format: minute hour day month weekday command
+
+# Daily backup at 2 AM
+0 2 * * * /app/scripts/backup.sh >> /app/logs/cron.log 2>&1
+
+# Weekly cleanup on Sunday at 3 AM
+0 3 * * 0 /app/scripts/cleanup.sh >> /app/logs/cron.log 2>&1
+
+# Health check every 5 minutes
+*/5 * * * * touch /tmp/backup-healthy

@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trading-bot-config
+  namespace: trading-bot
+data:
+  NODE_ENV: "production"
+  DATABASE_URL: "postgresql://postgres:$(POSTGRES_PASSWORD)@postgres-service:5432/trading_bot"
+  REDIS_URL: "redis://redis-service:6379"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq-service:5672"
+  LOG_LEVEL: "info"
+  METRICS_PORT: "9464"
+  HEALTH_CHECK_PORT: "8080"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: trading-bot
+data:
+  POSTGRES_DB: "trading_bot"
+  POSTGRES_USER: "postgres"
+  POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: trading-bot
+data:
+  redis.conf: |
+    # Redis configuration for production
+    bind 0.0.0.0
+    port 6379
+    timeout 0
+    tcp-keepalive 300
+    
+    # Memory management
+    maxmemory 512mb
+    maxmemory-policy allkeys-lru
+    
+    # Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+    
+    # Security
+    requirepass $(REDIS_PASSWORD)
+    
+    # Logging
+    loglevel notice
+    logfile ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: trading-bot
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes auto;
+    error_log /var/log/nginx/error.log warn;
+    pid /var/run/nginx.pid;
+
+    events {
+        worker_connections 1024;
+        use epoll;
+        multi_accept on;
+    }
+
+    http {
+        include /etc/nginx/mime.types;
+        default_type application/octet-stream;
+
+        log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                        '$status $body_bytes_sent "$http_referer" '
+                        '"$http_user_agent" "$http_x_forwarded_for"';
+
+        access_log /var/log/nginx/access.log main;
+
+        sendfile on;
+        tcp_nopush on;
+        tcp_nodelay on;
+        keepalive_timeout 65;
+        types_hash_max_size 2048;
+        client_max_body_size 16M;
+
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types
+            text/plain
+            text/css
+            text/xml
+            text/javascript
+            application/json
+            application/javascript
+            application/xml+rss
+            application/atom+xml
+            image/svg+xml;
+
+        include /etc/nginx/conf.d/*.conf;
+    }

@@ -1,0 +1,87 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@tradingbot.com'
+  smtp_auth_username: 'alerts@tradingbot.com'
+  smtp_auth_password: 'your-email-password'
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'web.hook'
+  routes:
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 5s
+      repeat_interval: 5m
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      repeat_interval: 30m
+    - match:
+        alertname: TradingSystemDown
+      receiver: 'trading-alerts'
+      group_wait: 0s
+      repeat_interval: 1m
+
+receivers:
+  - name: 'web.hook'
+    webhook_configs:
+      - url: 'http://host.docker.internal:3000/api/monitoring/alerts'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'admin@tradingbot.com'
+        subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Labels: {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+          {{ end }}
+    webhook_configs:
+      - url: 'http://host.docker.internal:3000/api/monitoring/alerts'
+        send_resolved: true
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#trading-alerts'
+        title: 'CRITICAL Alert'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'alerts@tradingbot.com'
+        subject: 'WARNING: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}
+
+  - name: 'trading-alerts'
+    email_configs:
+      - to: 'trading-team@tradingbot.com'
+        subject: 'TRADING SYSTEM ALERT: {{ .GroupLabels.alertname }}'
+        body: |
+          URGENT: Trading system requires immediate attention!
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt }}
+          {{ end }}
+    webhook_configs:
+      - url: 'http://host.docker.internal:3000/api/monitoring/alerts'
+        send_resolved: true
+      - url: 'http://host.docker.internal:3000/api/notifications/emergency'
+        send_resolved: true
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']

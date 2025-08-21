@@ -1,0 +1,39 @@
+# Backup Service Dockerfile
+# Optimized for database backup and restore operations
+
+FROM postgres:15-alpine
+
+# Install additional tools
+RUN apk add --no-cache \
+    aws-cli \
+    curl \
+    bash \
+    gzip \
+    bc \
+    findutils \
+    coreutils \
+    && rm -rf /var/cache/apk/*
+
+# Create app user
+RUN addgroup -g 1001 -S backup && \
+    adduser -S backup -u 1001 -G backup
+
+# Create directories
+RUN mkdir -p /app/scripts /app/logs /backups && \
+    chown -R backup:backup /app /backups
+
+# Copy backup scripts
+COPY docker/scripts/ /app/scripts/
+RUN chmod +x /app/scripts/*.sh
+
+# Switch to backup user
+USER backup
+
+WORKDIR /app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD test -f /tmp/backup-healthy || exit 1
+
+# Default command
+CMD ["/app/scripts/backup.sh"]

@@ -1,0 +1,278 @@
+# AlertManager Production Configuration
+
+global:
+  smtp_smarthost: '${SMTP_HOST}:587'
+  smtp_from: 'alerts@yourdomain.com'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route tree for alerts
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'default'
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 5m
+      routes:
+        # Trading specific critical alerts
+        - match:
+            service: trading
+          receiver: 'trading-critical'
+        - match:
+            service: risk-management
+          receiver: 'risk-critical'
+        # Infrastructure critical alerts
+        - match:
+            service: database
+          receiver: 'infrastructure-critical'
+
+    # Warning alerts - less frequent notifications
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_interval: 5m
+      repeat_interval: 2h
+
+    # Business alerts - during business hours only
+    - match:
+        service: signal-engine
+      receiver: 'business-alerts'
+      active_time_intervals:
+        - business-hours
+
+    # Security alerts - always immediate
+    - match:
+        service: security
+      receiver: 'security-alerts'
+      group_wait: 0s
+      repeat_interval: 15m
+
+# Time intervals
+time_intervals:
+  - name: business-hours
+    time_intervals:
+      - times:
+          - start_time: '09:00'
+            end_time: '17:00'
+        weekdays: ['monday:friday']
+        location: 'UTC'
+
+# Inhibition rules
+inhibit_rules:
+  # Inhibit warning alerts when critical alerts are firing
+  - source_matchers:
+      - severity="critical"
+    target_matchers:
+      - severity="warning"
+    equal: ['alertname', 'instance']
+
+  # Inhibit individual service alerts when the whole system is down
+  - source_matchers:
+      - alertname="TradingBotDown"
+    target_matchers:
+      - service=~"trading|signal-engine|risk-management"
+
+# Receivers configuration
+receivers:
+  # Default receiver
+  - name: 'default'
+    email_configs:
+      - to: 'admin@yourdomain.com'
+        subject: '[Trading Bot] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Labels: {{ range .Labels.SortedPairs }}{{ .Name }}={{ .Value }} {{ end }}
+          {{ end }}
+
+  # Critical alerts - multiple channels
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'admin@yourdomain.com,devops@yourdomain.com'
+        subject: '[CRITICAL] Trading Bot Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          🚨 CRITICAL ALERT 🚨
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Service: {{ .Labels.service }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          
+          Runbook: {{ .Annotations.runbook_url }}
+          {{ end }}
+        headers:
+          Priority: 'high'
+    
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#trading-alerts'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          *Time:* {{ .StartsAt.Format "15:04:05 UTC" }}
+          {{ if .Annotations.runbook_url }}*Runbook:* {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+        color: 'danger'
+        send_resolved: true
+
+    # SMS for critical alerts (using webhook to SMS service)
+    webhook_configs:
+      - url: 'https://api.yourdomain.com/webhooks/sms-alert'
+        send_resolved: false
+
+  # Trading critical alerts
+  - name: 'trading-critical'
+    email_configs:
+      - to: 'trading-team@yourdomain.com'
+        subject: '[TRADING CRITICAL] {{ .GroupLabels.alertname }}'
+        body: |
+          🔴 TRADING SYSTEM CRITICAL ALERT 🔴
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          
+          IMMEDIATE ACTION REQUIRED
+          {{ if .Annotations.runbook_url }}Runbook: {{ .Annotations.runbook_url }}{{ end }}
+          {{ end }}
+
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#trading-critical'
+        title: '🔴 TRADING CRITICAL: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *IMMEDIATE ACTION REQUIRED*
+          
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Time:* {{ .StartsAt.Format "15:04:05 UTC" }}
+          {{ end }}
+        color: 'danger'
+
+  # Risk management critical alerts
+  - name: 'risk-critical'
+    email_configs:
+      - to: 'risk-team@yourdomain.com,ceo@yourdomain.com'
+        subject: '[RISK ALERT] {{ .GroupLabels.alertname }}'
+        body: |
+          ⚠️ RISK MANAGEMENT ALERT ⚠️
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          
+          Risk controls may have been triggered.
+          Please review trading positions immediately.
+          {{ end }}
+
+  # Infrastructure critical alerts
+  - name: 'infrastructure-critical'
+    email_configs:
+      - to: 'devops@yourdomain.com,sre@yourdomain.com'
+        subject: '[INFRA CRITICAL] {{ .GroupLabels.alertname }}'
+        body: |
+          🔧 INFRASTRUCTURE CRITICAL ALERT 🔧
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          {{ end }}
+
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#infrastructure'
+        title: '🔧 INFRA CRITICAL: {{ .GroupLabels.alertname }}'
+        color: 'danger'
+
+  # Warning alerts
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'admin@yourdomain.com'
+        subject: '[WARNING] Trading Bot: {{ .GroupLabels.alertname }}'
+        body: |
+          ⚠️ Warning Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          {{ end }}
+
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#trading-warnings'
+        title: '⚠️ WARNING: {{ .GroupLabels.alertname }}'
+        color: 'warning'
+
+  # Business alerts
+  - name: 'business-alerts'
+    email_configs:
+      - to: 'business-team@yourdomain.com'
+        subject: '[BUSINESS] Trading Bot: {{ .GroupLabels.alertname }}'
+        body: |
+          📊 Business Alert
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          {{ end }}
+
+  # Security alerts
+  - name: 'security-alerts'
+    email_configs:
+      - to: 'security@yourdomain.com,admin@yourdomain.com'
+        subject: '[SECURITY] Trading Bot: {{ .GroupLabels.alertname }}'
+        body: |
+          🔒 SECURITY ALERT 🔒
+          
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+          
+          Please investigate immediately.
+          {{ end }}
+        headers:
+          Priority: 'high'
+
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#security-alerts'
+        title: '🔒 SECURITY: {{ .GroupLabels.alertname }}'
+        text: |
+          {{ range .Alerts }}
+          *SECURITY INCIDENT DETECTED*
+          
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Time:* {{ .StartsAt.Format "15:04:05 UTC" }}
+          
+          *Please investigate immediately.*
+          {{ end }}
+        color: 'danger'

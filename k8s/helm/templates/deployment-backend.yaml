@@ -1,0 +1,179 @@
+{{- if .Values.backend.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "trading-bot.fullname" . }}-backend
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "trading-bot.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{- include "trading-bot.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "trading-bot.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/path: "/metrics"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "trading-bot.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: backend
+        image: "{{ .Values.image.registry }}/{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Values.app.version }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 3000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9464
+          protocol: TCP
+        - name: health
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: {{ .Values.global.environment | default "production" }}
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-secrets
+              key: JWT_SECRET
+        - name: ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-secrets
+              key: ENCRYPTION_KEY
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-secrets
+              key: POSTGRES_PASSWORD
+        - name: BINANCE_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-exchange-secrets
+              key: BINANCE_API_KEY
+        - name: BINANCE_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-exchange-secrets
+              key: BINANCE_API_SECRET
+        - name: KUCOIN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-exchange-secrets
+              key: KUCOIN_API_KEY
+        - name: KUCOIN_API_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-exchange-secrets
+              key: KUCOIN_API_SECRET
+        - name: KUCOIN_PASSPHRASE
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-exchange-secrets
+              key: KUCOIN_PASSPHRASE
+        envFrom:
+        - configMapRef:
+            name: {{ include "trading-bot.fullname" . }}-config
+        resources:
+          {{- toYaml .Values.backend.resources | nindent 12 }}
+        livenessProbe:
+          {{- toYaml .Values.backend.livenessProbe | nindent 12 }}
+        readinessProbe:
+          {{- toYaml .Values.backend.readinessProbe | nindent 12 }}
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        - name: tmp
+          mountPath: /app/tmp
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+            - ALL
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: tmp
+        emptyDir: {}
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:15-alpine
+        command:
+        - sh
+        - -c
+        - |
+          until pg_isready -h {{ include "trading-bot.postgresql.host" . }} -p 5432 -U postgres; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-secrets
+              key: POSTGRES_PASSWORD
+      - name: wait-for-redis
+        image: redis:7-alpine
+        command:
+        - sh
+        - -c
+        - |
+          until redis-cli -h {{ include "trading-bot.redis.host" . }} ping; do
+            echo "Waiting for redis..."
+            sleep 2
+          done
+      - name: migrate-database
+        image: "{{ .Values.image.registry }}/{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag | default .Values.app.version }}"
+        command:
+        - sh
+        - -c
+        - |
+          npx prisma migrate deploy
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "trading-bot.fullname" . }}-secrets
+              key: POSTGRES_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: {{ include "trading-bot.fullname" . }}-config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

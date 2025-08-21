@@ -1,0 +1,340 @@
+# Default values for trading-bot
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Application configuration
+app:
+  name: trading-bot
+  version: "1.0.0"
+
+# Image configuration
+image:
+  registry: docker.io
+  repository: trading-bot
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Backend service configuration
+backend:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: trading-bot/backend
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 3000
+    targetPort: 3000
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 40
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# Frontend service configuration
+frontend:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: trading-bot/frontend
+    tag: latest
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 80
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: 80
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: 80
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "16m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: trading-bot.yourdomain.com
+      paths:
+        - path: /api
+          pathType: Prefix
+          service: backend
+        - path: /socket.io
+          pathType: Prefix
+          service: backend
+        - path: /
+          pathType: Prefix
+          service: frontend
+  tls:
+    - secretName: trading-bot-tls
+      hosts:
+        - trading-bot.yourdomain.com
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    username: postgres
+    password: ""
+    database: trading_bot
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: ""
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+  metrics:
+    enabled: true
+
+# Redis configuration
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: ""
+  master:
+    persistence:
+      enabled: true
+      size: 10Gi
+      storageClass: ""
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  metrics:
+    enabled: true
+
+# RabbitMQ configuration
+rabbitmq:
+  enabled: true
+  auth:
+    username: guest
+    password: ""
+  persistence:
+    enabled: true
+    size: 10Gi
+    storageClass: ""
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  metrics:
+    enabled: true
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: 30
+  storage:
+    size: 100Gi
+    storageClass: ""
+  s3:
+    enabled: false
+    bucket: ""
+    region: "us-east-1"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# Monitoring configuration
+monitoring:
+  prometheus:
+    enabled: true
+    retention: "30d"
+    storage:
+      size: 50Gi
+      storageClass: "fast-ssd"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+  grafana:
+    enabled: true
+    adminPassword: ""
+    storage:
+      size: 10Gi
+      storageClass: "fast-ssd"
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  alertmanager:
+    enabled: true
+    storage:
+      size: 5Gi
+      storageClass: ""
+
+# Security configuration
+security:
+  networkPolicies:
+    enabled: true
+  podSecurityPolicy:
+    enabled: true
+  rbac:
+    enabled: true
+
+# Environment-specific overrides
+environments:
+  development:
+    backend:
+      replicaCount: 1
+    frontend:
+      replicaCount: 1
+    postgresql:
+      primary:
+        persistence:
+          size: 10Gi
+    redis:
+      master:
+        persistence:
+          size: 1Gi
+    rabbitmq:
+      persistence:
+        size: 1Gi
+    backup:
+      enabled: false
+    monitoring:
+      prometheus:
+        retention: "7d"
+        storage:
+          size: 10Gi
+      grafana:
+        storage:
+          size: 1Gi
+
+  staging:
+    backend:
+      replicaCount: 2
+    frontend:
+      replicaCount: 1
+    postgresql:
+      primary:
+        persistence:
+          size: 50Gi
+    redis:
+      master:
+        persistence:
+          size: 5Gi
+    rabbitmq:
+      persistence:
+        size: 5Gi
+    backup:
+      retention: 14
+    monitoring:
+      prometheus:
+        retention: "15d"
+        storage:
+          size: 25Gi
+      grafana:
+        storage:
+          size: 5Gi
+
+  production:
+    backend:
+      replicaCount: 3
+      autoscaling:
+        enabled: true
+        minReplicas: 3
+        maxReplicas: 10
+    frontend:
+      replicaCount: 2
+    postgresql:
+      primary:
+        persistence:
+          size: 100Gi
+    redis:
+      master:
+        persistence:
+          size: 10Gi
+    rabbitmq:
+      persistence:
+        size: 10Gi
+    backup:
+      retention: 30
+      s3:
+        enabled: true
+    monitoring:
+      prometheus:
+        retention: "30d"
+        storage:
+          size: 50Gi
+      grafana:
+        storage:
+          size: 10Gi

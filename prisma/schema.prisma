@@ -1,0 +1,424 @@
+// Prisma schema for AI Crypto Trading Bot
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users and Authentication
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  firstName     String?  @map("first_name")
+  lastName      String?  @map("last_name")
+  isActive      Boolean  @default(true) @map("is_active")
+  isVerified    Boolean  @default(false) @map("is_verified")
+  role          UserRole @default(USER)
+  
+  // Security fields
+  requireMfaReset Boolean @default(false) @map("require_mfa_reset")
+  
+  // API Keys (encrypted) - deprecated, use UserApiKeys table
+  apiKeys       Json?    @map("api_keys")
+  
+  // Risk Management Settings
+  riskSettings  Json?    @map("risk_settings")
+  
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+  
+  // Relations
+  tradingSignals TradingSignal[]
+  tradeExecutions TradeExecution[]
+  grids         Grid[]
+  portfolios    Portfolio[]
+  performanceMetrics PerformanceMetric[]
+  auditLogs     AuditLog[]
+  botConfigs    BotConfig[]
+  configBackups ConfigBackup[]
+  
+  // Security relations
+  userApiKeys   UserApiKeys?
+  userSettings  UserSettings?
+  accountLock   AccountLock?
+  
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@map("refresh_tokens")
+}
+
+// Trading Signals
+model TradingSignal {
+  id          String        @id @default(cuid())
+  userId      String        @map("user_id")
+  symbol      String
+  direction   SignalDirection
+  confidence  Decimal       @db.Decimal(5,2)
+  entryPrice  Decimal       @db.Decimal(20,8) @map("entry_price")
+  stopLoss    Decimal?      @db.Decimal(20,8) @map("stop_loss")
+  takeProfit  Json?         @map("take_profit") // Array of take profit levels
+  reasoning   Json          // Analysis reasoning and confluence factors
+  status      SignalStatus  @default(PENDING)
+  
+  // Analysis metadata
+  technicalScore    Decimal? @db.Decimal(5,2) @map("technical_score")
+  patternScore      Decimal? @db.Decimal(5,2) @map("pattern_score")
+  elliottWaveScore  Decimal? @db.Decimal(5,2) @map("elliott_wave_score")
+  fibonacciScore    Decimal? @db.Decimal(5,2) @map("fibonacci_score")
+  volumeScore       Decimal? @db.Decimal(5,2) @map("volume_score")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  executedAt  DateTime? @map("executed_at")
+  closedAt    DateTime? @map("closed_at")
+  
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions  TradeExecution[]
+  
+  @@map("trading_signals")
+}
+
+// Trade Executions
+model TradeExecution {
+  id          String    @id @default(cuid())
+  signalId    String?   @map("signal_id")
+  userId      String    @map("user_id")
+  symbol      String
+  side        TradeSide
+  quantity    Decimal   @db.Decimal(20,8)
+  price       Decimal   @db.Decimal(20,8)
+  fee         Decimal?  @db.Decimal(20,8)
+  exchange    String
+  orderId     String?   @map("order_id")
+  
+  // P&L tracking
+  realizedPnl Decimal?  @db.Decimal(20,8) @map("realized_pnl")
+  
+  // Timestamps
+  executedAt  DateTime  @default(now()) @map("executed_at")
+  
+  // Relations
+  signal      TradingSignal? @relation(fields: [signalId], references: [id])
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("trade_executions")
+}
+
+// Grid Trading
+model Grid {
+  id          String      @id @default(cuid())
+  userId      String      @map("user_id")
+  symbol      String
+  strategy    GridStrategy
+  levels      Json        // Array of grid levels with prices and quantities
+  basePrice   Decimal     @db.Decimal(20,8) @map("base_price")
+  spacing     Decimal     @db.Decimal(10,4)
+  totalProfit Decimal     @default(0) @db.Decimal(20,8) @map("total_profit")
+  status      GridStatus  @default(ACTIVE)
+  
+  // Grid metadata
+  metadata    Json?       // Elliott Wave context, Fibonacci levels, etc.
+  
+  // Timestamps
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+  closedAt    DateTime?   @map("closed_at")
+  
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("grids")
+}
+
+// Portfolio Management
+model Portfolio {
+  id                String    @id @default(cuid())
+  userId            String    @map("user_id")
+  totalBalance      Decimal   @db.Decimal(20,8) @map("total_balance")
+  availableBalance  Decimal   @db.Decimal(20,8) @map("available_balance")
+  positions         Json      // Current positions
+  totalUnrealizedPnl Decimal  @db.Decimal(20,8) @map("total_unrealized_pnl")
+  totalRealizedPnl  Decimal   @db.Decimal(20,8) @map("total_realized_pnl")
+  maxDrawdown       Decimal   @db.Decimal(10,4) @map("max_drawdown")
+  currentDrawdown   Decimal   @db.Decimal(10,4) @map("current_drawdown")
+  
+  // Timestamps
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("portfolios")
+}
+
+// Performance Analytics
+model PerformanceMetric {
+  id            String    @id @default(cuid())
+  userId        String    @map("user_id")
+  metricType    String    @map("metric_type")
+  metricValue   Decimal   @db.Decimal(20,8) @map("metric_value")
+  metadata      Json?     // Additional metric data
+  period        String?   // daily, weekly, monthly, etc.
+  
+  // Timestamps
+  calculatedAt  DateTime  @default(now()) @map("calculated_at")
+  
+  // Relations
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("performance_metrics")
+}
+
+// Market Data (for caching and analysis)
+model MarketData {
+  id          String    @id @default(cuid())
+  symbol      String
+  exchange    String
+  timeframe   String
+  timestamp   DateTime
+  open        Decimal   @db.Decimal(20,8)
+  high        Decimal   @db.Decimal(20,8)
+  low         Decimal   @db.Decimal(20,8)
+  close       Decimal   @db.Decimal(20,8)
+  volume      Decimal   @db.Decimal(20,8)
+  
+  // Technical indicators (cached)
+  indicators  Json?
+  
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  @@unique([symbol, exchange, timeframe, timestamp])
+  @@map("market_data")
+}
+
+// System Monitoring
+model SystemMetric {
+  id          String    @id @default(cuid())
+  metricName  String    @map("metric_name")
+  metricValue Decimal   @db.Decimal(20,8) @map("metric_value")
+  labels      Json?     // Prometheus-style labels
+  
+  // Timestamps
+  timestamp   DateTime  @default(now())
+  
+  @@map("system_metrics")
+}
+
+// Bot Configuration
+model BotConfig {
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  name            String
+  description     String?
+  isActive        Boolean   @default(false) @map("is_active")
+  
+  // Strategy configuration
+  strategy        Json      // BotStrategy object
+  
+  // Risk management configuration
+  riskManagement  Json      @map("risk_management") // RiskManagementConfig object
+  
+  // Signal filters configuration
+  signalFilters   Json      @map("signal_filters") // SignalFilterConfig object
+  
+  // Grid configuration (optional)
+  gridConfig      Json?     @map("grid_config") // GridConfig object
+  
+  // Exchange configurations
+  exchanges       Json      // ExchangeConfig[] array
+  
+  // Notification settings
+  notifications   Json      // NotificationConfig object
+  
+  // Timestamps
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  user            User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  backups         ConfigBackup[]
+  
+  @@map("bot_configs")
+}
+
+// Configuration Backups
+model ConfigBackup {
+  id          String    @id @default(cuid())
+  userId      String    @map("user_id")
+  configId    String    @map("config_id")
+  name        String
+  description String?
+  backupData  Json      @map("backup_data") // Complete BotConfig snapshot
+  version     String    @default("1.0.0")
+  
+  // Timestamps
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  config      BotConfig @relation(fields: [configId], references: [id], onDelete: Cascade)
+  
+  @@map("config_backups")
+}
+
+// Enhanced Audit Logging
+model AuditLog {
+  id          String    @id @default(cuid())
+  userId      String?   @map("user_id")
+  sessionId   String?   @map("session_id")
+  eventType   String    @map("event_type")
+  severity    String    @default("LOW")
+  description String
+  metadata    String?   // JSON string
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  success     Boolean   @default(true)
+  errorMessage String?  @map("error_message")
+  
+  // Timestamps
+  timestamp   DateTime  @default(now())
+  
+  // Relations
+  user        User? @relation(fields: [userId], references: [id])
+  
+  @@map("audit_logs")
+}
+
+// Encrypted API Keys Storage
+model UserApiKeys {
+  id            String    @id @default(cuid())
+  userId        String    @unique @map("user_id")
+  encryptedData String    @map("encrypted_data") // JSON string of encrypted API keys
+  
+  // Timestamps
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  lastAccessed  DateTime  @default(now()) @map("last_accessed")
+  
+  // Relations
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_api_keys")
+}
+
+// Encrypted User Settings
+model UserSettings {
+  id                String    @id @default(cuid())
+  userId            String    @unique @map("user_id")
+  encryptedSettings String    @map("encrypted_settings") // JSON string of encrypted settings
+  
+  // Timestamps
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_settings")
+}
+
+// Account Security Locks
+model AccountLock {
+  id           String    @id @default(cuid())
+  userId       String    @unique @map("user_id")
+  lockedAt     DateTime  @map("locked_at")
+  lockReason   String    @map("lock_reason")
+  lockDuration Int?      @map("lock_duration") // minutes
+  unlockAt     DateTime? @map("unlock_at")
+  unlocked     Boolean   @default(false)
+  unlockedAt   DateTime? @map("unlocked_at")
+  unlockedBy   String?   @map("unlocked_by")
+  attemptCount Int       @default(1) @map("attempt_count")
+  
+  // Relations
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("account_locks")
+}
+
+// Blocked IP Addresses
+model BlockedIP {
+  id        String    @id @default(cuid())
+  ipAddress String    @unique @map("ip_address")
+  reason    String
+  blockedAt DateTime  @default(now()) @map("blocked_at")
+  expiresAt DateTime? @map("expires_at")
+  
+  @@map("blocked_ips")
+}
+
+// Security Threats
+model SecurityThreat {
+  id          String    @id @default(cuid())
+  userId      String?   @map("user_id")
+  ipAddress   String?   @map("ip_address")
+  threatType  String    @map("threat_type")
+  severity    String
+  description String
+  metadata    String?   // JSON string
+  resolved    Boolean   @default(false)
+  
+  // Timestamps
+  detectedAt  DateTime  @default(now()) @map("detected_at")
+  resolvedAt  DateTime? @map("resolved_at")
+  
+  @@map("security_threats")
+}
+
+// Enums
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum SignalDirection {
+  LONG
+  SHORT
+}
+
+enum SignalStatus {
+  PENDING
+  ACTIVE
+  EXECUTED
+  CANCELLED
+  EXPIRED
+  CLOSED
+}
+
+enum TradeSide {
+  BUY
+  SELL
+}
+
+enum GridStrategy {
+  ELLIOTT_WAVE
+  FIBONACCI
+  STANDARD
+  DYNAMIC
+}
+
+enum GridStatus {
+  ACTIVE
+  PAUSED
+  CLOSED
+  ERROR
+}
