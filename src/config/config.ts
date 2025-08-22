@@ -70,4 +70,37 @@ export const config = {
     heartbeatInterval: parseInt(process.env.WS_HEARTBEAT_INTERVAL || '30000', 10),
     cleanupInterval: parseInt(process.env.WS_CLEANUP_INTERVAL || '300000', 10), // 5 minutes
   },
+
+  // Paper Trading Configuration - CRITICAL SAFETY SETTINGS
+  paperTrading: {
+    enabled: true, // ALWAYS enabled for safety
+    allowRealTrades: false, // NEVER allow real trades
+    forceMode: process.env.NODE_ENV === 'production', // Force in production
+    initialVirtualBalance: parseFloat(process.env.INITIAL_VIRTUAL_BALANCE || '10000'),
+    maxVirtualLeverage: parseFloat(process.env.MAX_VIRTUAL_LEVERAGE || '3'),
+    virtualTradingFee: parseFloat(process.env.VIRTUAL_TRADING_FEE || '0.001'), // 0.1%
+    slippageSimulation: process.env.SLIPPAGE_SIMULATION !== 'false',
+    enableRealisticFees: process.env.REALISTIC_FEES !== 'false',
+    maxSlippagePercent: parseFloat(process.env.MAX_SLIPPAGE_PERCENT || '0.5'),
+    apiKeyValidation: {
+      enabled: true,
+      requireReadOnly: true,
+      blockTradingKeys: true,
+      cacheValidationMs: parseInt(process.env.API_VALIDATION_CACHE_MS || '300000'), // 5 minutes
+    },
+    security: {
+      auditAllOperations: true,
+      blockRealMoneyOps: true,
+      logSecurityEvents: true,
+      alertOnViolations: true,
+    }
+  },
+
+  // Environment validation for paper trading safety
+  environment: {
+    isPaperTradingMode: process.env.PAPER_TRADING_MODE !== 'false',
+    allowRealTrades: process.env.ALLOW_REAL_TRADES === 'true', // Explicit opt-in required
+    nodeEnv: process.env.NODE_ENV || 'development',
+    isProduction: process.env.NODE_ENV === 'production',
+  },
 } as const;

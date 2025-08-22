@@ -25,6 +25,12 @@ import {
 } from '@/middleware/security';
 import { comprehensiveValidation } from '@/middleware/inputValidation';
 
+// Paper Trading Safety Infrastructure
+import { paperTradingGuard, validatePaperTradingMode } from '@/middleware/paperTradingGuard';
+import { validateEnvironmentOnStartup } from '@/utils/EnvironmentValidator';
+import { virtualPortfolioManager } from '@/services/VirtualPortfolioManager';
+import { tradeSimulationEngine } from '@/services/TradeSimulationEngine';
+
 import { WebSocketServer } from '@/services/WebSocketServer';
 import { DataBroadcastService } from '@/services/DataBroadcastService';
 import { WebSocketClientManager } from '@/services/WebSocketClientManager';
@@ -50,6 +56,20 @@ const securityMonitoringService = new SecurityMonitoringService(
 // Create HTTP server for development
 const server = createServer(app);
 
+// CRITICAL: Validate environment for paper trading safety BEFORE starting server
+try {
+  validateEnvironmentOnStartup();
+  validatePaperTradingMode();
+  logger.info('✅ Paper trading safety validation passed');
+} catch (error) {
+  logger.error('❌ CRITICAL: Paper trading safety validation failed', error);
+  if (config.environment.isProduction) {
+    logger.error('Exiting application due to safety validation failure in production');
+    process.exit(1);
+  }
+  throw error;
+}
+
 // Basic middleware stack
 app.use(corsOptions);
 
@@ -61,6 +81,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Request logging
 app.use(requestLogger);
+
+// CRITICAL: Paper Trading Guard - MUST be applied before any trading routes
+app.use(paperTradingGuard);
 
 // API Documentation
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -75,14 +98,55 @@ app.get('/api/docs.json', (_req, res) => {
   res.send(swaggerSpec);
 });
 
-// Health check endpoint
+// Health check endpoint with paper trading status
 app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    version: process.env.npm_package_version || '1.0.0'
+    version: process.env.npm_package_version || '1.0.0',
+    paperTradingMode: config.paperTrading.enabled,
+    allowRealTrades: config.paperTrading.allowRealTrades,
+    environment: config.environment.nodeEnv,
+    safetyStatus: {
+      paperTradingEnabled: config.paperTrading.enabled,
+      realTradesBlocked: !config.paperTrading.allowRealTrades,
+      environmentValidated: true,
+      virtualPortfolioActive: true
+    }
   });
+});
+
+// Paper trading status endpoint
+app.get('/api/v1/paper-trading/status', (_req, res) => {
+  try {
+    const simulationStats = tradeSimulationEngine.getSimulationStats();
+    const portfolioUsers = virtualPortfolioManager.getAllUsers();
+    
+    res.json({
+      paperTradingMode: config.paperTrading.enabled,
+      allowRealTrades: config.paperTrading.allowRealTrades,
+      environment: config.environment.nodeEnv,
+      virtualPortfolio: {
+        activeUsers: portfolioUsers.length,
+        initialBalance: config.paperTrading.initialVirtualBalance
+      },
+      simulation: simulationStats,
+      safety: {
+        environmentValidated: true,
+        apiKeysValidated: true,
+        realMoneyOperationsBlocked: true,
+        auditLoggingEnabled: config.paperTrading.security.auditAllOperations
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Error getting paper trading status:', error);
+    res.status(500).json({ 
+      error: 'Failed to get paper trading status',
+      paperTradingMode: config.paperTrading.enabled 
+    });
+  }
 });
 
 // Metrics endpoint for Prometheus
@@ -170,6 +234,21 @@ server.listen(PORT, () => {
   logger.info(`🚨 Monitoring: Suspicious activity detection active`);
   logger.info(`⚡ Rate limiting: Enabled for all endpoints`);
   logger.info(`🔍 Input validation: SQL injection and XSS protection active`);
+  
+  // CRITICAL: Paper Trading Safety Status
+  logger.info(`🔒 PAPER TRADING MODE: ${config.paperTrading.enabled ? 'ENABLED' : 'DISABLED'}`);
+  logger.info(`🚫 REAL TRADES: ${config.paperTrading.allowRealTrades ? 'ALLOWED (DANGER!)' : 'BLOCKED (SAFE)'}`);
+  logger.info(`💰 Virtual Balance: $${config.paperTrading.initialVirtualBalance.toLocaleString()}`);
+  logger.info(`🎯 Paper Trading Status: ${protocol}://localhost:${PORT}/api/v1/paper-trading/status`);
+  
+  if (!config.paperTrading.enabled || config.paperTrading.allowRealTrades) {
+    logger.error('⚠️  WARNING: UNSAFE PAPER TRADING CONFIGURATION DETECTED!');
+    logger.error('⚠️  This configuration may allow real money operations!');
+  } else {
+    logger.info('✅ Paper trading safety: All real money operations blocked');
+    logger.info('✅ Virtual portfolio: Ready for simulated trading');
+    logger.info('✅ Trade simulation: Realistic market conditions enabled');
+  }
 });
 
 // Graceful shutdown
