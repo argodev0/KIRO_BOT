@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-08-24T08:17:39.961Z",
+  "summary": {
+    "configurationFiles": 6,
+    "successfulBuilds": 3,
+    "healthChecksConfigured": 3,
+    "volumesConfigured": 7
+  },
+  "details": {
+    "configValidation": {
+      "docker/Dockerfile.frontend": "exists",
+      "docker/Dockerfile.backend": "exists",
+      "docker/Dockerfile.backup": "exists",
+      "docker/docker-compose.prod.yml": "exists",
+      "docker/nginx.conf": "exists",
+      "docker/default.conf": "exists",
+      "docker-compose-syntax": "invalid"
+    },
+    "buildResults": {
+      "trading-bot-frontend": "failed",
+      "trading-bot-backend": "failed",
+      "trading-bot-backend-simple": "success",
+      "trading-bot-backup": "success",
+      "test-backend-startup": "success"
+    },
+    "healthChecks": {
+      "docker/Dockerfile.frontend": "configured",
+      "docker/Dockerfile.backend": "configured",
+      "docker/Dockerfile.backup": "configured"
+    },
+    "volumeValidation": {
+      "postgres_data": "defined",
+      "redis_data": "defined",
+      "rabbitmq_data": "defined",
+      "prometheus_data": "defined",
+      "grafana_data": "defined",
+      "backend_logs": "defined",
+      "certbot_certs": "defined"
+    },
+    "networkValidation": {
+      "custom-network": "defined",
+      "frontend-network": "configured",
+      "backend-network": "configured",
+      "postgres-network": "configured",
+      "redis-network": "configured"
+    }
+  },
+  "recommendations": [
+    "Backend build failed due to TypeScript errors. Consider fixing compilation issues or using simplified build approach."
+  ]
+}

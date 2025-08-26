@@ -1,0 +1,11 @@
+{
+  "phases": {},
+  "summary": {
+    "totalPhases": 7,
+    "passedPhases": 0,
+    "failedPhases": 0,
+    "criticalFailures": 1
+  },
+  "startTime": "2025-08-24T03:21:47.268Z",
+  "endTime": "2025-08-24T03:22:30.978Z"
+}

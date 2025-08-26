@@ -5,6 +5,8 @@ import gridRoutes from './grids';
 import analyticsRoutes from './analytics';
 import userRoutes from './users';
 import configRoutes from './config';
+import healthRoutes from './health';
+import monitoringRoutes from './monitoring';
 import { apiRateLimit } from '@/middleware/rateLimiter';
 
 const router = Router();
@@ -35,7 +37,9 @@ router.get('/status', (_req, res) => {
       grids: '/api/v1/grids',
       analytics: '/api/v1/analytics',
       users: '/api/v1/users',
-      config: '/api/v1/config'
+      config: '/api/v1/config',
+      health: '/api/v1/health',
+      monitoring: '/api/v1/monitoring'
     }
   });
 });
@@ -47,6 +51,8 @@ router.use('/grids', gridRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/users', userRoutes);
 router.use('/config', configRoutes);
+router.use('/health', healthRoutes);
+router.use('/monitoring', monitoringRoutes);
 
 // 404 handler for API routes
 router.use('*', (req, res) => {

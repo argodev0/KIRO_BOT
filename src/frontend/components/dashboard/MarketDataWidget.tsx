@@ -4,20 +4,23 @@ import {
   Card,
   CardContent,
   Typography,
-  Grid2 as Grid,
+  Grid,
   Chip,
   IconButton,
   Tooltip,
+  Alert,
 } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
   TrendingFlat,
   Refresh,
+  LiveTv,
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store/store';
 import { setSelectedSymbol } from '../../store/slices/marketDataSlice';
+import LiveDataIndicator from '../common/LiveDataIndicator';
 
 interface MarketDataWidgetProps {
   symbols?: string[];
@@ -82,13 +85,12 @@ const MarketDataWidget: React.FC<MarketDataWidgetProps> = ({
     <Card>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">Market Data</Typography>
           <Box display="flex" alignItems="center" gap={1}>
-            <Chip
-              label={isConnected ? 'Connected' : 'Disconnected'}
-              color={isConnected ? 'success' : 'error'}
-              size="small"
-            />
+            <LiveTv color="primary" />
+            <Typography variant="h6">Live Market Data</Typography>
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+            <LiveDataIndicator variant="chip" />
             <Tooltip title={`Last update: ${getLastUpdateText()}`}>
               <IconButton size="small">
                 <Refresh />
@@ -96,6 +98,17 @@ const MarketDataWidget: React.FC<MarketDataWidgetProps> = ({
             </Tooltip>
           </Box>
         </Box>
+
+        {/* Live Data Source Alert */}
+        <Alert
+          severity="info"
+          icon={<LiveTv />}
+          sx={{ mb: 2, backgroundColor: 'rgba(33, 150, 243, 0.1)' }}
+        >
+          <Typography variant="body2">
+            <strong>LIVE MAINNET DATA:</strong> Real-time market data from Binance & KuCoin exchanges
+          </Typography>
+        </Alert>
 
         <Grid container spacing={2}>
           {symbols.map((symbol) => {

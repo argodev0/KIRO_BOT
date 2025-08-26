@@ -2,7 +2,7 @@
  * Trade Simulation Engine Tests
  */
 
-import { TradeSimulationEngine } from '../services/TradeSimulationEngine';
+import { TradeSimulationEngine, SimulatedOrderResponse } from '../services/TradeSimulationEngine';
 import { OrderRequest } from '../types/trading';
 
 // Mock dependencies
@@ -12,6 +12,7 @@ jest.mock('../utils/logger');
 
 describe('TradeSimulationEngine', () => {
   let engine: TradeSimulationEngine;
+  let sampleOrderRequest: OrderRequest;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -22,10 +23,8 @@ describe('TradeSimulationEngine', () => {
       baseSlippagePercent: 0.05,
       baseFeePercent: 0.1
     });
-  });
 
-  it('should simulate market order execution successfully', async () => {
-    const orderRequest: OrderRequest = {
+    sampleOrderRequest = {
       symbol: 'BTCUSDT',
       side: 'buy',
       type: 'market',
@@ -34,94 +33,70 @@ describe('TradeSimulationEngine', () => {
       exchange: 'binance',
       clientOrderId: 'test-order-123'
     };
+  });
 
-    const result = await engine.simulateOrderExecution(orderRequest);
+  it('should simulate market order execution successfully', async () => {
+    const result = await engine.simulateOrderExecution(sampleOrderRequest);
 
     expect(result).toBeDefined();
     expect(result.isPaperTrade).toBe(true);
     expect(result.orderId).toMatch(/^sim_\d+_[a-z0-9]+$/);
-    expect(result.symbol).toBe(orderRequest.symbol);
-    expect(result.side).toBe(orderRequest.side);
-    expect(result.type).toBe(orderRequest.type);
-    expect(result.quantity).toBe(orderRequest.quantity);
-    expect(result.exchange).toBe(orderRequest.exchange);
-    expect(result.clientOrderId).toBe(orderRequest.clientOrderId);
+    expect(result.symbol).toBe(sampleOrderRequest.symbol);
+    expect(result.side).toBe(sampleOrderRequest.side);
+    expect(result.type).toBe(sampleOrderRequest.type);
+    expect(result.quantity).toBe(sampleOrderRequest.quantity);
+    expect(result.exchange).toBe(sampleOrderRequest.exchange);
+    expect(result.clientOrderId).toBe(sampleOrderRequest.clientOrderId);
     expect(result.status).toBe('filled');
     expect(result.price).toBeGreaterThan(0);
     expect(result.timestamp).toBeGreaterThan(0);
   });
 
   it('should apply realistic slippage to orders', async () => {
-    const orderRequest: OrderRequest = {
-      symbol: 'BTCUSDT',
-      side: 'buy',
-      type: 'market',
-      quantity: 0.1,
-      price: 50000,
-      exchange: 'binance'
+    const result = await engine.simulateOrderExecution(sampleOrderRequest);
+
+    expect(result.simulationDetails.slippage).toBeGreaterThanOrEqual(0);
+    expect(result.simulationDetails.slippagePercent).toBeGreaterThanOrEqual(0);
+    expect(result.simulationDetails.slippagePercent).toBeLessThan(2.0);
+    
+    if (sampleOrderRequest.price && sampleOrderRequest.side === 'buy') {
+      expect(result.price).toBeGreaterThanOrEqual(sampleOrderRequest.price);
+    }
+  });
+
+  it('should calculate realistic trading fees', async () => {
+    const result = await engine.simulateOrderExecution(sampleOrderRequest);
+
+    expect(result.simulationDetails.fee).toBeGreaterThan(0);
+    expect(result.simulationDetails.feePercent).toBe(0.1);
+    
+    const expectedFee = result.quantity * (result.price || 0) * (0.1 / 100);
+    expect(result.simulationDetails.fee).toBeCloseTo(expectedFee, 2);
+  });
+
+  it('should handle limit orders differently from market orders', async () => {
+    const limitOrderRequest: OrderRequest = {
+      ...sampleOrderRequest,
+      type: 'limit',
+      price: 49000
     };
 
-    const result = await engine.simulateOrderExecution(orderRequest);
-      expect(result).toBeDefined();
-      expect(result.isPaperTrade).toBe(true);
-      expect(result.orderId).toMatch(/^sim_\d+_[a-z0-9]+$/);
-      expect(result.symbol).toBe(sampleOrderRequest.symbol);
-      expect(result.side).toBe(sampleOrderRequest.side);
-      expect(result.type).toBe(sampleOrderRequest.type);
-      expect(result.quantity).toBe(sampleOrderRequest.quantity);
-      expect(result.exchange).toBe(sampleOrderRequest.exchange);
-      expect(result.clientOrderId).toBe(sampleOrderRequest.clientOrderId);
-      expect(result.status).toBe('filled');
-      expect(result.price).toBeGreaterThan(0);
-      expect(result.timestamp).toBeGreaterThan(0);
-    });
+    const result = await engine.simulateOrderExecution(limitOrderRequest);
 
-    it('should apply realistic slippage to orders', async () => {
-      const result = await engine.simulateOrderExecution(sampleOrderRequest);
+    expect(result.type).toBe('limit');
+    expect(['filled', 'new']).toContain(result.status);
+  });
 
-      expect(result.simulationDetails.slippage).toBeGreaterThanOrEqual(0);
-      expect(result.simulationDetails.slippagePercent).toBeGreaterThanOrEqual(0);
-      expect(result.simulationDetails.slippagePercent).toBeLessThan(2.0);
-      
-      if (sampleOrderRequest.price && sampleOrderRequest.side === 'buy') {
-        expect(result.price).toBeGreaterThanOrEqual(sampleOrderRequest.price);
-      }
-    });
+  it('should generate unique order IDs', async () => {
+    const results = await Promise.all([
+      engine.simulateOrderExecution(sampleOrderRequest),
+      engine.simulateOrderExecution(sampleOrderRequest),
+      engine.simulateOrderExecution(sampleOrderRequest)
+    ]);
 
-    it('should calculate realistic trading fees', async () => {
-      const result = await engine.simulateOrderExecution(sampleOrderRequest);
-
-      expect(result.simulationDetails.fee).toBeGreaterThan(0);
-      expect(result.simulationDetails.feePercent).toBe(0.1);
-      
-      const expectedFee = result.quantity * (result.price || 0) * (0.1 / 100);
-      expect(result.simulationDetails.fee).toBeCloseTo(expectedFee, 2);
-    });
-
-    it('should handle limit orders differently from market orders', async () => {
-      const limitOrderRequest: OrderRequest = {
-        ...sampleOrderRequest,
-        type: 'limit',
-        price: 49000
-      };
-
-      const result = await engine.simulateOrderExecution(limitOrderRequest);
-
-      expect(result.type).toBe('limit');
-      expect(['filled', 'new']).toContain(result.status);
-    });
-
-    it('should generate unique order IDs', async () => {
-      const results = await Promise.all([
-        engine.simulateOrderExecution(sampleOrderRequest),
-        engine.simulateOrderExecution(sampleOrderRequest),
-        engine.simulateOrderExecution(sampleOrderRequest)
-      ]);
-
-      const orderIds = results.map(r => r.orderId);
-      const uniqueIds = new Set(orderIds);
-      expect(uniqueIds.size).toBe(3);
-    });
+    const orderIds = results.map(r => r.orderId);
+    const uniqueIds = new Set(orderIds);
+    expect(uniqueIds.size).toBe(3);
   });
 
   describe('Market Conditions Simulation', () => {

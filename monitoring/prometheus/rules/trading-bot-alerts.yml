@@ -26,6 +26,16 @@ groups:
           summary: "High error rate in Trading Bot"
           description: "Error rate is {{ $value }} errors per second"
 
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{job="trading-bot-backend",status=~"5.."}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: trading-bot
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }} errors per second"
+
       # Trading Specific Alerts
       - alert: TradingExecutionFailure
         expr: rate(trading_execution_failures_total[5m]) > 0.05

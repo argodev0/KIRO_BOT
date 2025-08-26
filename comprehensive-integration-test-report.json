@@ -1,0 +1,313 @@
+{
+  "passed": 30,
+  "failed": 0,
+  "critical": 6,
+  "tests": [
+    {
+      "timestamp": "2025-08-24T03:21:42.308Z",
+      "level": "info",
+      "message": "Testing Paper Trading Guard Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.308Z",
+      "level": "success",
+      "message": "Paper Trading Guard: Real trades blocking - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.309Z",
+      "level": "success",
+      "message": "Paper Trading Guard: Paper trade marking - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.309Z",
+      "level": "critical",
+      "message": "Paper Trading Guard: Real trade error throwing - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.309Z",
+      "level": "success",
+      "message": "Paper Trading Guard: Paper trading mode validation - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.309Z",
+      "level": "critical",
+      "message": "Paper Trading Guard: 1 critical mechanisms missing",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.312Z",
+      "level": "info",
+      "message": "Testing Trade Simulation Engine Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.313Z",
+      "level": "success",
+      "message": "Trade Simulation Engine: Order simulation method - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.313Z",
+      "level": "success",
+      "message": "Trade Simulation Engine: Paper trade marking in simulation - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.313Z",
+      "level": "critical",
+      "message": "Trade Simulation Engine: Virtual balance handling - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.314Z",
+      "level": "success",
+      "message": "Trade Simulation Engine: Audit reporting capability - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.315Z",
+      "level": "critical",
+      "message": "Trade Simulation Engine: 1 critical features missing",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.315Z",
+      "level": "info",
+      "message": "Testing Virtual Portfolio Manager Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.316Z",
+      "level": "success",
+      "message": "Virtual Portfolio Manager: Portfolio initialization - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.316Z",
+      "level": "success",
+      "message": "Virtual Portfolio Manager: Simulated trade execution - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.317Z",
+      "level": "success",
+      "message": "Virtual Portfolio Manager: Virtual portfolio marking - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.317Z",
+      "level": "success",
+      "message": "Virtual Portfolio Manager: Portfolio summary reporting - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.317Z",
+      "level": "success",
+      "message": "Virtual Portfolio Manager: All critical features implemented",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.318Z",
+      "level": "info",
+      "message": "Testing API Permission Validator Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.318Z",
+      "level": "success",
+      "message": "API Permission Validator: API key validation method - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.318Z",
+      "level": "success",
+      "message": "API Permission Validator: Read-only enforcement - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.319Z",
+      "level": "success",
+      "message": "API Permission Validator: Permission risk assessment - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.321Z",
+      "level": "critical",
+      "message": "API Permission Validator: Trading permission blocking - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.321Z",
+      "level": "critical",
+      "message": "API Permission Validator: 1 critical features missing",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.321Z",
+      "level": "info",
+      "message": "Testing Exchange Service Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.322Z",
+      "level": "success",
+      "message": "BinanceExchange: Testnet/Sandbox usage - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.322Z",
+      "level": "success",
+      "message": "BinanceExchange: Read-only API enforcement - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.323Z",
+      "level": "warning",
+      "message": "BinanceExchange: Order simulation capability - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.324Z",
+      "level": "success",
+      "message": "KuCoinExchange: Testnet/Sandbox usage - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.324Z",
+      "level": "success",
+      "message": "KuCoinExchange: Read-only API enforcement - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.324Z",
+      "level": "warning",
+      "message": "KuCoinExchange: Order simulation capability - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.325Z",
+      "level": "info",
+      "message": "Testing Frontend Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.326Z",
+      "level": "success",
+      "message": "Paper Trading Indicator: Paper trading mode display - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.326Z",
+      "level": "warning",
+      "message": "Paper Trading Indicator: Warning color styling - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.326Z",
+      "level": "success",
+      "message": "Paper Trading Indicator: Safety warning text - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.327Z",
+      "level": "success",
+      "message": "Trading Page: Paper trading indicator integrated",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.327Z",
+      "level": "info",
+      "message": "Testing Security Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.327Z",
+      "level": "success",
+      "message": "Security file found: security.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.327Z",
+      "level": "success",
+      "message": "Security file found: productionSecurityHardening.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.327Z",
+      "level": "success",
+      "message": "Security file found: inputValidation.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.327Z",
+      "level": "success",
+      "message": "All security middleware files present",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.328Z",
+      "level": "warning",
+      "message": "Production config missing: paperTradingMode",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.328Z",
+      "level": "warning",
+      "message": "Production config missing: allowRealTrades",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.328Z",
+      "level": "success",
+      "message": "Production config includes: ssl",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.328Z",
+      "level": "warning",
+      "message": "Production config missing: helmet",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.328Z",
+      "level": "success",
+      "message": "Found 1 security configurations",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.329Z",
+      "level": "info",
+      "message": "Testing Monitoring Integration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.330Z",
+      "level": "warning",
+      "message": "Monitoring Service: Paper trading metrics - MISSING",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.330Z",
+      "level": "success",
+      "message": "Monitoring Service: Prometheus integration - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.330Z",
+      "level": "success",
+      "message": "Monitoring Service: Health check endpoints - IMPLEMENTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:21:42.331Z",
+      "level": "success",
+      "message": "Paper trading monitoring dashboard found",
+      "details": null
+    }
+  ]
+}

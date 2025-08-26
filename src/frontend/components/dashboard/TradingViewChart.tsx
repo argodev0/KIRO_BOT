@@ -1,5 +1,5 @@
 import React from 'react';
-import AdvancedTradingViewChart from '../charts/AdvancedTradingViewChart';
+import EnhancedTradingViewChart from '../charts/EnhancedTradingViewChart';
 import { AnalysisResults } from '../../../types/analysis';
 
 interface TradingViewChartProps {
@@ -8,26 +8,27 @@ interface TradingViewChartProps {
   height?: number;
   analysisData?: AnalysisResults;
   onAnalysisUpdate?: (analysis: AnalysisResults) => void;
+  onFullscreenToggle?: (isFullscreen: boolean) => void;
 }
 
 /**
  * TradingView Chart Component
- * Wrapper around AdvancedTradingViewChart for backward compatibility
+ * Enhanced wrapper with paper trading indicators and live data integration
  */
 const TradingViewChart: React.FC<TradingViewChartProps> = ({
   symbol = 'BTCUSDT',
   interval = '1H',
   height = 500,
   analysisData,
-  onAnalysisUpdate
+  onAnalysisUpdate,
+  onFullscreenToggle
 }) => {
   return (
-    <AdvancedTradingViewChart
+    <EnhancedTradingViewChart
       symbol={symbol}
       interval={interval}
       height={height}
-      analysisData={analysisData}
-      onAnalysisUpdate={onAnalysisUpdate}
+      onFullscreenToggle={onFullscreenToggle}
     />
   );
 };

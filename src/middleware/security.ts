@@ -345,6 +345,198 @@ export const websocketSecurity = {
 };
 
 /**
+ * Enhanced intrusion detection middleware
+ */
+export const intrusionDetection = (req: Request, res: Response, next: NextFunction): void => {
+  const clientIP = getClientIP(req);
+  const userAgent = req.get('User-Agent') || '';
+  const path = req.path.toLowerCase();
+  
+  // Detect common attack patterns
+  const attackPatterns = [
+    // Directory traversal attempts
+    /\.\./,
+    /\.\.\/|\.\.\\|%2e%2e/i,
+    
+    // Common exploit paths
+    /\/wp-admin|\/admin|\/phpmyadmin|\/config|\/backup/i,
+    
+    // File inclusion attempts
+    /\/(etc\/passwd|proc\/|sys\/|boot\/)/i,
+    
+    // Script injection in path
+    /<script|javascript:|vbscript:|onload=|onerror=/i,
+    
+    // SQL injection in path
+    /union\s+select|drop\s+table|insert\s+into/i,
+    
+    // Command injection
+    /;|\||&|`|\$\(|\${/,
+    
+    // Suspicious file extensions
+    /\.(php|asp|jsp|cgi|pl|py|rb|sh|bat|exe)$/i
+  ];
+  
+  const suspiciousUserAgents = [
+    /sqlmap|nikto|nmap|masscan|zap|burp|metasploit/i,
+    /bot|crawler|spider|scraper/i,
+    /curl|wget|python|perl|ruby/i
+  ];
+  
+  // Check for attack patterns
+  const hasAttackPattern = attackPatterns.some(pattern => 
+    pattern.test(path) || pattern.test(req.url || '')
+  );
+  
+  const hasSuspiciousUserAgent = suspiciousUserAgents.some(pattern => 
+    pattern.test(userAgent)
+  );
+  
+  if (hasAttackPattern || hasSuspiciousUserAgent) {
+    logger.warn('Intrusion attempt detected', {
+      ip: clientIP,
+      userAgent,
+      path: req.path,
+      method: req.method,
+      attackPattern: hasAttackPattern,
+      suspiciousUserAgent: hasSuspiciousUserAgent
+    });
+    
+    // Log security event
+    // This would integrate with SecurityMonitoringService
+    
+    return res.status(403).json({
+      error: 'FORBIDDEN',
+      message: 'Access denied'
+    });
+  }
+  
+  next();
+};
+
+/**
+ * Enhanced paper trading mode validation
+ */
+export const paperTradingModeValidation = (req: Request, res: Response, next: NextFunction): void => {
+  // Ensure paper trading mode is enforced
+  if (config.env === 'production' && !config.paperTradingMode) {
+    logger.error('CRITICAL: Paper trading mode disabled in production', {
+      ip: getClientIP(req),
+      path: req.path
+    });
+    
+    return res.status(500).json({
+      error: 'CONFIGURATION_ERROR',
+      message: 'Paper trading mode must be enabled in production'
+    });
+  }
+  
+  // Block any real trading endpoints
+  const tradingEndpoints = [
+    '/api/trading/execute',
+    '/api/orders/place',
+    '/api/withdraw',
+    '/api/transfer'
+  ];
+  
+  if (tradingEndpoints.some(endpoint => req.path.includes(endpoint))) {
+    logger.error('CRITICAL: Real trading endpoint accessed', {
+      ip: getClientIP(req),
+      path: req.path,
+      method: req.method
+    });
+    
+    return res.status(403).json({
+      error: 'TRADING_BLOCKED',
+      message: 'Real trading operations are blocked in paper trading mode'
+    });
+  }
+  
+  next();
+};
+
+/**
+ * Production environment validation
+ */
+export const productionEnvironmentValidation = (req: Request, res: Response, next: NextFunction): void => {
+  if (config.env === 'production') {
+    // Ensure HTTPS in production
+    if (!req.secure && req.get('x-forwarded-proto') !== 'https') {
+      return res.status(426).json({
+        error: 'HTTPS_REQUIRED',
+        message: 'HTTPS is required in production environment'
+      });
+    }
+    
+    // Validate required production headers
+    const requiredHeaders = ['user-agent', 'accept'];
+    for (const header of requiredHeaders) {
+      if (!req.get(header)) {
+        return res.status(400).json({
+          error: 'MISSING_HEADERS',
+          message: `Required header missing: ${header}`
+        });
+      }
+    }
+  }
+  
+  next();
+};
+
+/**
+ * Enhanced audit logging middleware
+ */
+export const auditLogging = (req: Request, res: Response, next: NextFunction): void => {
+  const startTime = Date.now();
+  const clientIP = getClientIP(req);
+  const userAgent = req.get('User-Agent') || '';
+  const userId = (req as any).user?.userId;
+  
+  // Log request
+  logger.info('API Request', {
+    method: req.method,
+    path: req.path,
+    ip: clientIP,
+    userAgent,
+    userId,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Capture response
+  const originalSend = res.send;
+  res.send = function(data) {
+    const duration = Date.now() - startTime;
+    
+    // Log response
+    logger.info('API Response', {
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      duration,
+      ip: clientIP,
+      userId,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Log security events for failed requests
+    if (res.statusCode >= 400) {
+      logger.warn('Failed API Request', {
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        ip: clientIP,
+        userAgent,
+        userId
+      });
+    }
+    
+    return originalSend.call(this, data);
+  };
+  
+  next();
+};
+
+/**
  * TLS configuration for HTTPS server
  */
 export const tlsOptions = {
@@ -377,6 +569,23 @@ export const tlsOptions = {
                  require('constants').SSL_OP_NO_TLSv1 | 
                  require('constants').SSL_OP_NO_TLSv1_1
 };
+
+/**
+ * Production security middleware stack
+ */
+export const productionSecurityStack = [
+  securityHeaders,
+  corsOptions,
+  forceHTTPS,
+  productionEnvironmentValidation,
+  paperTradingModeValidation,
+  intrusionDetection,
+  validateRequest,
+  validateContent,
+  auditLogging,
+  requestId,
+  responseTime
+];
 
 // Helper functions
 function getClientIP(req: any): string {

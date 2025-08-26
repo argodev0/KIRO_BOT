@@ -17,6 +17,9 @@ alerting:
 # Load rules once and periodically evaluate them
 rule_files:
   - "/etc/prometheus/rules/*.yml"
+  - "/etc/prometheus/rules/trading-bot-alerts.yml"
+  - "/etc/prometheus/rules/paper-trading-safety-alerts.yml"
+  - "/etc/prometheus/rules/real-time-data-alerts.yml"
 
 # Scrape configurations
 scrape_configs:

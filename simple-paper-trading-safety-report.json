@@ -1,0 +1,157 @@
+{
+  "passed": 18,
+  "failed": 7,
+  "critical": 0,
+  "tests": [
+    {
+      "timestamp": "2025-08-24T03:16:57.444Z",
+      "level": "info",
+      "message": "Verifying environment configuration for paper trading safety...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.445Z",
+      "level": "info",
+      "message": "Environment safety check passed: PAPER_TRADING_MODE=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.446Z",
+      "level": "info",
+      "message": "Environment safety check passed: ALLOW_REAL_TRADES=false",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.446Z",
+      "level": "info",
+      "message": "Environment safety check passed: NODE_ENV=production",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.446Z",
+      "level": "info",
+      "message": "Environment safety check passed: TRADING_SIMULATION_ONLY=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.449Z",
+      "level": "info",
+      "message": "Verifying code-level safety mechanisms...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.449Z",
+      "level": "error",
+      "message": "Code safety pattern MISSING: Paper trading mode enforcement",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.450Z",
+      "level": "info",
+      "message": "Code safety pattern found: Real trades blocking",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.450Z",
+      "level": "error",
+      "message": "Code safety pattern MISSING: Real trade error throwing",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.450Z",
+      "level": "info",
+      "message": "Code safety pattern found: Paper trade marking",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.451Z",
+      "level": "info",
+      "message": "Trade simulation engine properly marks paper trades",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.451Z",
+      "level": "info",
+      "message": "Trade simulation engine has simulation methods",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.451Z",
+      "level": "info",
+      "message": "Verifying configuration files for safety...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.452Z",
+      "level": "error",
+      "message": "Production config safety setting MISSING: paperTradingMode: true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.452Z",
+      "level": "error",
+      "message": "Production config safety setting MISSING: allowRealTrades: false",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.452Z",
+      "level": "error",
+      "message": "Production config safety setting MISSING: tradingSimulation: true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.452Z",
+      "level": "info",
+      "message": "Docker production config enforces paper trading mode",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.452Z",
+      "level": "info",
+      "message": "Docker production config blocks real trades",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.453Z",
+      "level": "info",
+      "message": "Verifying frontend safety indicators...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.453Z",
+      "level": "info",
+      "message": "Frontend safety element found: PAPER TRADING MODE",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.453Z",
+      "level": "error",
+      "message": "Frontend safety element MISSING: SIMULATION ONLY",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.453Z",
+      "level": "info",
+      "message": "Frontend safety element found: NO REAL MONEY",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.454Z",
+      "level": "error",
+      "message": "Frontend safety element MISSING: backgroundColor.*red",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.454Z",
+      "level": "info",
+      "message": "Trading page includes paper trading indicator",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-24T03:16:57.454Z",
+      "level": "info",
+      "message": "Trading page includes confirmation/warning dialogs",
+      "details": null
+    }
+  ]
+}

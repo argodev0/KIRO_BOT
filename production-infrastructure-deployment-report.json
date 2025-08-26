@@ -1,0 +1,46 @@
+{
+  "deployment": {
+    "timestamp": "2025-08-24T08:52:08.319Z",
+    "duration": "253 seconds",
+    "status": "FAILED",
+    "error": "Command failed: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml build --no-cache"
+  },
+  "environment": {
+    "paperTradingMode": true,
+    "realTradingAllowed": false,
+    "environment": "production"
+  },
+  "services": {},
+  "logs": [
+    "[2025-08-24T08:52:08.320Z] [INFO] Starting Production Infrastructure Deployment",
+    "[2025-08-24T08:52:08.328Z] [INFO] Project root: /home/trader/Kiro/KIRO_BOT",
+    "[2025-08-24T08:52:08.329Z] [INFO] === VALIDATING PREREQUISITES ===",
+    "[2025-08-24T08:52:08.330Z] [INFO] Executing: sudo docker --version",
+    "[2025-08-24T08:52:08.417Z] [INFO] Command completed successfully",
+    "[2025-08-24T08:52:08.421Z] [INFO] Docker version: Docker version 28.3.3, build 980b856",
+    "[2025-08-24T08:52:08.421Z] [INFO] Executing: sudo docker compose version",
+    "[2025-08-24T08:52:08.763Z] [INFO] Command completed successfully",
+    "[2025-08-24T08:52:08.764Z] [INFO] Docker Compose version: Docker Compose version v2.39.1",
+    "[2025-08-24T08:52:08.765Z] [INFO] Docker Compose file found: /home/trader/Kiro/KIRO_BOT/docker/docker-compose.prod.yml",
+    "[2025-08-24T08:52:08.765Z] [INFO] Environment file found: /home/trader/Kiro/KIRO_BOT/.env.production",
+    "[2025-08-24T08:52:08.766Z] [INFO] Prerequisites validation completed successfully",
+    "[2025-08-24T08:52:08.767Z] [INFO] === CLEANING UP EXISTING CONTAINERS ===",
+    "[2025-08-24T08:52:08.767Z] [INFO] Stopping existing containers...",
+    "[2025-08-24T08:52:08.768Z] [INFO] Executing: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml down --remove-orphans",
+    "[2025-08-24T08:52:09.180Z] [INFO] Command completed successfully",
+    "[2025-08-24T08:52:09.180Z] [INFO] Container cleanup completed",
+    "[2025-08-24T08:52:09.180Z] [INFO] === BUILDING DOCKER IMAGES ===",
+    "[2025-08-24T08:52:09.180Z] [INFO] Building all images...",
+    "[2025-08-24T08:52:09.180Z] [INFO] Executing: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml build --no-cache",
+    "[2025-08-24T08:56:21.554Z] [ERROR] Command failed: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml build --no-cache",
+    "[2025-08-24T08:56:21.554Z] [ERROR] Error: Command failed: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml build --no-cache",
+    "[2025-08-24T08:56:21.555Z] [ERROR] Failed to build Docker images",
+    "[2025-08-24T08:56:21.555Z] [ERROR] Error: Command failed: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml build --no-cache",
+    "[2025-08-24T08:56:21.556Z] [ERROR] Deployment failed",
+    "[2025-08-24T08:56:21.556Z] [ERROR] Error: Command failed: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml build --no-cache",
+    "[2025-08-24T08:56:21.556Z] [INFO] === GENERATING DEPLOYMENT REPORT ===",
+    "[2025-08-24T08:56:21.556Z] [INFO] Executing: sudo docker compose --env-file .env.production -f docker/docker-compose.prod.yml ps --format json",
+    "[2025-08-24T08:56:21.990Z] [INFO] Command completed successfully",
+    "[2025-08-24T08:56:22.054Z] [INFO] Deployment report saved to: /home/trader/Kiro/KIRO_BOT/production-infrastructure-deployment-report.json"
+  ]
+}

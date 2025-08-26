@@ -1,0 +1,77 @@
+{
+  "timestamp": "2025-08-23T19:43:02.759Z",
+  "phase": "environment-preparation",
+  "checks": {
+    "operatingSystem": {
+      "platform": "linux",
+      "release": "6.8.0-1036-gcp",
+      "arch": "x64",
+      "supported": true
+    },
+    "memory": {
+      "total": 16,
+      "free": 12,
+      "sufficient": true
+    },
+    "nodejs": {
+      "installed": true,
+      "currentVersion": "12.22.9",
+      "requiredVersion": "18.0.0",
+      "compatible": false
+    },
+    "docker": {
+      "dockerInstalled": false,
+      "dockerComposeInstalled": false,
+      "dockerVersion": null,
+      "dockerComposeVersion": null
+    },
+    "systemDependencies": {
+      "git": {
+        "installed": true,
+        "version": "git version 2.34.1"
+      },
+      "curl": {
+        "installed": true,
+        "version": "curl 7.81.0 (x86_64-pc-linux-gnu) libcurl/7.81.0 OpenSSL/3.0.2 zlib/1.2.11 brotli/1.0.9 zstd/1.4.8 libidn2/2.3.2 libpsl/0.21.0 (+libidn2/2.3.2) libssh/0.9.6/openssl/zlib nghttp2/1.43.0 librtmp/2.3 OpenLDAP/2.5.19"
+      },
+      "wget": {
+        "installed": true,
+        "version": "GNU Wget 1.21.2 built on linux-gnu."
+      },
+      "unzip": {
+        "installed": true,
+        "version": "UnZip 6.00 of 20 April 2009, by Debian. Original by Info-ZIP."
+      },
+      "build-essential": {
+        "installed": true,
+        "version": "gcc (Ubuntu 11.4.0-1ubuntu1~22.04.2) 11.4.0"
+      }
+    }
+  },
+  "actions": [
+    "Environment backup created: /home/trader/Kiro/KIRO_BOT/environment-backup/environment-backup-1755978184276.json",
+    "Rollback script created: /home/trader/Kiro/KIRO_BOT/environment-backup/rollback.sh"
+  ],
+  "errors": [
+    "CRITICAL: Node.js version v12.22.9 is below required v18.0.0",
+    "✗ Docker is not installed",
+    "✗ Docker Compose is not installed"
+  ],
+  "warnings": [],
+  "recommendations": [
+    "Upgrade Node.js to version 18 or higher using one of the provided methods",
+    "Install Docker and Docker Compose using the provided instructions"
+  ],
+  "summary": {
+    "nodeJsCompatible": false,
+    "dockerInstalled": false,
+    "dockerComposeInstalled": false,
+    "systemRequirementsMet": true,
+    "readyForDeployment": false
+  },
+  "nextSteps": [
+    "CRITICAL: Upgrade Node.js to version 18 or higher",
+    "REQUIRED: Install Docker",
+    "REQUIRED: Install Docker Compose"
+  ]
+}

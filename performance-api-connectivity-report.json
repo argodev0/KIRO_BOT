@@ -1,0 +1,300 @@
+{
+  "timestamp": "2025-08-24T03:21:09.567Z",
+  "testDuration": "35.57s",
+  "config": {
+    "baseUrl": "https://localhost",
+    "apiPort": 3000,
+    "wsPort": 3000,
+    "duration": 30000,
+    "concurrentUsers": 3,
+    "targetLatency": 100,
+    "targetThroughput": 1000
+  },
+  "summary": {
+    "totalTests": 45,
+    "passed": 0,
+    "failed": 45,
+    "warnings": 0,
+    "successRate": "0.00%"
+  },
+  "results": {
+    "marketDataConnections": {
+      "binance": {
+        "connection": false,
+        "apiKeyValidation": false,
+        "dataStreaming": false,
+        "reconnection": false,
+        "latency": [],
+        "errors": [
+          null
+        ]
+      },
+      "kucoin": {
+        "connection": false,
+        "apiKeyValidation": false,
+        "dataStreaming": false,
+        "reconnection": false,
+        "latency": [],
+        "errors": [
+          null
+        ]
+      },
+      "aggregated": {
+        "success": false
+      }
+    },
+    "performanceBenchmarks": {
+      "latency": {},
+      "throughput": {
+        "totalRequests": 5819,
+        "successfulRequests": 0,
+        "throughput": "193.93",
+        "successRate": "0.00",
+        "passed": false
+      },
+      "resources": {
+        "passed": false
+      },
+      "database": {
+        "/api/trades/history?limit=100": {
+          "passed": false
+        },
+        "/api/positions": {
+          "passed": false
+        },
+        "/api/analytics/performance": {
+          "passed": false
+        },
+        "/api/config": {
+          "passed": false
+        }
+      }
+    },
+    "frontendTests": {
+      "staticFiles": {
+        "/": {
+          "passed": false
+        },
+        "/static/js/main.js": {
+          "passed": false
+        },
+        "/static/css/main.css": {
+          "passed": false
+        },
+        "/favicon.ico": {
+          "passed": false
+        }
+      },
+      "apiEndpoints": {
+        "/api/config/ui": {
+          "passed": false
+        },
+        "/api/market/symbols": {
+          "passed": false
+        },
+        "/api/user/preferences": {
+          "passed": false
+        },
+        "/api/dashboard/widgets": {
+          "passed": false
+        }
+      },
+      "componentTests": {
+        "exitCode": 1,
+        "output": "🔍 Validating Frontend Paper Trading Enhancements...\n\n📁 Checking required files...\n✅ src/frontend/components/common/PaperTradingIndicator.tsx\n✅ src/frontend/components/common/LiveDataIndicator.tsx\n✅ src/frontend/components/dashboard/VirtualPortfolioDisplay.tsx\n✅ src/frontend/components/charts/EnhancedTradingViewChart.tsx\n✅ src/frontend/components/trading/PaperTradingConfirmDialog.tsx\n✅ src/frontend/__tests__/components/PaperTradingIndicator.test.tsx\n✅ src/frontend/__tests__/components/VirtualPortfolioDisplay.test.tsx\n\n📝 Checking file content...\n✅ src/frontend/components/common/PaperTradingIndicator.tsx contains \"PAPER TRADING\"\n✅ src/frontend/components/common/PaperTradingIndicator.tsx contains \"Security\"\n✅ src/frontend/components/common/PaperTradingIndicator.tsx contains \"warning\"\n✅ src/frontend/components/common/PaperTradingIndicator.tsx - All content checks passed\n✅ src/frontend/components/common/LiveDataIndicator.tsx contains \"LIVE MAINNET DATA\"\n✅ src/frontend/components/common/LiveDataIndicator.tsx contains \"isConnected\"\n✅ src/frontend/components/common/LiveDataIndicator.tsx contains \"TrendingUp\"\n✅ src/frontend/components/common/LiveDataIndicator.tsx - All content checks passed\n✅ src/frontend/components/dashboard/VirtualPortfolioDisplay.tsx contains \"Virtual Portfolio\"\n❌ src/frontend/components/dashboard/VirtualPortfolioDisplay.tsx missing \"PAPER TRADING\"\n✅ src/frontend/components/dashboard/VirtualPortfolioDisplay.tsx contains \"Simulated\"\n✅ src/frontend/components/charts/EnhancedTradingViewChart.tsx contains \"LIVE MAINNET DATA\"\n✅ src/frontend/components/charts/EnhancedTradingViewChart.tsx contains \"PaperTradingIndicator\"\n✅ src/frontend/components/charts/EnhancedTradingViewChart.tsx contains \"LiveDataIndicator\"\n✅ src/frontend/components/charts/EnhancedTradingViewChart.tsx - All content checks passed\n✅ src/frontend/App.tsx contains \"PaperTradingIndicator\"\n✅ src/frontend/App.tsx contains \"Paper Trading Banner\"\n✅ src/frontend/App.tsx - All content checks passed\n\n🔄 Checking updated files...\n✅ src/frontend/App.tsx - Updated\n✅ src/frontend/components/dashboard/ResponsiveDashboard.tsx - Updated\n✅ src/frontend/components/dashboard/TradingViewChart.tsx - Updated\n✅ src/frontend/components/dashboard/MarketDataWidget.tsx - Updated\n✅ src/frontend/hooks/useWebSocket.ts - Updated\n✅ src/frontend/store/slices/tradingSlice.ts - Updated\n\n🎯 Checking specific enhancements...\n✅ App.tsx has paper trading banner\n✅ ResponsiveDashboard uses VirtualPortfolioDisplay\n✅ MarketDataWidget has live data indicators\n✅ Trading slice has paper trading state\n\n==================================================\n❌ Some frontend enhancements are missing or incomplete.\nPlease review the errors above and ensure all components are properly implemented.\n",
+        "error": "",
+        "passed": false
+      },
+      "responsive": {
+        "mobile": {
+          "passed": false
+        },
+        "tablet": {
+          "passed": false
+        },
+        "desktop": {
+          "passed": false
+        }
+      }
+    },
+    "e2eWorkflows": {
+      "authentication": {
+        "Login page load": {
+          "passed": false
+        },
+        "Authentication check": {
+          "passed": false
+        },
+        "User profile": {
+          "passed": false
+        },
+        "Logout": {
+          "passed": false
+        }
+      },
+      "trading": {
+        "Trading page load": {
+          "passed": false
+        },
+        "Get trading mode": {
+          "passed": false
+        },
+        "Get positions": {
+          "passed": false
+        },
+        "Get market data": {
+          "passed": false
+        },
+        "Paper trading validation": {
+          "passed": false
+        }
+      },
+      "marketData": {
+        "Market overview": {
+          "passed": false
+        },
+        "Symbol list": {
+          "passed": false
+        },
+        "Price ticker": {
+          "passed": false
+        },
+        "Historical data": {
+          "passed": false
+        },
+        "Market status": {
+          "passed": false
+        }
+      },
+      "configuration": {
+        "Get configuration": {
+          "passed": false
+        },
+        "Trading settings": {
+          "passed": false
+        },
+        "Exchange settings": {
+          "passed": false
+        },
+        "Risk management": {
+          "passed": false
+        },
+        "Notification settings": {
+          "passed": false
+        }
+      },
+      "monitoring": {
+        "Health check": {
+          "passed": false
+        },
+        "System metrics": {
+          "passed": false
+        },
+        "Trading metrics": {
+          "passed": false
+        },
+        "Connection status": {
+          "passed": false
+        },
+        "Paper trading status": {
+          "passed": false
+        }
+      }
+    },
+    "summary": {
+      "passed": 0,
+      "failed": 45,
+      "warnings": 0
+    }
+  },
+  "recommendations": [
+    {
+      "category": "Market Data",
+      "priority": "High",
+      "issue": "binance connection issues",
+      "suggestions": [
+        "Check API key permissions and validity",
+        "Verify network connectivity to exchange",
+        "Review rate limiting settings",
+        "Check exchange API status"
+      ]
+    },
+    {
+      "category": "Market Data",
+      "priority": "High",
+      "issue": "kucoin connection issues",
+      "suggestions": [
+        "Check API key permissions and validity",
+        "Verify network connectivity to exchange",
+        "Review rate limiting settings",
+        "Check exchange API status"
+      ]
+    },
+    {
+      "category": "Frontend",
+      "priority": "Medium",
+      "issue": "Frontend component tests failing",
+      "suggestions": [
+        "Review component syntax and imports",
+        "Check TypeScript compilation",
+        "Verify React component structure",
+        "Update test dependencies"
+      ]
+    },
+    {
+      "category": "E2E Workflows",
+      "priority": "High",
+      "issue": "authentication workflow has 4 failing steps",
+      "suggestions": [
+        "Review API endpoint implementations",
+        "Check authentication and authorization",
+        "Verify database connectivity",
+        "Review error handling"
+      ]
+    },
+    {
+      "category": "E2E Workflows",
+      "priority": "High",
+      "issue": "trading workflow has 5 failing steps",
+      "suggestions": [
+        "Review API endpoint implementations",
+        "Check authentication and authorization",
+        "Verify database connectivity",
+        "Review error handling"
+      ]
+    },
+    {
+      "category": "E2E Workflows",
+      "priority": "High",
+      "issue": "marketData workflow has 5 failing steps",
+      "suggestions": [
+        "Review API endpoint implementations",
+        "Check authentication and authorization",
+        "Verify database connectivity",
+        "Review error handling"
+      ]
+    },
+    {
+      "category": "E2E Workflows",
+      "priority": "High",
+      "issue": "configuration workflow has 5 failing steps",
+      "suggestions": [
+        "Review API endpoint implementations",
+        "Check authentication and authorization",
+        "Verify database connectivity",
+        "Review error handling"
+      ]
+    },
+    {
+      "category": "E2E Workflows",
+      "priority": "High",
+      "issue": "monitoring workflow has 5 failing steps",
+      "suggestions": [
+        "Review API endpoint implementations",
+        "Check authentication and authorization",
+        "Verify database connectivity",
+        "Review error handling"
+      ]
+    }
+  ]
+}

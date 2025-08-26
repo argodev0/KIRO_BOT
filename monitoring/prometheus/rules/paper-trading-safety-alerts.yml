@@ -1,0 +1,209 @@
+# Paper Trading Safety Alert Rules
+
+groups:
+  - name: paper-trading-safety.critical
+    interval: 10s
+    rules:
+      # Critical Paper Trading Safety Alerts
+      - alert: PaperTradingModeDisabled
+        expr: paper_trading_mode_enabled == 0
+        for: 0s
+        labels:
+          severity: critical
+          service: paper-trading-safety
+          category: safety-violation
+        annotations:
+          summary: "CRITICAL: Paper trading mode has been disabled"
+          description: "Paper trading mode is disabled - system may allow real trades"
+          runbook_url: "https://docs.yourdomain.com/runbooks/paper-trading-disabled"
+          action_required: "Immediately enable paper trading mode and investigate"
+
+      - alert: RealTradingAttemptDetected
+        expr: increase(real_trading_attempts_blocked_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: paper-trading-safety
+          category: security-breach
+        annotations:
+          summary: "CRITICAL: Real trading attempt detected and blocked"
+          description: "{{ $value }} real trading attempts were blocked in the last minute"
+          runbook_url: "https://docs.yourdomain.com/runbooks/real-trading-attempt"
+          action_required: "Investigate source of real trading attempts immediately"
+
+      - alert: APIKeyPermissionViolation
+        expr: increase(api_key_permission_violations_total[1m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+          service: paper-trading-safety
+          category: security-breach
+        annotations:
+          summary: "CRITICAL: API key with trading permissions detected"
+          description: "{{ $value }} API key permission violations detected in the last minute"
+          runbook_url: "https://docs.yourdomain.com/runbooks/api-key-violation"
+          action_required: "Remove trading permissions from API keys immediately"
+
+      - alert: PaperTradingGuardFailure
+        expr: rate(paper_trading_guard_failures_total[5m]) > 0
+        for: 30s
+        labels:
+          severity: critical
+          service: paper-trading-safety
+          category: system-failure
+        annotations:
+          summary: "CRITICAL: Paper trading guard system failure"
+          description: "Paper trading guard is failing at {{ $value }} failures per second"
+          runbook_url: "https://docs.yourdomain.com/runbooks/guard-failure"
+          action_required: "Stop all trading operations and fix guard system"
+
+      - alert: VirtualPortfolioCorruption
+        expr: virtual_portfolio_balance < 0
+        for: 1m
+        labels:
+          severity: critical
+          service: paper-trading-safety
+          category: data-corruption
+        annotations:
+          summary: "CRITICAL: Virtual portfolio balance corruption detected"
+          description: "Virtual portfolio balance is negative: {{ $value }}"
+          runbook_url: "https://docs.yourdomain.com/runbooks/portfolio-corruption"
+          action_required: "Reset virtual portfolios and investigate data corruption"
+
+  - name: paper-trading-safety.warning
+    interval: 30s
+    rules:
+      # Warning Level Safety Alerts
+      - alert: HighPaperTradingVolume
+        expr: rate(paper_trades_executed_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: unusual-activity
+        annotations:
+          summary: "High paper trading volume detected"
+          description: "Paper trading rate is {{ $value }} trades per second"
+          runbook_url: "https://docs.yourdomain.com/runbooks/high-trading-volume"
+
+      - alert: PaperTradingGuardValidationFailures
+        expr: rate(paper_trading_guard_validation_failures_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: validation-failure
+        annotations:
+          summary: "Paper trading guard validation failures"
+          description: "Guard validation failing at {{ $value }} failures per second"
+          runbook_url: "https://docs.yourdomain.com/runbooks/validation-failures"
+
+      - alert: VirtualPortfolioImbalance
+        expr: abs(virtual_portfolio_balance - virtual_portfolio_expected_balance) > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: portfolio-drift
+        annotations:
+          summary: "Virtual portfolio balance drift detected"
+          description: "Portfolio balance differs from expected by {{ $value }}"
+          runbook_url: "https://docs.yourdomain.com/runbooks/portfolio-drift"
+
+      - alert: LowPaperTradingActivity
+        expr: rate(paper_trades_executed_total[1h]) == 0
+        for: 30m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: system-health
+        annotations:
+          summary: "No paper trading activity detected"
+          description: "No paper trades executed in the last hour"
+          runbook_url: "https://docs.yourdomain.com/runbooks/no-trading-activity"
+
+  - name: paper-trading-safety.monitoring
+    interval: 60s
+    rules:
+      # Monitoring and Health Checks
+      - alert: PaperTradingMetricsUnavailable
+        expr: up{job="trading-bot-backend"} == 1 and absent(paper_trading_mode_enabled)
+        for: 2m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: monitoring
+        annotations:
+          summary: "Paper trading safety metrics unavailable"
+          description: "Cannot retrieve paper trading safety metrics"
+          runbook_url: "https://docs.yourdomain.com/runbooks/metrics-unavailable"
+
+      - alert: SafetyAuditLogGaps
+        expr: increase(paper_trading_audit_logs_total[5m]) == 0 and rate(paper_trades_executed_total[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: audit-failure
+        annotations:
+          summary: "Paper trading audit log gaps detected"
+          description: "Trades are executing but audit logs are not being generated"
+          runbook_url: "https://docs.yourdomain.com/runbooks/audit-log-gaps"
+
+      - alert: EnvironmentValidationFailures
+        expr: rate(environment_validation_failures_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: environment-check
+        annotations:
+          summary: "Environment validation failures detected"
+          description: "Environment validation failing at {{ $value }} failures per second"
+          runbook_url: "https://docs.yourdomain.com/runbooks/environment-validation"
+
+  - name: paper-trading-safety.business
+    interval: 300s
+    rules:
+      # Business Logic Safety Checks
+      - alert: ExcessiveVirtualLosses
+        expr: (virtual_portfolio_balance / virtual_portfolio_initial_balance) < 0.5
+        for: 1h
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: risk-management
+        annotations:
+          summary: "Excessive virtual portfolio losses"
+          description: "Virtual portfolio has lost more than 50% of initial value"
+          runbook_url: "https://docs.yourdomain.com/runbooks/excessive-losses"
+
+      - alert: VirtualTradingFrequencyAnomaly
+        expr: rate(paper_trades_executed_total[1h]) > 1000 or rate(paper_trades_executed_total[1h]) < 0.1
+        for: 15m
+        labels:
+          severity: warning
+          service: paper-trading-safety
+          category: trading-anomaly
+        annotations:
+          summary: "Unusual virtual trading frequency"
+          description: "Trading frequency is {{ $value }} trades per hour"
+          runbook_url: "https://docs.yourdomain.com/runbooks/trading-frequency-anomaly"
+
+      - alert: PaperTradingSystemIntegrityCheck
+        expr: |
+          (
+            paper_trading_mode_enabled == 1 and
+            real_trading_attempts_blocked_total >= 0 and
+            paper_trades_executed_total >= 0 and
+            virtual_portfolio_balance >= 0
+          ) or 0
+        for: 0s
+        labels:
+          severity: info
+          service: paper-trading-safety
+          category: integrity-check
+        annotations:
+          summary: "Paper trading system integrity check"
+          description: "Periodic integrity verification of paper trading safety systems"
+          runbook_url: "https://docs.yourdomain.com/runbooks/integrity-check"

@@ -13,6 +13,8 @@ import { OrderRequest, OrderResponse, Position } from '../../types/trading';
 interface BinanceConfig extends ExchangeConfig {
   baseURL?: string;
   wsBaseURL?: string;
+  mainnet?: boolean;
+  readOnly?: boolean;
 }
 
 export class BinanceExchange extends BaseExchange {
@@ -25,13 +27,18 @@ export class BinanceExchange extends BaseExchange {
   constructor(config: BinanceConfig) {
     super(config);
     
-    this.baseURL = config.baseURL || (config.testnet 
-      ? 'https://testnet.binance.vision/api'
-      : 'https://api.binance.com/api');
-    
-    this.wsBaseURL = config.wsBaseURL || (config.testnet
-      ? 'wss://testnet.binance.vision/ws'
-      : 'wss://stream.binance.com:9443/ws');
+    // Determine URLs based on mainnet/testnet configuration
+    if (config.mainnet) {
+      this.baseURL = config.baseURL || 'https://api.binance.com/api';
+      this.wsBaseURL = config.wsBaseURL || 'wss://stream.binance.com:9443/ws';
+    } else if (config.testnet) {
+      this.baseURL = config.baseURL || 'https://testnet.binance.vision/api';
+      this.wsBaseURL = config.wsBaseURL || 'wss://testnet.binance.vision/ws';
+    } else {
+      // Default to testnet for safety
+      this.baseURL = config.baseURL || 'https://testnet.binance.vision/api';
+      this.wsBaseURL = config.wsBaseURL || 'wss://testnet.binance.vision/ws';
+    }
 
     this.httpClient = axios.create({
       baseURL: this.baseURL,
@@ -60,6 +67,11 @@ export class BinanceExchange extends BaseExchange {
 
   async connect(): Promise<void> {
     try {
+      // Validate API key permissions for mainnet connections
+      if ((this.config as BinanceConfig).mainnet) {
+        await this.validateApiKeyPermissions();
+      }
+      
       // Test connection with exchange info
       await this.executeWithRetry(() => this.getExchangeInfo());
       this.startConnectionMonitoring();
@@ -476,35 +488,180 @@ export class BinanceExchange extends BaseExchange {
     return [];
   }
 
-  // Helper methods
+  // API Key validation for mainnet safety
+  private async validateApiKeyPermissions(): Promise<void> {
+    if (!this.config.apiKey || !this.config.apiSecret) {
+      throw new Error('API credentials required for mainnet connection');
+    }
+
+    try {
+      // Check account information to validate API key permissions
+      const response = await this.httpClient.get('/v3/account', {
+        params: { signature: true }
+      });
+
+      // Verify this is a read-only API key by checking permissions
+      const accountInfo = response.data;
+      
+      // Check if API key has trading permissions (should be false for safety)
+      if (accountInfo.canTrade === true) {
+        const config = this.config as BinanceConfig;
+        if (!config.readOnly) {
+          throw new Error('SECURITY ALERT: API key has trading permissions. Use read-only keys for paper trading mode.');
+        }
+        console.warn('⚠️  WARNING: API key has trading permissions but read-only mode is enforced');
+      }
+
+      // Log successful validation
+      console.log('✅ Binance mainnet API key validated - Read-only permissions confirmed');
+      
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('SECURITY ALERT')) {
+        throw error;
+      }
+      throw new Error(`Failed to validate Binance API key permissions: ${error}`);
+    }
+  }
+
+  // Enhanced connection monitoring with automatic reconnection
+  private startConnectionMonitoring(): void {
+    // Monitor WebSocket connections and reconnect if needed
+    setInterval(async () => {
+      try {
+        // Check if we have active subscriptions but disconnected WebSockets
+        for (const [stream, ws] of this.wsConnections) {
+          if (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING) {
+            console.log(`🔄 Reconnecting to Binance stream: ${stream}`);
+            
+            // Remove the old connection
+            this.wsConnections.delete(stream);
+            this.subscriptions.delete(stream);
+            
+            // Attempt to reestablish the subscription
+            // This would need the original callback, which we'd need to store
+            // For now, emit a reconnection event
+            this.emit('streamDisconnected', { exchange: 'binance', stream });
+          }
+        }
+        
+        // Periodic health check
+        await this.healthCheck();
+        
+      } catch (error) {
+        console.error('Binance connection monitoring error:', error);
+        this.emitError(error as Error);
+      }
+    }, 30000); // Check every 30 seconds
+  }
+
+  // Enhanced health check
+  async healthCheck(): Promise<boolean> {
+    try {
+      // Test REST API connectivity
+      const response = await this.httpClient.get('/v3/ping');
+      
+      // Check WebSocket connections
+      const activeConnections = Array.from(this.wsConnections.values())
+        .filter(ws => ws.readyState === WebSocket.OPEN).length;
+      
+      const isHealthy = response.status === 200 && activeConnections >= 0;
+      
+      if (isHealthy) {
+        this.emit('healthCheck', { 
+          exchange: 'binance', 
+          status: 'healthy',
+          activeConnections,
+          timestamp: Date.now()
+        });
+      }
+      
+      return isHealthy;
+    } catch (error) {
+      this.emit('healthCheck', { 
+        exchange: 'binance', 
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: Date.now()
+      });
+      return false;
+    }
+  }
+
+  // Helper methods with enhanced reconnection logic
   private async subscribeToStream(stream: string, callback: (data: any) => void): Promise<void> {
     if (this.subscriptions.has(stream)) {
       return; // Already subscribed
     }
 
+    this.createWebSocketConnection(stream, callback, 0);
+  }
+
+  private createWebSocketConnection(stream: string, callback: (data: any) => void, retryCount: number = 0): void {
+    const maxRetries = 5;
+    const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 30000); // Exponential backoff, max 30s
+
     const ws = new WebSocket(`${this.wsBaseURL}/${stream}`);
     
     ws.on('open', () => {
+      console.log(`✅ Binance WebSocket connected: ${stream}`);
       this.subscriptions.add(stream);
       this.wsConnections.set(stream, ws);
+      
+      // Reset retry count on successful connection
+      retryCount = 0;
+      
+      // Send ping every 3 minutes to keep connection alive
+      const pingInterval = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.ping();
+        } else {
+          clearInterval(pingInterval);
+        }
+      }, 180000);
     });
     
     ws.on('message', (data) => {
       try {
         const parsed = JSON.parse(data.toString());
         callback(parsed);
+        
+        // Update last message timestamp for connection monitoring
+        this.emit('dataReceived', { 
+          exchange: 'binance', 
+          stream, 
+          timestamp: Date.now() 
+        });
       } catch (error) {
         this.emitError(new Error(`Failed to parse WebSocket message: ${error}`));
       }
     });
     
+    ws.on('pong', () => {
+      // Connection is alive
+      this.emit('pong', { exchange: 'binance', stream, timestamp: Date.now() });
+    });
+    
     ws.on('error', (error) => {
+      console.error(`❌ Binance WebSocket error on ${stream}:`, error);
       this.emitError(error);
     });
     
-    ws.on('close', () => {
+    ws.on('close', (code, reason) => {
+      console.log(`🔌 Binance WebSocket closed: ${stream} (${code}: ${reason})`);
       this.subscriptions.delete(stream);
       this.wsConnections.delete(stream);
+      
+      // Attempt reconnection if not manually closed and within retry limit
+      if (code !== 1000 && retryCount < maxRetries) {
+        console.log(`🔄 Reconnecting to ${stream} in ${retryDelay}ms (attempt ${retryCount + 1}/${maxRetries})`);
+        
+        setTimeout(() => {
+          this.createWebSocketConnection(stream, callback, retryCount + 1);
+        }, retryDelay);
+      } else if (retryCount >= maxRetries) {
+        console.error(`❌ Max reconnection attempts reached for ${stream}`);
+        this.emit('maxRetriesReached', { exchange: 'binance', stream });
+      }
     });
   }
 

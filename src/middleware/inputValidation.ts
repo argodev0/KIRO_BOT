@@ -400,11 +400,235 @@ export const commonSchemas = {
 };
 
 /**
+ * Enhanced input sanitization middleware
+ */
+export const enhancedInputSanitization = (req: Request, res: Response, next: NextFunction): void => {
+  try {
+    // Sanitize all input recursively
+    if (req.body) {
+      req.body = sanitizeObject(req.body);
+    }
+    
+    if (req.query) {
+      req.query = sanitizeObject(req.query);
+    }
+    
+    if (req.params) {
+      req.params = sanitizeObject(req.params);
+    }
+    
+    next();
+  } catch (error) {
+    logger.error('Input sanitization error:', error);
+    return res.status(400).json({
+      error: 'BAD_REQUEST',
+      message: 'Invalid input format'
+    });
+  }
+};
+
+/**
+ * Advanced threat detection middleware
+ */
+export const advancedThreatDetection = (req: Request, res: Response, next: NextFunction): void => {
+  const threats = detectAdvancedThreats(req);
+  
+  if (threats.length > 0) {
+    logger.warn('Advanced threats detected:', {
+      threats,
+      ip: req.ip,
+      path: req.path,
+      method: req.method
+    });
+    
+    return res.status(400).json({
+      error: 'SECURITY_VIOLATION',
+      message: 'Request blocked by security system'
+    });
+  }
+  
+  next();
+};
+
+/**
+ * File upload security validation
+ */
+export const validateFileUpload = (req: Request, res: Response, next: NextFunction): void => {
+  if (!req.file && !req.files) {
+    return next();
+  }
+  
+  const files = req.files ? (Array.isArray(req.files) ? req.files : Object.values(req.files).flat()) : [req.file];
+  
+  for (const file of files) {
+    if (!file) continue;
+    
+    // Check file size
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      return res.status(413).json({
+        error: 'FILE_TOO_LARGE',
+        message: 'File size exceeds 5MB limit'
+      });
+    }
+    
+    // Check file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/csv'];
+    if (!allowedTypes.includes(file.mimetype)) {
+      return res.status(400).json({
+        error: 'INVALID_FILE_TYPE',
+        message: 'File type not allowed'
+      });
+    }
+    
+    // Check for malicious content in filename
+    if (containsMaliciousContent(file.originalname)) {
+      return res.status(400).json({
+        error: 'MALICIOUS_FILENAME',
+        message: 'Filename contains invalid characters'
+      });
+    }
+  }
+  
+  next();
+};
+
+/**
+ * API key format validation
+ */
+export const validateApiKeyFormat = (req: Request, res: Response, next: NextFunction): void => {
+  const apiKey = req.get('X-API-Key') || req.body?.apiKey || req.query?.apiKey;
+  
+  if (apiKey) {
+    // Validate API key format and ensure it's read-only
+    if (!isValidApiKeyFormat(apiKey)) {
+      return res.status(401).json({
+        error: 'INVALID_API_KEY',
+        message: 'Invalid API key format'
+      });
+    }
+    
+    // Additional validation for trading permissions (should be blocked)
+    if (containsTradingPermissions(apiKey)) {
+      logger.error('Trading API key detected - SECURITY VIOLATION', {
+        ip: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+      
+      return res.status(403).json({
+        error: 'TRADING_API_KEY_BLOCKED',
+        message: 'Trading API keys are not allowed in paper trading mode'
+      });
+    }
+  }
+  
+  next();
+};
+
+/**
  * Comprehensive input validation middleware
  */
 export const comprehensiveValidation = [
   preventSQLInjection,
   preventXSS,
   preventPathTraversal,
-  preventCommandInjection
+  preventCommandInjection,
+  enhancedInputSanitization,
+  advancedThreatDetection,
+  validateFileUpload,
+  validateApiKeyFormat
 ];
+
+// Helper functions
+function sanitizeObject(obj: any): any {
+  if (typeof obj === 'string') {
+    return sanitizeString(obj);
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(sanitizeObject);
+  }
+  
+  if (typeof obj === 'object' && obj !== null) {
+    const sanitized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      sanitized[sanitizeString(key)] = sanitizeObject(value);
+    }
+    return sanitized;
+  }
+  
+  return obj;
+}
+
+function sanitizeString(str: string): string {
+  return str
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/\0/g, '') // Remove null bytes
+    .trim();
+}
+
+function detectAdvancedThreats(req: Request): string[] {
+  const threats: string[] = [];
+  const content = JSON.stringify({
+    body: req.body,
+    query: req.query,
+    params: req.params,
+    headers: req.headers
+  });
+  
+  // LDAP injection
+  if (/(\(|\)|&|\||!|=|\*|<|>|~)/g.test(content)) {
+    threats.push('potential_ldap_injection');
+  }
+  
+  // NoSQL injection
+  if (/(\$where|\$ne|\$gt|\$lt|\$regex|\$or|\$and)/gi.test(content)) {
+    threats.push('potential_nosql_injection');
+  }
+  
+  // XML injection
+  if (/<\?xml|<!DOCTYPE|<script|<iframe/gi.test(content)) {
+    threats.push('potential_xml_injection');
+  }
+  
+  // Template injection
+  if (/\{\{|\}\}|\$\{|\}|\[\[|\]\]/g.test(content)) {
+    threats.push('potential_template_injection');
+  }
+  
+  // Prototype pollution
+  if (/__proto__|constructor\.prototype|prototype\./gi.test(content)) {
+    threats.push('potential_prototype_pollution');
+  }
+  
+  return threats;
+}
+
+function containsMaliciousContent(filename: string): boolean {
+  const maliciousPatterns = [
+    /\.\./,
+    /[<>:"|?*]/,
+    /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/i,
+    /\.(exe|bat|cmd|scr|pif|com|dll|vbs|js|jar|app)$/i
+  ];
+  
+  return maliciousPatterns.some(pattern => pattern.test(filename));
+}
+
+function isValidApiKeyFormat(apiKey: string): boolean {
+  // Basic format validation - should be alphanumeric and proper length
+  return /^[a-zA-Z0-9]{32,128}$/.test(apiKey);
+}
+
+function containsTradingPermissions(apiKey: string): boolean {
+  // This would integrate with exchange APIs to validate permissions
+  // For now, we'll use pattern matching for common trading key indicators
+  const tradingPatterns = [
+    /trade/i,
+    /spot/i,
+    /futures/i,
+    /margin/i,
+    /withdraw/i
+  ];
+  
+  return tradingPatterns.some(pattern => pattern.test(apiKey));
+}

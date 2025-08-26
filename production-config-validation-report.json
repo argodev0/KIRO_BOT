@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-08-23T21:01:38.072Z",
+  "overallStatus": true,
+  "checksPassedRatio": "6/6",
+  "validationResults": {
+    "paperTradingSafety": true,
+    "securityCompliance": true,
+    "sslConfiguration": true,
+    "databaseConfiguration": true,
+    "exchangeConfiguration": true,
+    "monitoringConfiguration": true
+  },
+  "errors": [],
+  "warnings": [
+    "No exchange APIs configured - market data will be limited"
+  ],
+  "paperTradingSafety": {
+    "paperTradingMode": true,
+    "realTradingBlocked": true,
+    "forcePaperTrading": true,
+    "binanceReadOnly": true,
+    "kucoinReadOnly": true
+  }
+}

@@ -1,0 +1,169 @@
+{
+  "timestamp": "2025-08-23T19:04:57.370Z",
+  "testSuites": {
+    "productionValidation": {
+      "name": "Production Validation Suite",
+      "passed": 84,
+      "failed": 23,
+      "critical": 4,
+      "success": false,
+      "recommendations": [
+        {
+          "priority": "CRITICAL",
+          "category": "Safety",
+          "message": "Critical paper trading safety issues detected",
+          "action": "DO NOT DEPLOY - Fix all critical safety issues immediately"
+        },
+        {
+          "priority": "HIGH",
+          "category": "Readiness",
+          "message": "Production readiness validation failed",
+          "action": "Review and fix configuration issues before deployment"
+        },
+        {
+          "priority": "CRITICAL",
+          "category": "Safety",
+          "message": "Paper trading safety verification failed",
+          "action": "Fix all safety mechanisms before proceeding"
+        },
+        {
+          "priority": "HIGH",
+          "category": "Functionality",
+          "message": "Production smoke tests failed",
+          "action": "Investigate and fix failing endpoints/features"
+        }
+      ]
+    },
+    "paperTradingSafety": {
+      "name": "Paper Trading Safety Verification",
+      "passed": 26,
+      "failed": 19,
+      "critical": 4,
+      "success": false,
+      "safetyScore": 53.06122448979592
+    },
+    "coreFunctionality": {
+      "name": "Core Functionality Tests",
+      "passed": 34,
+      "failed": 1,
+      "critical": 0,
+      "success": false,
+      "successRate": 97.14285714285714
+    },
+    "integration": {
+      "name": "Comprehensive Integration Tests",
+      "passed": 30,
+      "failed": 0,
+      "critical": 6,
+      "success": false,
+      "successRate": 83.33333333333334
+    },
+    "smokeTests": {
+      "name": "Production Smoke Tests",
+      "passed": 0,
+      "failed": 1,
+      "critical": 0,
+      "success": false,
+      "successRate": 0
+    }
+  },
+  "overallResults": {
+    "totalPassed": 174,
+    "totalFailed": 44,
+    "totalCritical": 14,
+    "successRate": 75,
+    "deploymentReady": false
+  },
+  "criticalIssues": [
+    {
+      "source": "Production Validation",
+      "issue": "Critical paper trading safety issues detected",
+      "action": "DO NOT DEPLOY - Fix all critical safety issues immediately"
+    },
+    {
+      "source": "Production Validation",
+      "issue": "Paper trading safety verification failed",
+      "action": "Fix all safety mechanisms before proceeding"
+    },
+    {
+      "source": "Paper Trading Safety",
+      "issue": "Environment safety check FAILED: TRADING_SIMULATION_ONLY must be true",
+      "action": "Fix immediately before deployment"
+    },
+    {
+      "source": "Paper Trading Safety",
+      "issue": "DANGEROUS: Found potentially unsafe environment variable: BINANCE_API_SECRET",
+      "action": "Fix immediately before deployment"
+    },
+    {
+      "source": "Paper Trading Safety",
+      "issue": "DANGEROUS: Found potentially unsafe environment variable: KUCOIN_API_SECRET",
+      "action": "Fix immediately before deployment"
+    },
+    {
+      "source": "Paper Trading Safety",
+      "issue": "DANGEROUS CODE PATTERN: Real trades enabled",
+      "action": "Fix immediately before deployment"
+    },
+    {
+      "source": "Integration Tests",
+      "issue": "Paper Trading Guard: Real trade error throwing - MISSING",
+      "action": "Fix critical integration issue"
+    },
+    {
+      "source": "Integration Tests",
+      "issue": "Paper Trading Guard: 1 critical mechanisms missing",
+      "action": "Fix critical integration issue"
+    },
+    {
+      "source": "Integration Tests",
+      "issue": "Trade Simulation Engine: Virtual balance handling - MISSING",
+      "action": "Fix critical integration issue"
+    },
+    {
+      "source": "Integration Tests",
+      "issue": "Trade Simulation Engine: 1 critical features missing",
+      "action": "Fix critical integration issue"
+    },
+    {
+      "source": "Integration Tests",
+      "issue": "API Permission Validator: Trading permission blocking - MISSING",
+      "action": "Fix critical integration issue"
+    },
+    {
+      "source": "Integration Tests",
+      "issue": "API Permission Validator: 1 critical features missing",
+      "action": "Fix critical integration issue"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "category": "Deployment Blocker",
+      "message": "14 critical issues detected",
+      "action": "DO NOT DEPLOY - Fix all critical issues immediately",
+      "blocking": true
+    },
+    {
+      "priority": "HIGH",
+      "category": "Safety",
+      "message": "Paper trading safety score is 53.1%",
+      "action": "Improve safety mechanisms before deployment",
+      "blocking": true
+    },
+    {
+      "priority": "HIGH",
+      "category": "Integration",
+      "message": "Integration tests failed",
+      "action": "Fix component integration issues",
+      "blocking": true
+    },
+    {
+      "priority": "MEDIUM",
+      "category": "Smoke Tests",
+      "message": "Production smoke tests failed",
+      "action": "Start services and validate endpoints before deployment",
+      "blocking": false
+    }
+  ]
+}

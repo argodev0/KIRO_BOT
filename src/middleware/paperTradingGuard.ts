@@ -126,7 +126,7 @@ export class PaperTradingGuard {
     }
 
     // Critical validation: real trades must be disabled
-    if (this.paperTradingConfig.allowRealTrades || allowReal === 'true') {
+    if (this.paperTradingConfig.allowRealTrades === true || allowReal === 'true') {
       throw new PaperTradingError(
         PAPER_TRADING_ERRORS.REAL_TRADE_ATTEMPTED,
         'REAL_TRADES_ENABLED',

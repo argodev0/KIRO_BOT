@@ -33,7 +33,7 @@ interface WebSocketHook {
   emit: (event: string, data?: any) => void;
 }
 
-const useWebSocket = (options: UseWebSocketOptions = {}): WebSocketHook => {
+export const useWebSocket = (isAuthenticated: boolean, options: UseWebSocketOptions = {}): WebSocketHook => {
   const { url = 'http://localhost:3001', autoConnect = true } = options;
   const dispatch = useDispatch();
   const socketRef = useRef<Socket | null>(null);
@@ -159,14 +159,16 @@ const useWebSocket = (options: UseWebSocketOptions = {}): WebSocketHook => {
   }, []);
 
   useEffect(() => {
-    if (autoConnect) {
+    if (autoConnect && isAuthenticated) {
       connect();
+    } else if (!isAuthenticated) {
+      disconnect();
     }
 
     return () => {
       disconnect();
     };
-  }, [connect, disconnect, autoConnect]);
+  }, [connect, disconnect, autoConnect, isAuthenticated]);
 
   return {
     isConnected,

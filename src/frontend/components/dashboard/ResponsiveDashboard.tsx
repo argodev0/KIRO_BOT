@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Grid2 as Grid,
+  Grid,
   useTheme,
   useMediaQuery,
   Drawer,
@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import TradingViewChart from './TradingViewChart';
 import MarketDataWidget from './MarketDataWidget';
-import PortfolioOverview from './PortfolioOverview';
+import VirtualPortfolioDisplay from './VirtualPortfolioDisplay';
 import TradeHistory from './TradeHistory';
 import AlertsNotifications from './AlertsNotifications';
 
@@ -177,8 +177,8 @@ const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({ children }) =
         {/* Sidebar */}
         <Grid xs={12} lg={4}>
           <Box display="flex" flexDirection="column" gap={2}>
-            {/* Portfolio Overview */}
-            <PortfolioOverview />
+            {/* Virtual Portfolio Overview */}
+            <VirtualPortfolioDisplay />
 
             {/* Market Data Widget - Desktop */}
             {!isMobile && !isTablet && <MarketDataWidget />}

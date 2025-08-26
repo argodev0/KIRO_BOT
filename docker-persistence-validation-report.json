@@ -1,0 +1,151 @@
+{
+  "timestamp": "2025-08-24T08:19:16.382Z",
+  "summary": {
+    "volumesConfigured": 4,
+    "restartPoliciesConfigured": 7,
+    "healthChecksConfigured": 5,
+    "networkConfigured": 6
+  },
+  "details": {
+    "volumeTests": {
+      "postgres_data": {
+        "defined": true,
+        "service": "postgres",
+        "testPath": "/var/lib/postgresql/data",
+        "description": "PostgreSQL data persistence",
+        "status": "configured"
+      },
+      "redis_data": {
+        "defined": true,
+        "service": "redis",
+        "testPath": "/data",
+        "description": "Redis data persistence",
+        "status": "configured"
+      },
+      "rabbitmq_data": {
+        "defined": true,
+        "service": "rabbitmq",
+        "testPath": "/var/lib/rabbitmq",
+        "description": "RabbitMQ data persistence",
+        "status": "configured"
+      },
+      "backend_logs": {
+        "defined": true,
+        "service": "backend",
+        "testPath": "/app/logs",
+        "description": "Backend logs persistence",
+        "status": "configured"
+      }
+    },
+    "restartPolicyTests": {
+      "frontend": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      },
+      "backend": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      },
+      "postgres": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      },
+      "redis": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      },
+      "rabbitmq": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      },
+      "prometheus": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      },
+      "grafana": {
+        "configured": true,
+        "policy": "unless-stopped",
+        "status": "optimal"
+      }
+    },
+    "healthCheckTests": {
+      "frontend": {
+        "configured": true,
+        "status": "configured"
+      },
+      "backend": {
+        "configured": true,
+        "status": "configured"
+      },
+      "postgres": {
+        "configured": true,
+        "status": "configured"
+      },
+      "redis": {
+        "configured": true,
+        "status": "configured"
+      },
+      "rabbitmq": {
+        "configured": true,
+        "status": "configured"
+      }
+    },
+    "networkTests": {
+      "custom-network": {
+        "defined": true,
+        "status": "configured"
+      },
+      "frontend-network": {
+        "assigned": true,
+        "status": "configured"
+      },
+      "backend-network": {
+        "assigned": true,
+        "status": "configured"
+      },
+      "postgres-network": {
+        "assigned": true,
+        "status": "configured"
+      },
+      "redis-network": {
+        "assigned": true,
+        "status": "configured"
+      },
+      "rabbitmq-network": {
+        "assigned": true,
+        "status": "configured"
+      },
+      "backend-dependencies": {
+        "configured": true,
+        "expected": [
+          "postgres",
+          "redis",
+          "rabbitmq"
+        ],
+        "found": [
+          "postgres",
+          "redis",
+          "rabbitmq"
+        ],
+        "status": "complete"
+      },
+      "frontend-dependencies": {
+        "configured": true,
+        "expected": [
+          "backend"
+        ],
+        "found": [
+          "backend"
+        ],
+        "status": "complete"
+      }
+    }
+  },
+  "recommendations": []
+}

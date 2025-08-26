@@ -2,7 +2,7 @@
 # Optimized for production deployment
 
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache python3 make g++
@@ -27,7 +27,7 @@ RUN npx prisma generate
 RUN npm run build:backend
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 # Install runtime dependencies
 RUN apk add --no-cache \

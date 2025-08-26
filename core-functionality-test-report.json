@@ -1,0 +1,294 @@
+{
+  "passed": 34,
+  "failed": 1,
+  "tests": [
+    {
+      "timestamp": "2025-08-23T19:01:24.158Z",
+      "level": "info",
+      "message": "Testing environment configuration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.159Z",
+      "level": "success",
+      "message": "Environment check passed: PAPER_TRADING_MODE=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.159Z",
+      "level": "success",
+      "message": "Environment check passed: ALLOW_REAL_TRADES=false",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.159Z",
+      "level": "success",
+      "message": "Environment check passed: NODE_ENV=production",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.159Z",
+      "level": "success",
+      "message": "All critical environment variables are properly configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.160Z",
+      "level": "info",
+      "message": "Testing code structure and safety mechanisms...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.161Z",
+      "level": "success",
+      "message": "Critical file found: src/middleware/paperTradingGuard.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.161Z",
+      "level": "success",
+      "message": "Critical file found: src/services/TradeSimulationEngine.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.161Z",
+      "level": "success",
+      "message": "Critical file found: src/services/VirtualPortfolioManager.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.161Z",
+      "level": "success",
+      "message": "Critical file found: src/utils/ApiPermissionValidator.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.161Z",
+      "level": "success",
+      "message": "Critical file found: src/config/production.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.161Z",
+      "level": "success",
+      "message": "All critical code files are present",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.162Z",
+      "level": "success",
+      "message": "Safety mechanism found: Real trades blocking",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.162Z",
+      "level": "success",
+      "message": "Safety mechanism found: Paper trade marking",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.162Z",
+      "level": "warning",
+      "message": "Safety mechanism may be missing: Paper trading mode check",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.163Z",
+      "level": "info",
+      "message": "Testing database schema for paper trading safety...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.163Z",
+      "level": "warning",
+      "message": "Database safety field missing: isPaperTrade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.163Z",
+      "level": "warning",
+      "message": "Database safety field missing: virtualBalance",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.163Z",
+      "level": "warning",
+      "message": "Database safety field missing: simulatedTrade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.163Z",
+      "level": "error",
+      "message": "No paper trading safety fields found in database schema",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.163Z",
+      "level": "info",
+      "message": "Testing frontend safety indicators...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.164Z",
+      "level": "success",
+      "message": "Frontend safety element found: PAPER TRADING MODE",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.164Z",
+      "level": "warning",
+      "message": "Frontend safety element missing: NO REAL MONEY",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.164Z",
+      "level": "warning",
+      "message": "Frontend safety element missing: SIMULATION",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.164Z",
+      "level": "success",
+      "message": "Found 1 frontend safety indicators",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.164Z",
+      "level": "success",
+      "message": "Trading page includes paper trading indicator",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.164Z",
+      "level": "info",
+      "message": "Testing configuration files...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "TypeScript configuration found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Required dependency found: express",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Required dependency found: ws",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Required dependency found: redis",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Required dependency found: winston",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Required dependency found: helmet",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Required dependency found: cors",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "All required dependencies are present",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "success",
+      "message": "Test script configuration found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.165Z",
+      "level": "info",
+      "message": "Testing security configuration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "Security middleware found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "Production security hardening found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "SSL configuration found: docker/nginx/production.conf",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "SSL configuration found: docker/nginx/security.conf",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "SSL configuration found: docker/scripts/ssl-setup.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "Found 3 SSL configuration files",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "info",
+      "message": "Testing monitoring setup...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "Monitoring file found: monitoring/prometheus.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.166Z",
+      "level": "success",
+      "message": "Monitoring file found: monitoring/docker-compose.monitoring.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.167Z",
+      "level": "success",
+      "message": "Found 5 Grafana dashboards",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T19:01:24.167Z",
+      "level": "success",
+      "message": "Monitoring setup is configured",
+      "details": null
+    }
+  ]
+}

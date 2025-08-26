@@ -1,0 +1,245 @@
+# Real-time Data Feed Alert Rules
+
+groups:
+  - name: real-time-data.critical
+    interval: 30s
+    rules:
+      # Critical Data Feed Alerts
+      - alert: AllExchangeConnectionsLost
+        expr: sum(exchange_connection_status) == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: market-data
+          category: connectivity
+        annotations:
+          summary: "CRITICAL: All exchange connections lost"
+          description: "No active connections to any exchanges"
+          runbook_url: "https://docs.yourdomain.com/runbooks/all-exchanges-down"
+          action_required: "Investigate network connectivity and exchange status"
+
+      - alert: PrimaryExchangeConnectionLost
+        expr: exchange_connection_status{exchange="binance"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: market-data
+          category: connectivity
+        annotations:
+          summary: "CRITICAL: Primary exchange (Binance) connection lost"
+          description: "Connection to Binance exchange has been lost"
+          runbook_url: "https://docs.yourdomain.com/runbooks/binance-connection-lost"
+          action_required: "Check Binance API status and network connectivity"
+
+      - alert: MarketDataStale
+        expr: time() - market_data_last_update_timestamp > 300
+        for: 1m
+        labels:
+          severity: critical
+          service: market-data
+          category: data-freshness
+        annotations:
+          summary: "CRITICAL: Market data is stale"
+          description: "No market data updates received for {{ $value }} seconds"
+          runbook_url: "https://docs.yourdomain.com/runbooks/stale-market-data"
+          action_required: "Check data feed connections and processing pipeline"
+
+      - alert: WebSocketServerDown
+        expr: websocket_server_status == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: market-data
+          category: infrastructure
+        annotations:
+          summary: "CRITICAL: WebSocket server is down"
+          description: "WebSocket server for real-time data distribution is not running"
+          runbook_url: "https://docs.yourdomain.com/runbooks/websocket-server-down"
+          action_required: "Restart WebSocket server and check for errors"
+
+      - alert: HighMarketDataLatency
+        expr: market_data_latency_ms > 1000
+        for: 5m
+        labels:
+          severity: critical
+          service: market-data
+          category: performance
+        annotations:
+          summary: "CRITICAL: High market data latency"
+          description: "Market data latency is {{ $value }}ms for {{ $labels.exchange }}"
+          runbook_url: "https://docs.yourdomain.com/runbooks/high-latency"
+          action_required: "Check network performance and exchange API status"
+
+  - name: real-time-data.warning
+    interval: 60s
+    rules:
+      # Warning Level Data Feed Alerts
+      - alert: SecondaryExchangeConnectionLost
+        expr: exchange_connection_status{exchange="kucoin"} == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: market-data
+          category: connectivity
+        annotations:
+          summary: "Secondary exchange (KuCoin) connection lost"
+          description: "Connection to KuCoin exchange has been lost"
+          runbook_url: "https://docs.yourdomain.com/runbooks/kucoin-connection-lost"
+
+      - alert: ReducedMarketDataUpdateRate
+        expr: rate(market_data_updates_total[5m]) < 1
+        for: 10m
+        labels:
+          severity: warning
+          service: market-data
+          category: data-flow
+        annotations:
+          summary: "Reduced market data update rate"
+          description: "Market data update rate is {{ $value }} updates per second for {{ $labels.exchange }}"
+          runbook_url: "https://docs.yourdomain.com/runbooks/low-update-rate"
+
+      - alert: WebSocketConnectionDrops
+        expr: rate(websocket_connection_drops_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: market-data
+          category: connectivity
+        annotations:
+          summary: "Frequent WebSocket connection drops"
+          description: "WebSocket connections dropping at {{ $value }} drops per second"
+          runbook_url: "https://docs.yourdomain.com/runbooks/websocket-drops"
+
+      - alert: MarketDataProcessingDelay
+        expr: market_data_processing_delay_ms > 500
+        for: 5m
+        labels:
+          severity: warning
+          service: market-data
+          category: performance
+        annotations:
+          summary: "Market data processing delay"
+          description: "Data processing delay is {{ $value }}ms"
+          runbook_url: "https://docs.yourdomain.com/runbooks/processing-delay"
+
+      - alert: APIRateLimitApproaching
+        expr: exchange_api_rate_limit_usage > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          service: market-data
+          category: rate-limiting
+        annotations:
+          summary: "API rate limit approaching for {{ $labels.exchange }}"
+          description: "API rate limit usage is {{ $value | humanizePercentage }}"
+          runbook_url: "https://docs.yourdomain.com/runbooks/rate-limit-approaching"
+
+  - name: real-time-data.performance
+    interval: 120s
+    rules:
+      # Performance Monitoring
+      - alert: LowWebSocketThroughput
+        expr: rate(websocket_messages_sent_total[5m]) < 10
+        for: 10m
+        labels:
+          severity: warning
+          service: market-data
+          category: performance
+        annotations:
+          summary: "Low WebSocket message throughput"
+          description: "WebSocket throughput is {{ $value }} messages per second"
+          runbook_url: "https://docs.yourdomain.com/runbooks/low-websocket-throughput"
+
+      - alert: MarketDataBufferOverflow
+        expr: market_data_buffer_overflow_total > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: market-data
+          category: performance
+        annotations:
+          summary: "Market data buffer overflow detected"
+          description: "{{ $value }} buffer overflow events detected"
+          runbook_url: "https://docs.yourdomain.com/runbooks/buffer-overflow"
+
+      - alert: HighMemoryUsageDataProcessor
+        expr: process_resident_memory_bytes{job="trading-bot-backend"} / 1024 / 1024 > 1000
+        for: 10m
+        labels:
+          severity: warning
+          service: market-data
+          category: resource-usage
+        annotations:
+          summary: "High memory usage in data processor"
+          description: "Data processor using {{ $value }}MB of memory"
+          runbook_url: "https://docs.yourdomain.com/runbooks/high-memory-usage"
+
+      - alert: DataFeedReconnectionFrequency
+        expr: rate(exchange_reconnections_total[1h]) > 5
+        for: 30m
+        labels:
+          severity: warning
+          service: market-data
+          category: stability
+        annotations:
+          summary: "Frequent data feed reconnections"
+          description: "{{ $labels.exchange }} reconnecting {{ $value }} times per hour"
+          runbook_url: "https://docs.yourdomain.com/runbooks/frequent-reconnections"
+
+  - name: real-time-data.business
+    interval: 300s
+    rules:
+      # Business Impact Monitoring
+      - alert: MarketDataGaps
+        expr: increase(market_data_gaps_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          service: market-data
+          category: data-quality
+        annotations:
+          summary: "Market data gaps detected"
+          description: "{{ $value }} data gaps detected in the last 15 minutes"
+          runbook_url: "https://docs.yourdomain.com/runbooks/data-gaps"
+
+      - alert: InconsistentPriceData
+        expr: abs(binance_price - kucoin_price) / binance_price > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: market-data
+          category: data-quality
+        annotations:
+          summary: "Inconsistent price data between exchanges"
+          description: "Price difference between exchanges exceeds 5%"
+          runbook_url: "https://docs.yourdomain.com/runbooks/price-inconsistency"
+
+      - alert: NoActiveDataSubscriptions
+        expr: active_market_data_subscriptions == 0
+        for: 5m
+        labels:
+          severity: warning
+          service: market-data
+          category: subscriptions
+        annotations:
+          summary: "No active market data subscriptions"
+          description: "No clients are subscribed to market data feeds"
+          runbook_url: "https://docs.yourdomain.com/runbooks/no-subscriptions"
+
+      - alert: DataFeedHealthCheck
+        expr: |
+          (
+            sum(exchange_connection_status) > 0 and
+            rate(market_data_updates_total[5m]) > 0 and
+            websocket_connections_active > 0 and
+            market_data_latency_ms < 2000
+          ) or 0
+        for: 0s
+        labels:
+          severity: info
+          service: market-data
+          category: health-check
+        annotations:
+          summary: "Real-time data feed health check"
+          description: "Periodic health verification of real-time data feeds"
+          runbook_url: "https://docs.yourdomain.com/runbooks/data-feed-health"

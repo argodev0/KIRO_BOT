@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   AppBar,
   Toolbar,
@@ -10,6 +10,7 @@ import {
   MenuItem,
   Chip,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
@@ -17,10 +18,13 @@ import {
   Logout,
   Settings,
   Notifications,
+  Security,
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../store/store';
 import { logout } from '../../store/slices/authSlice';
+import PaperTradingIndicator from '../common/PaperTradingIndicator';
+import LiveDataIndicator from '../common/LiveDataIndicator';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -28,12 +32,13 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { portfolio, botStatus } = useSelector((state: RootState) => state.trading);
-  const { notifications } = useSelector((state: RootState) => state.ui);
-  
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { isConnected } = useSelector((state: RootState) => state.marketData);
+  const { botStatus } = useSelector((state: RootState) => state.trading);
+
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -48,7 +53,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
     handleProfileMenuClose();
   };
 
-  const unreadNotifications = notifications.filter(n => !n.autoHide).length;
+  const getBotStatusColor = (status: string) => {
+    switch (status) {
+      case 'running': return 'success';
+      case 'paused': return 'warning';
+      case 'stopped': return 'default';
+      default: return 'default';
+    }
+  };
 
   return (
     <AppBar 
@@ -61,7 +73,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
       }}
     >
       <Toolbar>
-        {/* Menu button */}
+        {/* Menu Button */}
         <IconButton
           edge="start"
           color="inherit"
@@ -72,57 +84,34 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           <MenuIcon />
         </IconButton>
 
-        {/* Page title */}
+        {/* Title */}
         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-          AI Crypto Trading Bot
+          {isMobile ? 'KIRO' : 'KIRO Trading Bot'}
         </Typography>
 
-        {/* Status indicators */}
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mr: 2 }}>
-          {/* Bot status */}
+        {/* Status Indicators */}
+        <Box display="flex" alignItems="center" gap={1} mr={2}>
+          {/* Live Data Status */}
+          <LiveDataIndicator variant="chip" />
+          
+          {/* Paper Trading Indicator */}
+          <PaperTradingIndicator variant="chip" size="small" />
+          
+          {/* Bot Status */}
           <Chip
             label={`Bot: ${botStatus}`}
+            color={getBotStatusColor(botStatus)}
             size="small"
-            color={
-              botStatus === 'running' ? 'success' :
-              botStatus === 'paused' ? 'warning' : 'default'
-            }
-            variant="outlined"
+            icon={<Security />}
           />
-
-          {/* Portfolio balance */}
-          <Typography variant="body2" color="text.secondary">
-            Balance: ${portfolio.totalBalance.toLocaleString()}
-          </Typography>
-
-          {/* P&L */}
-          <Typography 
-            variant="body2" 
-            color={portfolio.totalUnrealizedPnl >= 0 ? 'success.main' : 'error.main'}
-          >
-            P&L: {portfolio.totalUnrealizedPnl >= 0 ? '+' : ''}${portfolio.totalUnrealizedPnl.toFixed(2)}
-          </Typography>
         </Box>
 
         {/* Notifications */}
         <IconButton color="inherit" sx={{ mr: 1 }}>
           <Notifications />
-          {unreadNotifications > 0 && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                backgroundColor: 'error.main',
-              }}
-            />
-          )}
         </IconButton>
 
-        {/* User menu */}
+        {/* User Profile */}
         <IconButton
           edge="end"
           aria-label="account of current user"
@@ -132,10 +121,11 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           color="inherit"
         >
           <Avatar sx={{ width: 32, height: 32 }}>
-            {user?.email?.charAt(0).toUpperCase()}
+            {user?.username?.charAt(0).toUpperCase() || <AccountCircle />}
           </Avatar>
         </IconButton>
 
+        {/* Profile Menu */}
         <Menu
           anchorEl={anchorEl}
           anchorOrigin={{
@@ -164,6 +154,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
           </MenuItem>
         </Menu>
       </Toolbar>
+
+      {/* Mobile Paper Trading Banner */}
+      {isMobile && (
+        <Box sx={{ px: 2, pb: 1 }}>
+          <PaperTradingIndicator variant="banner" showDetails={false} />
+        </Box>
+      )}
     </AppBar>
   );
 };

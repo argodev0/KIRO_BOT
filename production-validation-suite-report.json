@@ -1,0 +1,760 @@
+{
+  "timestamp": "2025-08-23T18:59:56.737Z",
+  "duration": "2.64s",
+  "config": {
+    "skipReadiness": false,
+    "skipSafety": false,
+    "skipSmokeTests": false,
+    "skipPerformance": true,
+    "baseUrl": "https://localhost",
+    "apiPort": 3000,
+    "frontendPort": 3002,
+    "generateReport": true
+  },
+  "summary": {
+    "totalPassed": 84,
+    "totalFailed": 23,
+    "totalCritical": 4,
+    "overallSuccess": false
+  },
+  "results": {
+    "readiness": {
+      "success": false,
+      "skipped": false,
+      "reportData": {
+        "passed": 58,
+        "failed": 3,
+        "warnings": 1,
+        "details": [
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "info",
+            "message": "Validating environment configuration...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "info",
+            "message": "Found required file: .env.production",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "info",
+            "message": "Found required file: .env.production.template",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "error",
+            "message": "Missing required file: docker-compose.prod.yml",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "info",
+            "message": "Environment variable validated: NODE_ENV=production",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "info",
+            "message": "Environment variable validated: PAPER_TRADING_MODE=true",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.329Z",
+            "level": "info",
+            "message": "Environment variable validated: ALLOW_REAL_TRADES=false",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.330Z",
+            "level": "info",
+            "message": "Environment variable validated: SSL_ENABLED=true",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.330Z",
+            "level": "error",
+            "message": "Missing or incorrect environment variable: MONITORING_ENABLED=true",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.331Z",
+            "level": "info",
+            "message": "Validating security configuration...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.331Z",
+            "level": "info",
+            "message": "SSL configuration file found: docker/nginx/production.conf",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.331Z",
+            "level": "info",
+            "message": "SSL configuration file found: docker/nginx/security.conf",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.331Z",
+            "level": "info",
+            "message": "SSL configuration file found: docker/scripts/ssl-setup.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Security header configured: X-Frame-Options",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Security header configured: X-Content-Type-Options",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Security header configured: X-XSS-Protection",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Security header configured: Strict-Transport-Security",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Security script found: docker/scripts/generate-dhparam.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Security script found: scripts/validate-api-permissions.js",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.332Z",
+            "level": "info",
+            "message": "Validating monitoring setup...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Monitoring file found: monitoring/prometheus.yml",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Monitoring file found: monitoring/grafana/provisioning/dashboards/dashboard.yml",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Monitoring file found: monitoring/docker-compose.monitoring.yml",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Found 5 Grafana dashboards",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Dashboard configured: trading-bot-overview.json",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Dashboard configured: paper-trading-safety.json",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Dashboard configured: system-metrics.json",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Dashboard configured: real-time-data-feeds.json",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Found 3 Prometheus alert rule files",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.333Z",
+            "level": "info",
+            "message": "Validating database configuration...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Database file found: database/init/01-init.sql",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Database file found: database/production/production-setup.sql",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Database file found: prisma/schema.prisma",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Backup script found: scripts/backup-automation.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Backup script found: scripts/database-migration.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Backup script found: docker/scripts/backup.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Validating application code structure...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Critical file found: src/index.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Critical file found: src/config/production.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Critical file found: src/middleware/paperTradingGuard.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Critical file found: src/services/TradeSimulationEngine.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.334Z",
+            "level": "info",
+            "message": "Critical file found: src/services/LiveMarketDataService.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Required dependency found: express",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Required dependency found: ws",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "error",
+            "message": "Missing required dependency: prisma",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Required dependency found: redis",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Required dependency found: winston",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Required dependency found: helmet",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Required dependency found: cors",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "TypeScript configuration found",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.335Z",
+            "level": "info",
+            "message": "Validating test coverage...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.336Z",
+            "level": "info",
+            "message": "Found 8 test files in src/__tests__",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.336Z",
+            "level": "info",
+            "message": "Found 5 test files in src/__tests__/comprehensive",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.336Z",
+            "level": "info",
+            "message": "Found 11 test files in src/__tests__/integration",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.336Z",
+            "level": "info",
+            "message": "Found 6 test files in src/__tests__/security",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:54.336Z",
+            "level": "info",
+            "message": "Jest configuration found",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.071Z",
+            "level": "warn",
+            "message": "Test suite execution failed",
+            "details": "Command failed: npm run test -- --passWithNoTests --silent\nsh: 1: jest: not found\n"
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.072Z",
+            "level": "info",
+            "message": "Validating deployment scripts...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.073Z",
+            "level": "info",
+            "message": "Deployment script ready: scripts/deploy-production.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.073Z",
+            "level": "info",
+            "message": "Deployment script ready: scripts/deploy-automation.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.073Z",
+            "level": "info",
+            "message": "Deployment script ready: scripts/health-check.sh",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.073Z",
+            "level": "info",
+            "message": "Deployment script ready: scripts/production-orchestrator.sh",
+            "details": null
+          }
+        ]
+      }
+    },
+    "safety": {
+      "success": false,
+      "skipped": false,
+      "reportData": {
+        "passed": 26,
+        "failed": 19,
+        "critical": 4,
+        "tests": [
+          {
+            "timestamp": "2025-08-23T18:59:55.250Z",
+            "level": "info",
+            "message": "Verifying environment configuration for paper trading safety...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.250Z",
+            "level": "info",
+            "message": "Environment safety check passed: PAPER_TRADING_MODE=true",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.251Z",
+            "level": "info",
+            "message": "Environment safety check passed: ALLOW_REAL_TRADES=false",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.251Z",
+            "level": "info",
+            "message": "Environment safety check passed: NODE_ENV=production",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.251Z",
+            "level": "critical",
+            "message": "Environment safety check FAILED: TRADING_SIMULATION_ONLY must be true",
+            "details": {
+              "expected": "true",
+              "found": "NOT_FOUND"
+            }
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.251Z",
+            "level": "critical",
+            "message": "DANGEROUS: Found potentially unsafe environment variable: BINANCE_API_SECRET",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.252Z",
+            "level": "critical",
+            "message": "DANGEROUS: Found potentially unsafe environment variable: KUCOIN_API_SECRET",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.253Z",
+            "level": "info",
+            "message": "Verifying code-level safety mechanisms...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.254Z",
+            "level": "error",
+            "message": "Code safety pattern MISSING: Paper trading mode enforcement",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.254Z",
+            "level": "info",
+            "message": "Code safety pattern found: Real trades blocking",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.254Z",
+            "level": "error",
+            "message": "Code safety pattern MISSING: Real trade error throwing",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.255Z",
+            "level": "info",
+            "message": "Code safety pattern found: Paper trade marking",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.255Z",
+            "level": "critical",
+            "message": "DANGEROUS CODE PATTERN: Real trades enabled",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.256Z",
+            "level": "info",
+            "message": "Trade simulation engine properly marks paper trades",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.256Z",
+            "level": "info",
+            "message": "Trade simulation engine has simulation methods",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.256Z",
+            "level": "info",
+            "message": "Verifying API key permission restrictions...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.257Z",
+            "level": "info",
+            "message": "API permission check found: Read-only enforcement",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.258Z",
+            "level": "error",
+            "message": "API permission check MISSING: Trading permission blocking",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.258Z",
+            "level": "error",
+            "message": "API permission check MISSING: Withdrawal permission blocking",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.258Z",
+            "level": "error",
+            "message": "API permission check MISSING: Permission validation function",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.259Z",
+            "level": "info",
+            "message": "Exchange service uses testnet/sandbox: BinanceExchange.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.259Z",
+            "level": "info",
+            "message": "Exchange service enforces read-only: BinanceExchange.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.260Z",
+            "level": "error",
+            "message": "Exchange service contains dangerous method: cancelOrder in BinanceExchange.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.265Z",
+            "level": "info",
+            "message": "Exchange service uses testnet/sandbox: KuCoinExchange.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.266Z",
+            "level": "info",
+            "message": "Exchange service enforces read-only: KuCoinExchange.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.266Z",
+            "level": "error",
+            "message": "Exchange service contains dangerous method: cancelOrder in KuCoinExchange.ts",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.266Z",
+            "level": "info",
+            "message": "Verifying database safety mechanisms...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.267Z",
+            "level": "error",
+            "message": "Database safety field MISSING: isPaperTrade",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.267Z",
+            "level": "error",
+            "message": "Database safety field MISSING: simulatedTrade",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.267Z",
+            "level": "error",
+            "message": "Database safety field MISSING: virtualBalance",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.267Z",
+            "level": "error",
+            "message": "Database safety field MISSING: paperTradingMode",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.268Z",
+            "level": "error",
+            "message": "Database initialization missing paper trading configuration",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.268Z",
+            "level": "info",
+            "message": "Verifying frontend safety indicators...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.269Z",
+            "level": "info",
+            "message": "Frontend safety element found: PAPER TRADING MODE",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.269Z",
+            "level": "error",
+            "message": "Frontend safety element MISSING: SIMULATION ONLY",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.269Z",
+            "level": "info",
+            "message": "Frontend safety element found: NO REAL MONEY",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.269Z",
+            "level": "error",
+            "message": "Frontend safety element MISSING: backgroundColor.*red",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.270Z",
+            "level": "info",
+            "message": "Trading page includes paper trading indicator",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.270Z",
+            "level": "info",
+            "message": "Trading page includes confirmation/warning dialogs",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.270Z",
+            "level": "info",
+            "message": "Portfolio display clearly indicates virtual/simulated balances",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.271Z",
+            "level": "info",
+            "message": "Verifying paper trading safety test coverage...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.272Z",
+            "level": "info",
+            "message": "Test scenario found in PaperTradingGuardTests.test.ts: api permission",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:55.273Z",
+            "level": "info",
+            "message": "Test scenario found in paperTradingSafety.test.ts: virtual balance",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:56.159Z",
+            "level": "error",
+            "message": "Could not execute paper trading tests",
+            "details": "Command failed: npm test -- --testNamePattern=\"paper.*trading\" --passWithNoTests --silent\nsh: 1: jest: not found\n"
+          },
+          {
+            "timestamp": "2025-08-23T18:59:56.160Z",
+            "level": "info",
+            "message": "Verifying configuration files for safety...",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:56.161Z",
+            "level": "error",
+            "message": "Production config safety setting MISSING: paperTradingMode: true",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:56.161Z",
+            "level": "error",
+            "message": "Production config safety setting MISSING: allowRealTrades: false",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:56.161Z",
+            "level": "error",
+            "message": "Production config safety setting MISSING: tradingSimulation: true",
+            "details": null
+          },
+          {
+            "timestamp": "2025-08-23T18:59:56.161Z",
+            "level": "error",
+            "message": "Docker production configuration not found",
+            "details": {
+              "file": "docker-compose.prod.yml"
+            }
+          }
+        ]
+      }
+    },
+    "smokeTests": {
+      "success": false,
+      "skipped": false,
+      "reportData": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 0,
+        "tests": [
+          {
+            "name": "API Health Check",
+            "status": "FAILED",
+            "duration": 60,
+            "error": "connect ECONNREFUSED 127.0.0.1:3000",
+            "critical": true
+          }
+        ]
+      }
+    },
+    "performance": null
+  },
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "category": "Safety",
+      "message": "Critical paper trading safety issues detected",
+      "action": "DO NOT DEPLOY - Fix all critical safety issues immediately"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Readiness",
+      "message": "Production readiness validation failed",
+      "action": "Review and fix configuration issues before deployment"
+    },
+    {
+      "priority": "CRITICAL",
+      "category": "Safety",
+      "message": "Paper trading safety verification failed",
+      "action": "Fix all safety mechanisms before proceeding"
+    },
+    {
+      "priority": "HIGH",
+      "category": "Functionality",
+      "message": "Production smoke tests failed",
+      "action": "Investigate and fix failing endpoints/features"
+    }
+  ]
+}

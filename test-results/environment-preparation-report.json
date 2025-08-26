@@ -1,0 +1,37 @@
+{
+  "timestamp": "2025-08-23T18:34:17.930Z",
+  "summary": {
+    "totalChecks": 21,
+    "passed": 17,
+    "failed": 4,
+    "warnings": 0,
+    "successRate": "81.0%"
+  },
+  "systemInfo": {
+    "platform": "linux",
+    "arch": "x64",
+    "nodeVersion": "v12.22.9",
+    "totalMemory": "15.62GB",
+    "cpuCores": 4,
+    "hostname": "kira-20250822-20250822-201857"
+  },
+  "errors": [
+    {
+      "description": "Node.js Version Compatibility",
+      "error": "Node.js version v12.22.9 is too old. Version >=18.0.0 required for full compatibility."
+    },
+    {
+      "description": "Docker Installation",
+      "error": "Docker is not installed or not in PATH"
+    },
+    {
+      "description": "Docker Compose Installation",
+      "error": "Docker Compose is not installed or not in PATH"
+    },
+    {
+      "description": "Docker Service Status",
+      "error": "Docker service is not running or not accessible"
+    }
+  ],
+  "readyForDeployment": false
+}

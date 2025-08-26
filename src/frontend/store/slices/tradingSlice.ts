@@ -55,6 +55,13 @@ export interface TradingState {
     maxDrawdown: number;
     currentDrawdown: number;
   };
+  paperTrading: {
+    isEnabled: boolean;
+    initialBalance: number;
+    virtualBalance: number;
+    totalPaperTrades: number;
+    paperTradingStartDate: number;
+  };
   botStatus: 'stopped' | 'running' | 'paused';
   isLoading: boolean;
   error: string | null;
@@ -65,12 +72,19 @@ const initialState: TradingState = {
   positions: [],
   orders: [],
   portfolio: {
-    totalBalance: 0,
-    availableBalance: 0,
+    totalBalance: 10000, // Default virtual balance
+    availableBalance: 10000,
     totalUnrealizedPnl: 0,
     totalRealizedPnl: 0,
     maxDrawdown: 0,
     currentDrawdown: 0,
+  },
+  paperTrading: {
+    isEnabled: true, // Always enabled in this deployment
+    initialBalance: 10000,
+    virtualBalance: 10000,
+    totalPaperTrades: 0,
+    paperTradingStartDate: Date.now(),
   },
   botStatus: 'stopped',
   isLoading: false,
@@ -122,6 +136,12 @@ const tradingSlice = createSlice({
     updatePortfolio: (state, action: PayloadAction<Partial<TradingState['portfolio']>>) => {
       state.portfolio = { ...state.portfolio, ...action.payload };
     },
+    updatePaperTradingStats: (state, action: PayloadAction<Partial<TradingState['paperTrading']>>) => {
+      state.paperTrading = { ...state.paperTrading, ...action.payload };
+    },
+    incrementPaperTradeCount: (state) => {
+      state.paperTrading.totalPaperTrades += 1;
+    },
     setBotStatus: (state, action: PayloadAction<TradingState['botStatus']>) => {
       state.botStatus = action.payload;
     },
@@ -150,6 +170,8 @@ export const {
   addOrder,
   updateOrder,
   updatePortfolio,
+  updatePaperTradingStats,
+  incrementPaperTradeCount,
   setBotStatus,
   setLoading,
   setError,

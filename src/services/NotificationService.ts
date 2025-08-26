@@ -277,7 +277,7 @@ export class NotificationService extends EventEmitter {
           history.channels.push(channelType);
         } catch (error) {
           logger.error(`Failed to send notification via ${channelType}:`, error);
-          history.error = error.message;
+          history.error = error instanceof Error ? error.message : String(error);
         }
       }
 
@@ -286,7 +286,7 @@ export class NotificationService extends EventEmitter {
     } catch (error) {
       logger.error('Error processing notification:', error);
       history.status = 'failed';
-      history.error = error.message;
+      history.error = error instanceof Error ? error.message : String(error);
     }
 
     this.notificationHistory.push(history);
@@ -338,9 +338,14 @@ export class NotificationService extends EventEmitter {
 
     const message = this.renderTemplate(template.smsTemplate, data);
 
+    const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+    if (!fromNumber) {
+      throw new Error('TWILIO_PHONE_NUMBER not configured');
+    }
+
     await this.twilioClient.messages.create({
       body: message,
-      from: process.env.TWILIO_PHONE_NUMBER,
+      from: fromNumber,
       to: config.phoneNumber
     });
 

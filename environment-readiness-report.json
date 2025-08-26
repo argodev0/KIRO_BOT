@@ -1,0 +1,168 @@
+{
+  "timestamp": "2025-08-23T20:38:56.829Z",
+  "phase": "environment-validation",
+  "validations": {
+    "nodejs": {
+      "name": "Node.js",
+      "tests": {
+        "installation": {
+          "name": "Node.js Installation",
+          "passed": true,
+          "output": "v18.20.8"
+        },
+        "version": {
+          "name": "Node.js Version Compatibility",
+          "passed": true,
+          "output": "v18.20.8 (required: >=18.0.0)",
+          "version": "18.20.8",
+          "required": "18.0.0"
+        },
+        "npm": {
+          "name": "npm Installation",
+          "passed": true,
+          "output": "10.8.2"
+        }
+      },
+      "passed": true,
+      "critical": true
+    },
+    "docker": {
+      "name": "Docker",
+      "tests": {
+        "installation": {
+          "name": "Docker Installation",
+          "passed": true,
+          "output": "Docker version 28.3.3, build 980b856"
+        },
+        "service": {
+          "name": "Docker Service",
+          "passed": false,
+          "output": "Command failed: docker info\npermission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Get \"http://%2Fvar%2Frun%2Fdocker.sock/v1.51/info\": dial unix /var/run/docker.sock: connect: permission denied\n"
+        },
+        "permissions": {
+          "name": "Docker Permissions",
+          "passed": false,
+          "output": "User needs sudo for Docker"
+        }
+      },
+      "passed": false,
+      "critical": true
+    },
+    "dockerCompose": {
+      "name": "Docker Compose",
+      "tests": {
+        "standalone": {
+          "name": "Docker Compose (standalone)",
+          "passed": false,
+          "output": "/bin/sh: 1: docker-compose: not found",
+          "error": "Command failed: docker-compose --version\n/bin/sh: 1: docker-compose: not found\n"
+        },
+        "plugin": {
+          "name": "Docker Compose (plugin)",
+          "passed": true,
+          "output": "Docker Compose version v2.39.1"
+        }
+      },
+      "passed": true,
+      "critical": true
+    },
+    "projectStructure": {
+      "name": "Project Structure",
+      "tests": {
+        "file_package_json": {
+          "name": "Required file: package.json",
+          "passed": true,
+          "output": "File exists"
+        },
+        "file_tsconfig_json": {
+          "name": "Required file: tsconfig.json",
+          "passed": true,
+          "output": "File exists"
+        },
+        "file_docker_docker_compose_prod_yml": {
+          "name": "Required file: docker/docker-compose.prod.yml",
+          "passed": true,
+          "output": "File exists"
+        },
+        "file__env_production_template": {
+          "name": "Required file: .env.production.template",
+          "passed": true,
+          "output": "File exists"
+        },
+        "file_scripts_deploy_production_sh": {
+          "name": "Required file: scripts/deploy-production.sh",
+          "passed": true,
+          "output": "File exists"
+        },
+        "dir_src": {
+          "name": "Required directory: src",
+          "passed": true,
+          "output": "Directory exists"
+        },
+        "dir_docker": {
+          "name": "Required directory: docker",
+          "passed": true,
+          "output": "Directory exists"
+        },
+        "dir_scripts": {
+          "name": "Required directory: scripts",
+          "passed": true,
+          "output": "Directory exists"
+        },
+        "dir_monitoring": {
+          "name": "Required directory: monitoring",
+          "passed": true,
+          "output": "Directory exists"
+        }
+      },
+      "passed": true,
+      "critical": false
+    },
+    "systemResources": {
+      "name": "System Resources",
+      "tests": {
+        "diskSpace": {
+          "name": "Disk Space",
+          "passed": true,
+          "output": "Available: 233G"
+        },
+        "memory": {
+          "name": "Memory",
+          "passed": true,
+          "output": "Total: 15Gi, Available: 12Gi"
+        }
+      },
+      "passed": true,
+      "critical": false
+    },
+    "dockerFunctionality": {
+      "name": "Docker Functionality",
+      "tests": {
+        "helloWorld": {
+          "name": "Docker Hello World Test",
+          "passed": false,
+          "output": "Command failed: docker run --rm hello-world\ndocker: permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock: Head \"http://%2Fvar%2Frun%2Fdocker.sock/_ping\": dial unix /var/run/docker.sock: connect: permission denied\n\nRun 'docker run --help' for more information\n"
+        }
+      },
+      "passed": false,
+      "critical": true
+    }
+  },
+  "passed": 4,
+  "failed": 2,
+  "warnings": 1,
+  "ready": false,
+  "summary": {
+    "totalValidations": 6,
+    "criticalValidations": 4,
+    "criticalPassed": 2,
+    "readyForDeployment": false,
+    "nextSteps": [
+      "❌ Environment is not ready for deployment",
+      "Please resolve the failed validations above",
+      "Re-run this script after making corrections",
+      "- Install Docker and ensure the service is running",
+      "- Fix Docker permissions or service issues"
+    ]
+  }
+}

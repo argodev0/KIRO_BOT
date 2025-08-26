@@ -13,6 +13,7 @@ import SettingsPage from './pages/SettingsPage';
 import BotConfigPage from './pages/BotConfigPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import PaperTradingIndicator from './components/common/PaperTradingIndicator';
 import { useWebSocket } from './hooks/useWebSocket';
 
 const App: React.FC = () => {
@@ -28,6 +29,11 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        {/* Paper Trading Banner - Always visible when authenticated */}
+        {isAuthenticated && (
+          <PaperTradingIndicator variant="banner" showDetails={true} />
+        )}
+        
         <Routes>
           {/* Public routes */}
           <Route 

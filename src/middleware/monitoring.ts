@@ -1,11 +1,28 @@
 import { Request, Response, NextFunction } from 'express';
 import { MonitoringService } from '../services/MonitoringService';
 import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
-import { logger } from '../utils/logger';
+import { logger, logPerformanceMetric } from '../utils/logger';
+// Simple UUID v4 generator
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
-interface MonitoredRequest extends Request {
-  startTime?: number;
-  requestId?: string;
+// Extend Request interface to include monitoring data
+declare global {
+  namespace Express {
+    interface Request {
+      requestId?: string;
+      startTime?: number;
+      monitoring?: {
+        startTime: number;
+        requestId: string;
+      };
+    }
+  }
 }
 
 export class MonitoringMiddleware {
@@ -17,111 +34,231 @@ export class MonitoringMiddleware {
     this.performance = PerformanceMonitoringService.getInstance();
   }
 
-  // Request monitoring middleware
-  public requestMonitoring() {
-    return (req: MonitoredRequest, res: Response, next: NextFunction) => {
-      req.startTime = Date.now();
-      req.requestId = this.generateRequestId();
+  /**
+   * Request tracking middleware
+   * Adds request ID and start time to requests
+   */
+  public requestTracking = (req: Request, res: Response, next: NextFunction): void => {
+    const requestId = generateUUID();
+    const startTime = Date.now();
 
-      // Increment active connections
-      this.monitoring.incrementActiveConnections();
+    req.requestId = requestId;
+    req.startTime = startTime;
+    req.monitoring = {
+      startTime,
+      requestId
+    };
 
-      // Record throughput
-      this.performance.recordThroughput('http_requests');
+    // Add request ID to response headers
+    res.setHeader('X-Request-ID', requestId);
 
-      // Log request
-      logger.info(`Request started: ${req.method} ${req.path}`, {
-        requestId: req.requestId,
-        method: req.method,
-        path: req.path,
-        userAgent: req.get('User-Agent'),
-        ip: req.ip
-      });
+    // Increment active connections
+    this.monitoring.incrementActiveConnections();
 
-      // Monitor response
-      const originalSend = res.send;
-      res.send = function(data) {
-        const duration = Date.now() - (req.startTime || 0);
-        
-        // Record metrics
-        this.monitoring.recordHttpRequest(
-          req.method,
-          req.route?.path || req.path,
-          res.statusCode,
-          duration / 1000
-        );
+    // Log request start
+    logger.info('Request started', {
+      requestId,
+      method: req.method,
+      url: req.url,
+      userAgent: req.get('User-Agent'),
+      ip: req.ip,
+      timestamp: new Date().toISOString()
+    });
 
+    next();
+  };
+
+  /**
+   * Response monitoring middleware
+   * Records metrics when response is finished
+   */
+  public responseMonitoring = (req: Request, res: Response, next: NextFunction): void => {
+    const originalSend = res.send;
+    const originalJson = res.json;
+    const originalEnd = res.end;
+
+    // Override response methods to capture metrics
+    res.send = function(body) {
+      recordResponseMetrics();
+      return originalSend.call(this, body);
+    };
+
+    res.json = function(body) {
+      recordResponseMetrics();
+      return originalJson.call(this, body);
+    };
+
+    res.end = function(chunk, encoding) {
+      recordResponseMetrics();
+      return originalEnd.call(this, chunk, encoding);
+    };
+
+    const recordResponseMetrics = () => {
+      if (req.monitoring) {
+        const duration = Date.now() - req.monitoring.startTime;
+        const route = req.route?.path || req.path;
+        const method = req.method;
+        const statusCode = res.statusCode;
+
+        // Record HTTP metrics
+        this.monitoring.recordHttpRequest(method, route, statusCode, duration / 1000);
+
+        // Record performance metrics
         this.performance.recordLatency('http_request', duration);
+        this.performance.recordThroughput('http_requests');
+
+        // Record errors if status code indicates error
+        if (statusCode >= 400) {
+          this.performance.recordError('http', `${statusCode}`);
+          
+          if (statusCode >= 500) {
+            this.monitoring.recordError('http', 'server_error', 'high');
+          } else if (statusCode >= 400) {
+            this.monitoring.recordError('http', 'client_error', 'medium');
+          }
+        }
 
         // Decrement active connections
         this.monitoring.decrementActiveConnections();
 
         // Log response
-        logger.info(`Request completed: ${req.method} ${req.path}`, {
-          requestId: req.requestId,
-          statusCode: res.statusCode,
+        logger.info('Request completed', {
+          requestId: req.monitoring.requestId,
+          method,
+          url: req.url,
+          statusCode,
           duration,
-          responseSize: data ? data.length : 0
+          contentLength: res.get('Content-Length'),
+          timestamp: new Date().toISOString()
         });
 
-        return originalSend.call(this, data);
-      }.bind(this);
-
-      next();
-    };
-  }
-
-  // Error monitoring middleware
-  public errorMonitoring() {
-    return (error: Error, req: MonitoredRequest, res: Response, next: NextFunction) => {
-      const duration = Date.now() - (req.startTime || 0);
-
-      // Record error metrics
-      this.monitoring.recordError('api', error.name, 'high');
-      this.performance.recordError('api', error.name);
-
-      // Log error
-      logger.error(`Request error: ${req.method} ${req.path}`, {
-        requestId: req.requestId,
-        error: error.message,
-        stack: error.stack,
-        duration
-      });
-
-      next(error);
-    };
-  }
-
-  // Trading operation monitoring
-  public tradingMonitoring() {
-    return (req: MonitoredRequest, res: Response, next: NextFunction) => {
-      if (req.path.includes('/trading/') || req.path.includes('/signals/')) {
-        const originalSend = res.send;
-        res.send = function(data) {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            // Record successful trading operation
-            this.performance.recordThroughput('trading_operations');
-          } else {
-            // Record trading error
-            this.performance.recordError('trading', 'operation_failed');
-          }
-
-          return originalSend.call(this, data);
-        }.bind(this);
+        // Log performance metric
+        logPerformanceMetric('http_request_duration', duration, {
+          method,
+          route,
+          statusCode,
+          requestId: req.monitoring.requestId
+        });
       }
-
-      next();
     };
-  }
 
-  private generateRequestId(): string {
-    return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }
+    next();
+  };
+
+  /**
+   * Error monitoring middleware
+   * Records error metrics and logs
+   */
+  public errorMonitoring = (error: Error, req: Request, res: Response, next: NextFunction): void => {
+    const requestId = req.requestId || 'unknown';
+    
+    // Record error metrics
+    this.monitoring.recordError('application', error.name || 'UnknownError', 'high');
+    this.performance.recordError('application', error.name || 'UnknownError');
+
+    // Log error with context
+    logger.error('Request error', {
+      requestId,
+      error: error.message,
+      stack: error.stack,
+      method: req.method,
+      url: req.url,
+      userAgent: req.get('User-Agent'),
+      ip: req.ip,
+      timestamp: new Date().toISOString()
+    });
+
+    next(error);
+  };
+
+  /**
+   * Security event monitoring middleware
+   * Records security-related events
+   */
+  public securityMonitoring = (req: Request, res: Response, next: NextFunction): void => {
+    // Monitor for suspicious patterns
+    const suspiciousPatterns = [
+      /\.\.\//,  // Path traversal
+      /<script/i, // XSS attempts
+      /union.*select/i, // SQL injection
+      /javascript:/i, // JavaScript injection
+      /vbscript:/i, // VBScript injection
+    ];
+
+    const url = req.url;
+    const body = JSON.stringify(req.body || {});
+    const query = JSON.stringify(req.query || {});
+
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(url) || pattern.test(body) || pattern.test(query)) {
+        this.monitoring.recordSecurityEvent('suspicious_request', 'medium', req.ip || 'unknown');
+        
+        logger.warn('Suspicious request detected', {
+          requestId: req.requestId,
+          pattern: pattern.source,
+          method: req.method,
+          url: req.url,
+          ip: req.ip,
+          userAgent: req.get('User-Agent'),
+          timestamp: new Date().toISOString()
+        });
+        break;
+      }
+    }
+
+    // Monitor for rate limiting violations
+    const userAgent = req.get('User-Agent') || '';
+    if (userAgent.includes('bot') || userAgent.includes('crawler')) {
+      this.monitoring.recordSecurityEvent('bot_request', 'low', req.ip || 'unknown');
+    }
+
+    next();
+  };
+
+  /**
+   * Paper trading monitoring middleware
+   * Records paper trading specific metrics
+   */
+  public paperTradingMonitoring = (req: Request, res: Response, next: NextFunction): void => {
+    // Monitor trading-related endpoints
+    if (req.path.includes('/trading') || req.path.includes('/orders')) {
+      const originalJson = res.json;
+      
+      res.json = function(body) {
+        // Record paper trading metrics if this is a trading operation
+        if (body && body.type === 'paper_trade') {
+          const monitoring = MonitoringService.getInstance();
+          monitoring.recordPaperTrade(
+            body.symbol || 'unknown',
+            body.side || 'unknown',
+            body.exchange || 'unknown'
+          );
+        }
+        
+        return originalJson.call(this, body);
+      };
+    }
+
+    next();
+  };
 }
 
-// Export middleware functions
+// Create singleton instance
 const monitoringMiddleware = new MonitoringMiddleware();
 
-export const requestMonitoring = monitoringMiddleware.requestMonitoring.bind(monitoringMiddleware);
-export const errorMonitoring = monitoringMiddleware.errorMonitoring.bind(monitoringMiddleware);
-export const tradingMonitoring = monitoringMiddleware.tradingMonitoring.bind(monitoringMiddleware);
+// Export middleware functions
+export const requestTracking = monitoringMiddleware.requestTracking;
+export const responseMonitoring = monitoringMiddleware.responseMonitoring;
+export const errorMonitoring = monitoringMiddleware.errorMonitoring;
+export const securityMonitoring = monitoringMiddleware.securityMonitoring;
+export const paperTradingMonitoring = monitoringMiddleware.paperTradingMonitoring;
+
+// Combined monitoring middleware
+export const fullMonitoring = [
+  requestTracking,
+  responseMonitoring,
+  securityMonitoring,
+  paperTradingMonitoring
+];
+
+export default monitoringMiddleware;

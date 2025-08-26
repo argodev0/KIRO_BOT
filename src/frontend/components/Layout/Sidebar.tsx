@@ -12,15 +12,15 @@ import {
   useTheme,
 } from '@mui/material';
 import {
-  Dashboard as DashboardIcon,
-  TrendingUp as TradingIcon,
-  Analytics as AnalyticsIcon,
-  Settings as SettingsIcon,
-  ShowChart as ChartIcon,
+  Dashboard,
+  TrendingUp,
+  Analytics,
+  Settings,
+  SmartToy,
+  Security,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store/store';
+import PaperTradingIndicator from '../common/PaperTradingIndicator';
 
 interface SidebarProps {
   open: boolean;
@@ -29,19 +29,18 @@ interface SidebarProps {
   isMobile: boolean;
 }
 
-const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Trading', icon: <TradingIcon />, path: '/trading' },
-  { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
-];
-
 const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => {
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isConnected } = useSelector((state: RootState) => state.marketData);
-  const { botStatus } = useSelector((state: RootState) => state.trading);
+
+  const menuItems = [
+    { text: 'Dashboard', icon: <Dashboard />, path: '/dashboard' },
+    { text: 'Trading', icon: <TrendingUp />, path: '/trading' },
+    { text: 'Analytics', icon: <Analytics />, path: '/analytics' },
+    { text: 'Bot Config', icon: <SmartToy />, path: '/bot-config' },
+    { text: 'Settings', icon: <Settings />, path: '/settings' },
+  ];
 
   const handleNavigation = (path: string) => {
     navigate(path);
@@ -51,56 +50,25 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => 
   };
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      {/* Logo/Title */}
+    <Box sx={{ width, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      {/* Logo/Brand */}
       <Box sx={{ p: 2, textAlign: 'center' }}>
-        <Typography variant="h6" component="div" sx={{ fontWeight: 'bold' }}>
-          AI Crypto Bot
+        <Typography variant="h6" fontWeight="bold" color="primary">
+          KIRO BOT
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          Trading Platform
+          AI Trading Platform
         </Typography>
       </Box>
 
-      <Divider />
-
-      {/* Status indicators */}
-      <Box sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              backgroundColor: isConnected ? 'success.main' : 'error.main',
-              mr: 1,
-            }}
-          />
-          <Typography variant="caption">
-            {isConnected ? 'Connected' : 'Disconnected'}
-          </Typography>
-        </Box>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box
-            sx={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              backgroundColor: 
-                botStatus === 'running' ? 'success.main' :
-                botStatus === 'paused' ? 'warning.main' : 'error.main',
-              mr: 1,
-            }}
-          />
-          <Typography variant="caption">
-            Bot: {botStatus}
-          </Typography>
-        </Box>
+      {/* Paper Trading Indicator */}
+      <Box sx={{ px: 2, mb: 2 }}>
+        <PaperTradingIndicator variant="banner" showDetails={false} />
       </Box>
 
       <Divider />
 
-      {/* Navigation menu */}
+      {/* Navigation Menu */}
       <List sx={{ flexGrow: 1, pt: 1 }}>
         {menuItems.map((item) => (
           <ListItem key={item.text} disablePadding>
@@ -122,7 +90,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => 
                 sx={{
                   color: location.pathname === item.path 
                     ? theme.palette.primary.main 
-                    : 'inherit',
+                    : 'inherit'
                 }}
               >
                 {item.icon}
@@ -131,11 +99,11 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => 
                 primary={item.text}
                 sx={{
                   '& .MuiListItemText-primary': {
+                    fontWeight: location.pathname === item.path ? 'bold' : 'normal',
                     color: location.pathname === item.path 
                       ? theme.palette.primary.main 
-                      : 'inherit',
-                    fontWeight: location.pathname === item.path ? 600 : 400,
-                  },
+                      : 'inherit'
+                  }
                 }}
               />
             </ListItemButton>
@@ -143,10 +111,18 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => 
         ))}
       </List>
 
+      <Divider />
+
       {/* Footer */}
       <Box sx={{ p: 2, textAlign: 'center' }}>
+        <Box display="flex" alignItems="center" justifyContent="center" gap={1} mb={1}>
+          <Security color="warning" fontSize="small" />
+          <Typography variant="caption" color="warning.main" fontWeight="bold">
+            PAPER TRADING ONLY
+          </Typography>
+        </Box>
         <Typography variant="caption" color="text.secondary">
-          v1.0.0
+          No real money at risk
         </Typography>
       </Box>
     </Box>
@@ -158,6 +134,9 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => 
       anchor="left"
       open={open}
       onClose={onClose}
+      ModalProps={{
+        keepMounted: true, // Better open performance on mobile
+      }}
       sx={{
         width: width,
         flexShrink: 0,
@@ -167,9 +146,6 @@ const Sidebar: React.FC<SidebarProps> = ({ open, onClose, width, isMobile }) => 
           backgroundColor: theme.palette.background.paper,
           borderRight: `1px solid ${theme.palette.divider}`,
         },
-      }}
-      ModalProps={{
-        keepMounted: true, // Better open performance on mobile
       }}
     >
       {drawerContent}

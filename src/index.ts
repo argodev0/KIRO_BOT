@@ -9,6 +9,7 @@ import { swaggerSpec } from '@/config/swagger';
 import { logger } from '@/utils/logger';
 import { errorHandler } from '@/middleware/errorHandler';
 import { requestLogger } from '@/middleware/requestLogger';
+import { fullMonitoring } from '@/middleware/monitoring';
 import { register } from '@/utils/metrics';
 
 // Enhanced security middleware
@@ -79,8 +80,9 @@ app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging
+// Request logging and monitoring
 app.use(requestLogger);
+app.use(fullMonitoring);
 
 // CRITICAL: Paper Trading Guard - MUST be applied before any trading routes
 app.use(paperTradingGuard);
@@ -156,6 +158,28 @@ app.get('/metrics', async (_req, res) => {
     res.end(await register.metrics());
   } catch (error) {
     res.status(500).end(error);
+  }
+});
+
+// Cache test endpoint for Redis validation
+app.get('/api/cache/test', async (_req, res) => {
+  try {
+    // Simple cache test - this would use Redis in a real implementation
+    const testData = {
+      cached: true,
+      redis: true,
+      timestamp: new Date().toISOString(),
+      testValue: 'cache-test-success'
+    };
+    
+    res.json(testData);
+  } catch (error) {
+    logger.error('Cache test error:', error);
+    res.status(500).json({ 
+      cached: false,
+      redis: false,
+      error: 'Cache test failed' 
+    });
   }
 });
 

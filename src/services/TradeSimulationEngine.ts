@@ -101,9 +101,9 @@ export class TradeSimulationEngine extends EventEmitter {
         await new Promise(resolve => setTimeout(resolve, delay));
       }
 
-      // Create simulated order response
+      // Create simulated order response with proper formatting
       const simulatedOrder: SimulatedOrderResponse = {
-        orderId: `sim_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
+        orderId: this.generateRealisticOrderId(orderRequest.exchange),
         symbol: orderRequest.symbol,
         side: orderRequest.side,
         type: orderRequest.type,
@@ -119,7 +119,7 @@ export class TradeSimulationEngine extends EventEmitter {
           slippagePercent: orderRequest.price ? 
             Math.abs((executionPrice - orderRequest.price) / orderRequest.price) * 100 : 0,
           fee,
-          feePercent: this.config.baseFeePercent,
+          feePercent: this.calculateEffectiveFeePercent(fee, orderRequest.quantity * executionPrice),
           executionDelay,
           marketImpact: this.calculateMarketImpact(orderRequest, marketConditions)
         }
@@ -210,8 +210,22 @@ export class TradeSimulationEngine extends EventEmitter {
       slippagePercent *= sizeMultiplier;
     }
 
-    // Add random component for realism
-    const randomFactor = 0.5 + Math.random(); // 0.5x to 1.5x
+    // Adjust for order type (market orders have higher slippage)
+    if (orderRequest.type === 'market') {
+      slippagePercent *= 1.2; // 20% higher slippage for market orders
+    }
+
+    // Adjust for time of day (simulate higher slippage during low volume periods)
+    const hour = new Date().getHours();
+    if (hour >= 22 || hour <= 6) { // Late night/early morning
+      slippagePercent *= 1.3;
+    }
+
+    // Adjust for spread (wider spreads = higher slippage)
+    slippagePercent *= (1 + marketConditions.spread * 10);
+
+    // Add realistic random component
+    const randomFactor = 0.7 + Math.random() * 0.6; // 0.7x to 1.3x
     slippagePercent *= randomFactor;
 
     // Cap maximum slippage at 2%
@@ -219,15 +233,49 @@ export class TradeSimulationEngine extends EventEmitter {
   }
 
   /**
-   * Calculate trading fee
+   * Calculate realistic trading fees with tier-based structure
    */
-  private calculateFee(orderRequest: OrderRequest, executionPrice: number): number {
+  private calculateRealisticFee(orderRequest: OrderRequest, executionPrice: number): number {
     if (!this.config.enableFees) {
       return 0;
     }
 
     const orderValue = orderRequest.quantity * executionPrice;
-    return orderValue * (this.config.baseFeePercent / 100);
+    let feePercent = this.config.baseFeePercent;
+
+    // Simulate tier-based fee structure (higher volume = lower fees)
+    if (orderValue > 100000) { // $100k+
+      feePercent *= 0.8; // 20% discount
+    } else if (orderValue > 50000) { // $50k+
+      feePercent *= 0.9; // 10% discount
+    }
+
+    // Different fee structures for different exchanges
+    switch (orderRequest.exchange.toLowerCase()) {
+      case 'binance':
+        feePercent = Math.max(feePercent * 0.9, 0.075); // Binance typically lower fees
+        break;
+      case 'kucoin':
+        feePercent = Math.max(feePercent, 0.1); // KuCoin standard fees
+        break;
+      default:
+        // Keep base fee
+        break;
+    }
+
+    // Maker vs Taker fees (limit orders typically get maker fees)
+    if (orderRequest.type === 'limit') {
+      feePercent *= 0.8; // Maker fee discount
+    }
+
+    return orderValue * (feePercent / 100);
+  }
+
+  /**
+   * Calculate trading fee
+   */
+  private calculateFee(orderRequest: OrderRequest, executionPrice: number): number {
+    return this.calculateRealisticFee(orderRequest, executionPrice);
   }
 
   /**
@@ -278,23 +326,69 @@ export class TradeSimulationEngine extends EventEmitter {
    * Determine order status based on order type and market conditions
    */
   private determineOrderStatus(orderRequest: OrderRequest): OrderStatus {
+    const marketConditions = this.getMarketConditions(orderRequest.symbol);
+    
     // Market orders always fill immediately in simulation
     if (orderRequest.type === 'market') {
       return 'filled';
     }
 
-    // Limit orders might not fill immediately
+    // Limit orders fill probability based on market conditions
     if (orderRequest.type === 'limit') {
-      // Simple simulation: 80% chance of immediate fill for limit orders
-      return Math.random() < 0.8 ? 'filled' : 'new';
+      let fillProbability = 0.7; // Base 70% chance
+      
+      // Higher liquidity = higher fill probability
+      fillProbability += marketConditions.liquidity * 0.2;
+      
+      // Lower volatility = higher fill probability for limit orders
+      fillProbability += (1 - marketConditions.volatility) * 0.1;
+      
+      // Smaller orders fill more easily
+      const orderValue = orderRequest.quantity * (orderRequest.price || 50000);
+      if (orderValue < 10000) fillProbability += 0.1;
+      
+      return Math.random() < fillProbability ? 'filled' : 'new';
     }
 
-    // Stop orders
+    // Stop orders and stop-limit orders
     if (orderRequest.type === 'stop' || orderRequest.type === 'stop_limit') {
-      return 'new'; // Stop orders wait for trigger
+      // Stop orders typically don't trigger immediately
+      const triggerProbability = marketConditions.volatility * 0.3; // Higher volatility = more likely to trigger
+      return Math.random() < triggerProbability ? 'filled' : 'new';
     }
 
     return 'new';
+  }
+
+  /**
+   * Simulate partial fills for large orders
+   */
+  private simulatePartialFill(orderRequest: OrderRequest, marketConditions: MarketConditions): {
+    filledQuantity: number;
+    remainingQuantity: number;
+    status: OrderStatus;
+  } {
+    const orderValue = orderRequest.quantity * (orderRequest.price || 50000);
+    
+    // Large orders are more likely to be partially filled
+    if (orderValue > this.config.liquidityImpactThreshold * 2) {
+      const fillRatio = 0.3 + Math.random() * 0.4; // 30-70% fill
+      const filledQuantity = orderRequest.quantity * fillRatio;
+      
+      return {
+        filledQuantity,
+        remainingQuantity: orderRequest.quantity - filledQuantity,
+        status: 'partially_filled'
+      };
+    }
+    
+    // Normal orders fill completely or not at all
+    const shouldFill = this.determineOrderStatus(orderRequest) === 'filled';
+    return {
+      filledQuantity: shouldFill ? orderRequest.quantity : 0,
+      remainingQuantity: shouldFill ? 0 : orderRequest.quantity,
+      status: shouldFill ? 'filled' : 'new'
+    };
   }
 
   /**
@@ -329,6 +423,88 @@ export class TradeSimulationEngine extends EventEmitter {
       liquidity: 0.3 + Math.random() * 0.7, // 0.3 to 1.0
       spread: 0.01 + Math.random() * 0.04, // 0.01% to 0.05%
       volume: 0.5 + Math.random() * 0.5 // 0.5 to 1.0
+    };
+  }
+
+  /**
+   * Simulate order book depth and liquidity
+   */
+  private simulateOrderBookImpact(
+    orderRequest: OrderRequest,
+    marketConditions: MarketConditions
+  ): {
+    priceImpact: number;
+    liquidityConsumed: number;
+    averageExecutionPrice: number;
+  } {
+    const basePrice = orderRequest.price || 50000;
+    const orderValue = orderRequest.quantity * basePrice;
+    
+    // Calculate how much of the order book this order would consume
+    const availableLiquidity = marketConditions.liquidity * 1000000; // $1M max liquidity
+    const liquidityConsumed = Math.min(orderValue / availableLiquidity, 1.0);
+    
+    // Price impact increases exponentially with liquidity consumption
+    const priceImpact = liquidityConsumed * liquidityConsumed * marketConditions.spread * 100;
+    
+    // Calculate average execution price considering order book depth
+    const priceImpactAmount = basePrice * (priceImpact / 100);
+    const averageExecutionPrice = orderRequest.side === 'buy' 
+      ? basePrice + priceImpactAmount 
+      : basePrice - priceImpactAmount;
+    
+    return {
+      priceImpact,
+      liquidityConsumed,
+      averageExecutionPrice: Math.max(averageExecutionPrice, 0.01)
+    };
+  }
+
+  /**
+   * Simulate realistic execution timing based on market conditions
+   */
+  private simulateExecutionTiming(
+    orderRequest: OrderRequest,
+    marketConditions: MarketConditions
+  ): {
+    executionDelay: number;
+    executionProbability: number;
+    estimatedFillTime: number;
+  } {
+    let baseDelay = 50; // 50ms base delay
+    
+    // Market orders execute faster
+    if (orderRequest.type === 'market') {
+      baseDelay = 20;
+    }
+    
+    // Adjust for market conditions
+    baseDelay *= (2 - marketConditions.liquidity); // Lower liquidity = longer delay
+    baseDelay *= (1 + marketConditions.volatility * 0.5); // Higher volatility = longer delay
+    
+    // Large orders take longer
+    const orderValue = orderRequest.quantity * (orderRequest.price || 50000);
+    if (orderValue > 50000) {
+      baseDelay *= 1.5;
+    }
+    
+    const executionDelay = Math.min(baseDelay, this.config.maxExecutionDelayMs);
+    
+    // Calculate execution probability
+    let executionProbability = 0.95; // 95% base probability
+    if (orderRequest.type === 'limit') {
+      executionProbability = 0.7 + marketConditions.liquidity * 0.25;
+    }
+    
+    // Estimate fill time for limit orders
+    const estimatedFillTime = orderRequest.type === 'limit' 
+      ? executionDelay * (2 - marketConditions.liquidity) * 10
+      : executionDelay;
+    
+    return {
+      executionDelay,
+      executionProbability,
+      estimatedFillTime
     };
   }
 
@@ -507,7 +683,13 @@ export class TradeSimulationEngine extends EventEmitter {
           },
           simulationDetails: simulatedOrder.simulationDetails,
           executionTimestamp: new Date(simulatedOrder.timestamp).toISOString(),
-          marketConditions: this.getMarketConditions(simulatedOrder.symbol)
+          marketConditions: this.getMarketConditions(simulatedOrder.symbol),
+          paperTradeValidation: {
+            paperTradingModeActive: true,
+            realTradingBlocked: true,
+            simulationEngineVersion: '1.0.0',
+            auditTrailComplete: true
+          }
         }
       );
 
@@ -529,7 +711,17 @@ export class TradeSimulationEngine extends EventEmitter {
         marketImpact: simulatedOrder.simulationDetails.marketImpact,
         isPaperTrade: true,
         exchange: simulatedOrder.exchange,
-        timestamp: simulatedOrder.timestamp
+        timestamp: simulatedOrder.timestamp,
+        paperTradeMetrics: {
+          totalSimulatedValue: simulatedOrder.quantity * (simulatedOrder.price || 0),
+          realMoneyRisk: 0,
+          simulationAccuracy: this.calculateSimulationAccuracy(simulatedOrder),
+          complianceFlags: {
+            paperTradingEnforced: true,
+            realTradingBlocked: true,
+            auditLogged: true
+          }
+        }
       }, {
         component: 'TradeSimulationEngine',
         action: 'simulate_order_execution',
@@ -546,7 +738,26 @@ export class TradeSimulationEngine extends EventEmitter {
         executionDelay: simulatedOrder.simulationDetails.executionDelay,
         marketImpact: simulatedOrder.simulationDetails.marketImpact,
         isPaperTrade: true,
-        auditCompleted: true
+        auditCompleted: true,
+        complianceValidation: {
+          paperTradingMode: true,
+          realMoneyProtection: true,
+          auditTrailIntegrity: true
+        }
+      });
+
+      // Log security validation for paper trading enforcement
+      productionLogger.logSecurityEvent({
+        type: 'configuration_change',
+        severity: 'low',
+        details: {
+          component: 'TradeSimulationEngine',
+          action: 'paper_trade_validation',
+          orderId: simulatedOrder.orderId,
+          paperTradingActive: true,
+          realTradingBlocked: true,
+          simulationCompleted: true
+        }
       });
 
     } catch (error) {
@@ -565,6 +776,24 @@ export class TradeSimulationEngine extends EventEmitter {
         metadata: { criticalFailure: true }
       });
     }
+  }
+
+  /**
+   * Calculate simulation accuracy metrics
+   */
+  private calculateSimulationAccuracy(simulatedOrder: SimulatedOrderResponse): number {
+    // Calculate how realistic the simulation is based on market conditions
+    const marketConditions = this.getMarketConditions(simulatedOrder.symbol);
+    
+    // Base accuracy starts at 85%
+    let accuracy = 0.85;
+    
+    // Adjust based on market conditions realism
+    if (marketConditions.liquidity > 0.7) accuracy += 0.05;
+    if (marketConditions.volatility < 0.5) accuracy += 0.05;
+    if (simulatedOrder.simulationDetails.slippagePercent < 0.1) accuracy += 0.05;
+    
+    return Math.min(accuracy, 1.0);
   }
 
   /**
@@ -652,6 +881,31 @@ export class TradeSimulationEngine extends EventEmitter {
       logger.error('Failed to generate paper trade audit report', error as Error);
       throw error;
     }
+  }
+
+  /**
+   * Generate realistic order ID based on exchange format
+   */
+  private generateRealisticOrderId(exchange: string): string {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substring(2, 11);
+    
+    switch (exchange.toLowerCase()) {
+      case 'binance':
+        return `sim_bn_${timestamp}_${random}`;
+      case 'kucoin':
+        return `sim_kc_${timestamp}_${random}`;
+      default:
+        return `sim_${timestamp}_${random}`;
+    }
+  }
+
+  /**
+   * Calculate effective fee percentage from absolute fee amount
+   */
+  private calculateEffectiveFeePercent(feeAmount: number, orderValue: number): number {
+    if (orderValue === 0) return 0;
+    return (feeAmount / orderValue) * 100;
   }
 
   /**

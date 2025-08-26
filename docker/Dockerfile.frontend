@@ -2,7 +2,7 @@
 # Optimized for production deployment with Nginx
 
 # Build stage
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -16,7 +16,6 @@ RUN npm ci
 
 # Copy source code
 COPY src/frontend/ ./src/frontend/
-COPY public/ ./public/
 
 # Build the frontend
 RUN npm run build:frontend

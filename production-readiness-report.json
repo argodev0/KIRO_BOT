@@ -1,0 +1,379 @@
+{
+  "passed": 58,
+  "failed": 3,
+  "warnings": 1,
+  "details": [
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "info",
+      "message": "Validating environment configuration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "info",
+      "message": "Found required file: .env.production",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "info",
+      "message": "Found required file: .env.production.template",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "error",
+      "message": "Missing required file: docker-compose.prod.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "info",
+      "message": "Environment variable validated: NODE_ENV=production",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "info",
+      "message": "Environment variable validated: PAPER_TRADING_MODE=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.329Z",
+      "level": "info",
+      "message": "Environment variable validated: ALLOW_REAL_TRADES=false",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.330Z",
+      "level": "info",
+      "message": "Environment variable validated: SSL_ENABLED=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.330Z",
+      "level": "error",
+      "message": "Missing or incorrect environment variable: MONITORING_ENABLED=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.331Z",
+      "level": "info",
+      "message": "Validating security configuration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.331Z",
+      "level": "info",
+      "message": "SSL configuration file found: docker/nginx/production.conf",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.331Z",
+      "level": "info",
+      "message": "SSL configuration file found: docker/nginx/security.conf",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.331Z",
+      "level": "info",
+      "message": "SSL configuration file found: docker/scripts/ssl-setup.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Security header configured: X-Frame-Options",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Security header configured: X-Content-Type-Options",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Security header configured: X-XSS-Protection",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Security header configured: Strict-Transport-Security",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Security script found: docker/scripts/generate-dhparam.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Security script found: scripts/validate-api-permissions.js",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.332Z",
+      "level": "info",
+      "message": "Validating monitoring setup...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Monitoring file found: monitoring/prometheus.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Monitoring file found: monitoring/grafana/provisioning/dashboards/dashboard.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Monitoring file found: monitoring/docker-compose.monitoring.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Found 5 Grafana dashboards",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Dashboard configured: trading-bot-overview.json",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Dashboard configured: paper-trading-safety.json",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Dashboard configured: system-metrics.json",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Dashboard configured: real-time-data-feeds.json",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Found 3 Prometheus alert rule files",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.333Z",
+      "level": "info",
+      "message": "Validating database configuration...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Database file found: database/init/01-init.sql",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Database file found: database/production/production-setup.sql",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Database file found: prisma/schema.prisma",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Backup script found: scripts/backup-automation.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Backup script found: scripts/database-migration.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Backup script found: docker/scripts/backup.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Validating application code structure...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Critical file found: src/index.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Critical file found: src/config/production.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Critical file found: src/middleware/paperTradingGuard.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Critical file found: src/services/TradeSimulationEngine.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.334Z",
+      "level": "info",
+      "message": "Critical file found: src/services/LiveMarketDataService.ts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Required dependency found: express",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Required dependency found: ws",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "error",
+      "message": "Missing required dependency: prisma",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Required dependency found: redis",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Required dependency found: winston",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Required dependency found: helmet",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Required dependency found: cors",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "TypeScript configuration found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.335Z",
+      "level": "info",
+      "message": "Validating test coverage...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.336Z",
+      "level": "info",
+      "message": "Found 8 test files in src/__tests__",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.336Z",
+      "level": "info",
+      "message": "Found 5 test files in src/__tests__/comprehensive",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.336Z",
+      "level": "info",
+      "message": "Found 11 test files in src/__tests__/integration",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.336Z",
+      "level": "info",
+      "message": "Found 6 test files in src/__tests__/security",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:54.336Z",
+      "level": "info",
+      "message": "Jest configuration found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:55.071Z",
+      "level": "warn",
+      "message": "Test suite execution failed",
+      "details": "Command failed: npm run test -- --passWithNoTests --silent\nsh: 1: jest: not found\n"
+    },
+    {
+      "timestamp": "2025-08-23T18:59:55.072Z",
+      "level": "info",
+      "message": "Validating deployment scripts...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:55.073Z",
+      "level": "info",
+      "message": "Deployment script ready: scripts/deploy-production.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:55.073Z",
+      "level": "info",
+      "message": "Deployment script ready: scripts/deploy-automation.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:55.073Z",
+      "level": "info",
+      "message": "Deployment script ready: scripts/health-check.sh",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-23T18:59:55.073Z",
+      "level": "info",
+      "message": "Deployment script ready: scripts/production-orchestrator.sh",
+      "details": null
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "passed": 0,
+  "failed": 1,
+  "skipped": 0,
+  "tests": [
+    {
+      "name": "API Health Check",
+      "status": "FAILED",
+      "duration": 60,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "critical": true
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "timestamp": "2025-08-23T21:04:01.294Z",
+  "overallStatus": true,
+  "checksPassedRatio": "4/4",
+  "criticalViolations": 0,
+  "totalViolations": 0,
+  "warnings": [],
+  "validationResults": {
+    "environmentVariables": true,
+    "exchangeConfiguration": true,
+    "securityEnforcement": true,
+    "auditLogging": true
+  },
+  "violations": [],
+  "paperTradingSafety": {
+    "environment": "production",
+    "paperTradingMode": true,
+    "realTradingBlocked": true,
+    "forcePaperTrading": true,
+    "validationMode": "strict",
+    "binanceReadOnly": true,
+    "kucoinReadOnly": true
+  }
+}

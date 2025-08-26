@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Frontend Service
+  # Frontend Service with Enhanced SSL and Security
   frontend:
     build:
       context: ..
@@ -13,20 +13,79 @@ services:
       - "443:443"
     depends_on:
       - backend
+      - certbot
     networks:
       - trading-bot-network
     volumes:
+      # SSL certificates and DH parameters
       - ./ssl:/etc/nginx/ssl:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+      
+      # Enhanced Nginx configurations
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/complete-production.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/security.conf:/etc/nginx/conf.d/security.conf:ro
+      - ./nginx/websocket.conf:/etc/nginx/conf.d/websocket.conf:ro
+      
+      # Authentication and security files
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+      
+      # Log directories
+      - nginx_logs:/var/log/nginx
+      
+      # Cache directory
+      - nginx_cache:/var/cache/nginx
     environment:
       - NODE_ENV=production
+      - SSL_ENABLED=true
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - PAPER_TRADING_MODE=true
+      - FORCE_PAPER_TRADING=true
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
 
-  # Backend Service
+  # SSL Certificate Management with Certbot
+  certbot:
+    image: certbot/certbot:latest
+    container_name: trading-bot-certbot
+    restart: unless-stopped
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+      - ./scripts/ssl-renew.sh:/scripts/ssl-renew.sh:ro
+    environment:
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    command: >
+      sh -c "
+        if [ ! -f /etc/letsencrypt/live/${DOMAIN_NAME}/fullchain.pem ]; then
+          certbot certonly --webroot --webroot-path=/var/www/certbot 
+          --email ${LETSENCRYPT_EMAIL} --agree-tos --no-eff-email 
+          --force-renewal -d ${DOMAIN_NAME};
+        fi;
+        trap exit TERM;
+        while :; do
+          certbot renew --webroot --webroot-path=/var/www/certbot;
+          sleep 12h & wait $!;
+        done;
+      "
+    networks:
+      - trading-bot-network
+
+  # Backend Service with Paper Trading Enforcement
   backend:
     build:
       context: ..
@@ -45,20 +104,68 @@ services:
     networks:
       - trading-bot-network
     environment:
+      # Core Application
       - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      
+      # CRITICAL: Paper Trading Safety Configuration
+      - PAPER_TRADING_MODE=true
+      - ALLOW_REAL_TRADES=false
+      - FORCE_PAPER_TRADING=true
+      - PAPER_TRADING_VALIDATION=strict
+      
+      # Database
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/trading_bot
-      - REDIS_URL=redis://redis:6379
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672
+      - DATABASE_SSL=true
+      - DATABASE_POOL_SIZE=20
+      
+      # Cache and Message Queue
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - RABBITMQ_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      
+      # Security
       - JWT_SECRET=${JWT_SECRET}
       - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - BCRYPT_ROUNDS=12
+      - HELMET_ENABLED=true
+      - CSRF_PROTECTION=true
+      
+      # Exchange APIs - MAINNET READ-ONLY for Paper Trading
       - BINANCE_API_KEY=${BINANCE_API_KEY}
       - BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - BINANCE_SANDBOX=false
+      - BINANCE_MAINNET=true
+      - BINANCE_READ_ONLY=true
+      
       - KUCOIN_API_KEY=${KUCOIN_API_KEY}
       - KUCOIN_API_SECRET=${KUCOIN_API_SECRET}
       - KUCOIN_PASSPHRASE=${KUCOIN_PASSPHRASE}
+      - KUCOIN_SANDBOX=false
+      - KUCOIN_MAINNET=true
+      - KUCOIN_READ_ONLY=true
+      
+      # Monitoring
+      - PROMETHEUS_PORT=9090
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+      - METRICS_ENABLED=true
+      - HEALTH_CHECK_ENABLED=true
+      
+      # Paper Trading Configuration
+      - VIRTUAL_BALANCE_USD=100000
+      - VIRTUAL_BALANCE_BTC=10
+      - VIRTUAL_BALANCE_ETH=100
+      - TRADING_FEE_SIMULATION=0.001
+      - SLIPPAGE_SIMULATION=0.0005
+      - PAPER_TRADE_AUDIT_LOG=true
+      
     volumes:
       - backend_logs:/app/logs
       - backend_tmp:/app/tmp
+      - production_config:/app/config:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
@@ -279,6 +386,16 @@ volumes:
   backend_tmp:
     driver: local
   backup_logs:
+    driver: local
+  certbot_certs:
+    driver: local
+  certbot_www:
+    driver: local
+  production_config:
+    driver: local
+  nginx_logs:
+    driver: local
+  nginx_cache:
     driver: local
 
 networks:
