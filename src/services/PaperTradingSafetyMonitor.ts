@@ -186,6 +186,88 @@ export class PaperTradingSafetyMonitor extends EventEmitter {
     return this.safetyStatus.paperTradingModeEnabled;
   }
 
+  public isPaperTrade(tradeData: any): boolean {
+    // Always return true in paper trading mode
+    if (!this.safetyStatus.paperTradingModeEnabled) {
+      this.recordCriticalGuardFailure('paper_trading_mode_disabled');
+      return false;
+    }
+    return true;
+  }
+
+  public blockRealTrades(userId: string, endpoint: string): boolean {
+    // Block all real trades when in paper trading mode
+    if (this.safetyStatus.paperTradingModeEnabled) {
+      this.recordRealTradingAttemptBlocked(userId, endpoint, 'paper_trading_mode_active');
+      return true;
+    }
+    return false;
+  }
+
+  public validateTradingMode(): { valid: boolean; mode: string; errors: string[] } {
+    const errors: string[] = [];
+    
+    // Check environment variables
+    const PAPER_TRADING_MODE = process.env.PAPER_TRADING_MODE === 'true';
+    const ALLOW_REAL_TRADES = process.env.ALLOW_REAL_TRADES === 'true';
+    const TRADING_SIMULATION_ONLY = process.env.TRADING_SIMULATION_ONLY === 'true';
+    
+    if (!PAPER_TRADING_MODE) {
+      errors.push('PAPER_TRADING_MODE not set to true');
+    }
+    
+    if (ALLOW_REAL_TRADES) {
+      errors.push('ALLOW_REAL_TRADES is set to true - should be false');
+    }
+    
+    if (!TRADING_SIMULATION_ONLY) {
+      errors.push('TRADING_SIMULATION_ONLY not set to true');
+    }
+    
+    const valid = errors.length === 0;
+    
+    if (!valid) {
+      errors.forEach(error => {
+        this.recordEnvironmentValidation('trading_mode', 'failure');
+        this.safetyStatus.safetyViolations.push(error);
+      });
+    } else {
+      this.recordEnvironmentValidation('trading_mode', 'success');
+    }
+    
+    return {
+      valid,
+      mode: PAPER_TRADING_MODE ? 'paper' : 'live',
+      errors
+    };
+  }
+
+  public simulateOrder(orderData: any): any {
+    // Simulate order execution without real money
+    const simulatedOrder = {
+      ...orderData,
+      isPaperTrade: true,
+      simulatedExecution: true,
+      executionTime: Date.now(),
+      status: 'filled',
+      virtualBalance: this.safetyStatus.virtualPortfolioBalances.get(orderData.userId) || 0
+    };
+    
+    this.recordPaperTradeExecution(
+      orderData.symbol,
+      orderData.side,
+      orderData.exchange,
+      orderData.userId,
+      orderData.amount
+    );
+    
+    return simulatedOrder;
+  }
+
+  public virtualBalance(userId: string): number {
+    return this.safetyStatus.virtualPortfolioBalances.get(userId) || 0;
+  }
+
   // Real Trading Attempt Blocking
   public recordRealTradingAttemptBlocked(userId: string, endpoint: string, reason: string): void {
     this.realTradingAttemptsBlocked.inc({ user_id: userId, endpoint, reason });

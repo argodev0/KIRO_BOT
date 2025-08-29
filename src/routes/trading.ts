@@ -325,4 +325,94 @@ router.get('/orders/:orderId/status',
   TradingController.getOrderStatus
 );
 
+/**
+ * @swagger
+ * /api/v1/trading/portfolio:
+ *   get:
+ *     summary: Get virtual portfolio summary
+ *     tags: [Trading]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Virtual portfolio retrieved successfully
+ *       401:
+ *         description: Authentication required
+ */
+router.get('/portfolio',
+  requirePermission(Permission.TRADE_VIEW),
+  TradingController.getVirtualPortfolio
+);
+
+/**
+ * @swagger
+ * /api/v1/trading/portfolio/history:
+ *   get:
+ *     summary: Get paper trading history
+ *     tags: [Trading]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of items per page
+ *       - in: query
+ *         name: symbol
+ *         schema:
+ *           type: string
+ *         description: Filter by trading symbol
+ *     responses:
+ *       200:
+ *         description: Paper trading history retrieved successfully
+ */
+router.get('/portfolio/history',
+  requirePermission(Permission.TRADE_VIEW),
+  validate({ query: commonSchemas.pagination }),
+  TradingController.getPaperTradingHistory
+);
+
+/**
+ * @swagger
+ * /api/v1/trading/portfolio/performance:
+ *   get:
+ *     summary: Get portfolio performance metrics
+ *     tags: [Trading]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Performance metrics retrieved successfully
+ */
+router.get('/portfolio/performance',
+  requirePermission(Permission.TRADE_VIEW),
+  TradingController.getPortfolioPerformance
+);
+
+/**
+ * @swagger
+ * /api/v1/trading/portfolio/positions:
+ *   get:
+ *     summary: Get current virtual positions
+ *     tags: [Trading]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Virtual positions retrieved successfully
+ */
+router.get('/portfolio/positions',
+  requirePermission(Permission.TRADE_VIEW),
+  TradingController.getVirtualPositions
+);
+
 export default router;

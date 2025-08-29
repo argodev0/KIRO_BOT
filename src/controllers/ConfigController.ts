@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '@/middleware/auth';
 import { logger } from '@/utils/logger';
-import { PrismaClient } from '@prisma/client';
 import { 
   BotConfig, 
   BotControlAction, 
@@ -11,70 +10,113 @@ import {
   ConfigTemplate,
   BotStatus
 } from '@/types/config';
+import { createError, asyncHandler } from '@/middleware/errorHandler';
+import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+// Mock database interface for now - replace with actual Prisma client when schema is ready
+interface MockDatabase {
+  botConfig: {
+    findMany: (args: any) => Promise<any[]>;
+    findFirst: (args: any) => Promise<any | null>;
+    create: (args: any) => Promise<any>;
+    update: (args: any) => Promise<any>;
+    delete: (args: any) => Promise<any>;
+    count: (args: any) => Promise<number>;
+  };
+  configBackup: {
+    create: (args: any) => Promise<any>;
+    findFirst: (args: any) => Promise<any | null>;
+  };
+}
+
+// Mock implementation - replace with actual Prisma client
+const mockDb: MockDatabase = {
+  botConfig: {
+    findMany: async () => [],
+    findFirst: async () => null,
+    create: async (args) => ({ id: 'mock-id', ...args.data }),
+    update: async (args) => ({ id: args.where.id, ...args.data }),
+    delete: async () => ({ id: 'deleted' }),
+    count: async () => 0
+  },
+  configBackup: {
+    create: async (args) => ({ id: 'backup-id', ...args.data }),
+    findFirst: async () => null
+  }
+};
 
 export class ConfigController {
   /**
    * Get bot configurations
    */
-  static async getConfigs(req: AuthenticatedRequest, res: Response): Promise<void> {
-    try {
-      if (!req.user) {
-        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
-        return;
+  static getConfigs = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    if (!req.user) {
+      throw createError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+
+    const { page = 1, limit = 20, status } = req.query;
+    const pageNum = Math.max(1, Number(page));
+    const limitNum = Math.min(100, Math.max(1, Number(limit))); // Limit between 1-100
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: any = { userId: req.user.userId };
+    if (status) {
+      if (!['active', 'inactive'].includes(status as string)) {
+        throw createError('Invalid status filter. Must be "active" or "inactive"', 400, 'INVALID_PARAMETER');
       }
+      where.isActive = status === 'active';
+    }
 
-      const { page = 1, limit = 20, status } = req.query;
-      const skip = (Number(page) - 1) * Number(limit);
-
-      const where: any = { userId: req.user.userId };
-      if (status) where.isActive = status === 'active';
-
+    try {
       const [configs, total] = await Promise.all([
-        prisma.botConfig.findMany({
+        mockDb.botConfig.findMany({
           where,
           skip,
-          take: Number(limit),
+          take: limitNum,
           orderBy: { updatedAt: 'desc' }
         }),
-        prisma.botConfig.count({ where })
+        mockDb.botConfig.count({ where })
       ]);
+
+      const totalPages = Math.ceil(total / limitNum);
 
       res.json({
         success: true,
         data: configs,
         pagination: {
-          page: Number(page),
-          limit: Number(limit),
+          page: pageNum,
+          limit: limitNum,
           total,
-          totalPages: Math.ceil(total / Number(limit)),
-          hasNext: skip + Number(limit) < total,
-          hasPrev: Number(page) > 1
-        }
+          totalPages,
+          hasNext: pageNum < totalPages,
+          hasPrev: pageNum > 1
+        },
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
-      logger.error('Get configs error:', error);
-      res.status(500).json({
-        error: 'CONFIGS_FETCH_FAILED',
-        message: 'Failed to fetch bot configurations'
-      });
+      logger.error('Database error in getConfigs:', error);
+      throw createError('Failed to fetch bot configurations', 500, 'DATABASE_ERROR');
     }
-  }
+  });
 
   /**
    * Get specific bot configuration
    */
-  static async getConfig(req: AuthenticatedRequest, res: Response): Promise<void> {
+  static getConfig = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    if (!req.user) {
+      throw createError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+
+    const { id } = req.params;
+
+    if (!id || typeof id !== 'string') {
+      throw createError('Configuration ID is required', 400, 'INVALID_PARAMETER');
+    }
+
     try {
-      if (!req.user) {
-        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
-        return;
-      }
-
-      const { id } = req.params;
-
-      const config = await prisma.botConfig.findFirst({
+      const config = await mockDb.botConfig.findFirst({
         where: {
           id,
           userId: req.user.userId
@@ -82,51 +124,51 @@ export class ConfigController {
       });
 
       if (!config) {
-        res.status(404).json({
-          error: 'CONFIG_NOT_FOUND',
-          message: 'Bot configuration not found'
-        });
-        return;
+        throw createError('Bot configuration not found', 404, 'CONFIG_NOT_FOUND');
       }
 
       res.json({
         success: true,
-        data: config
+        data: config,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
-      logger.error('Get config error:', error);
-      res.status(500).json({
-        error: 'CONFIG_FETCH_FAILED',
-        message: 'Failed to fetch bot configuration'
-      });
+      if (error instanceof Error && error.message.includes('not found')) {
+        throw error; // Re-throw 404 errors
+      }
+      logger.error('Database error in getConfig:', error);
+      throw createError('Failed to fetch bot configuration', 500, 'DATABASE_ERROR');
     }
-  }
+  });
 
   /**
    * Create new bot configuration
    */
-  static async createConfig(req: AuthenticatedRequest, res: Response): Promise<void> {
+  static createConfig = asyncHandler(async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    if (!req.user) {
+      throw createError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+
+    const configData: BotConfig = req.body;
+
+    if (!configData || typeof configData !== 'object') {
+      throw createError('Configuration data is required', 400, 'INVALID_REQUEST_BODY');
+    }
+
+    // Validate configuration
+    const validation = await ConfigController.validateConfig(configData);
+    if (!validation.isValid) {
+      throw createError(
+        'Configuration validation failed', 
+        400, 
+        'CONFIG_VALIDATION_FAILED', 
+        validation.errors.map(e => e.message)
+      );
+    }
+
     try {
-      if (!req.user) {
-        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
-        return;
-      }
-
-      const configData: BotConfig = req.body;
-
-      // Validate configuration
-      const validation = await ConfigController.validateConfig(configData);
-      if (!validation.isValid) {
-        res.status(400).json({
-          error: 'CONFIG_VALIDATION_FAILED',
-          message: 'Configuration validation failed',
-          errors: validation.errors
-        });
-        return;
-      }
-
       // Create configuration in database
-      const config = await prisma.botConfig.create({
+      const config = await mockDb.botConfig.create({
         data: {
           userId: req.user.userId,
           name: configData.name,
@@ -137,23 +179,24 @@ export class ConfigController {
           signalFilters: configData.signalFilters,
           gridConfig: configData.gridConfig,
           exchanges: configData.exchanges,
-          notifications: configData.notifications
+          notifications: configData.notifications,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
         }
       });
 
       res.status(201).json({
         success: true,
         message: 'Bot configuration created successfully',
-        data: config
+        data: config,
+        validation: validation.warnings.length > 0 ? { warnings: validation.warnings } : undefined,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
-      logger.error('Create config error:', error);
-      res.status(500).json({
-        error: 'CONFIG_CREATION_FAILED',
-        message: 'Failed to create bot configuration'
-      });
+      logger.error('Database error in createConfig:', error);
+      throw createError('Failed to create bot configuration', 500, 'DATABASE_ERROR');
     }
-  }
+  });
 
   /**
    * Update bot configuration

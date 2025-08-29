@@ -85,12 +85,48 @@ export const useWebSocket = (isAuthenticated: boolean, options: UseWebSocketOpti
       dispatch(updateTicker(data));
     });
 
+    socket.on('marketData', (data: any) => {
+      // Handle real-time market data updates
+      if (data.type === 'ticker') {
+        dispatch(updateTicker(data.data));
+      } else if (data.type === 'candles') {
+        dispatch(updateCandles({
+          symbol: data.symbol,
+          timeframe: data.timeframe,
+          candles: data.data
+        }));
+      }
+    });
+
     socket.on('orderbook', (data: any) => {
       dispatch(updateOrderBook(data));
     });
 
     socket.on('candles', (data: any) => {
       dispatch(updateCandles(data));
+    });
+
+    // Handle real-time price updates
+    socket.on('priceUpdate', (data: any) => {
+      dispatch(updateTicker({
+        symbol: data.symbol,
+        price: data.price,
+        change24h: data.change24h || 0,
+        changePercent24h: data.changePercent24h || 0,
+        volume24h: data.volume24h || 0,
+        high24h: data.high24h || data.price,
+        low24h: data.low24h || data.price,
+        timestamp: data.timestamp || Date.now()
+      }));
+    });
+
+    // Handle candle updates for real-time charts
+    socket.on('candleUpdate', (data: any) => {
+      dispatch(updateCandles({
+        symbol: data.symbol,
+        timeframe: data.timeframe,
+        candles: data.candles
+      }));
     });
 
     // Trading events

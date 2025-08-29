@@ -1,0 +1,95 @@
+{
+  "timestamp": "2025-08-29T02:24:17.016Z",
+  "overallStatus": "passed",
+  "configurations": {
+    "dockerCompose": {
+      "status": "passed",
+      "size": 8294
+    },
+    "prometheus": {
+      "status": "passed",
+      "size": 3967
+    },
+    "alertmanager": {
+      "status": "passed",
+      "size": 8672
+    },
+    "grafana": {
+      "status": "passed",
+      "size": 2199
+    }
+  },
+  "alertRules": {
+    "totalRules": 88,
+    "files": 3,
+    "details": [
+      {
+        "file": "monitoring/prometheus/rules/trading-bot-alerts.yml",
+        "rules": 29,
+        "status": "passed"
+      },
+      {
+        "file": "monitoring/prometheus/rules/paper-trading-safety-alerts.yml",
+        "rules": 24,
+        "status": "passed"
+      },
+      {
+        "file": "monitoring/prometheus/rules/real-time-data-alerts.yml",
+        "rules": 35,
+        "status": "passed"
+      }
+    ]
+  },
+  "dashboards": {
+    "totalDashboards": 6,
+    "totalPanels": 49,
+    "details": [
+      {
+        "title": "Paper Trading Safety Dashboard",
+        "panels": 9,
+        "status": "passed"
+      },
+      {
+        "title": "Performance Analytics Dashboard",
+        "panels": 10,
+        "status": "passed"
+      },
+      {
+        "title": "Real-time Data Feeds Dashboard",
+        "panels": 10,
+        "status": "passed"
+      },
+      {
+        "title": "System Metrics Dashboard",
+        "panels": 6,
+        "status": "passed"
+      },
+      {
+        "title": "Trading Bot - Overview",
+        "panels": 4,
+        "status": "passed"
+      },
+      {
+        "title": "Trading Metrics Dashboard",
+        "panels": 10,
+        "status": "passed"
+      }
+    ]
+  },
+  "healthEndpoints": {
+    "totalEndpoints": 0,
+    "workingEndpoints": 0,
+    "metricsEndpoint": {
+      "status": "not_tested"
+    },
+    "averageResponseTime": 0
+  },
+  "recommendations": [
+    {
+      "priority": "low",
+      "category": "next_steps",
+      "message": "Monitoring system is properly configured.",
+      "action": "Deploy monitoring stack with Docker Compose and configure external alerting."
+    }
+  ]
+}

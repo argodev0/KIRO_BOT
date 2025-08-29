@@ -11,6 +11,7 @@ import TradingPage from './pages/TradingPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import BotConfigPage from './pages/BotConfigPage';
+import ConfigurationPage from './pages/ConfigurationPage';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import PaperTradingIndicator from './components/common/PaperTradingIndicator';
@@ -56,6 +57,8 @@ const App: React.FC = () => {
                     <Route path="/trading" element={<TradingPage />} />
                     <Route path="/analytics" element={<AnalyticsPage />} />
                     <Route path="/bot-config" element={<BotConfigPage />} />
+                    <Route path="/config" element={<ConfigurationPage />} />
+                    <Route path="/config/:configId" element={<ConfigurationPage />} />
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/" element={<Navigate to="/dashboard" replace />} />
                   </Routes>

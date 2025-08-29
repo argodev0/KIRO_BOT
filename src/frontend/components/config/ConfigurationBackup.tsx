@@ -204,7 +204,7 @@ export const ConfigurationBackup: React.FC<ConfigurationBackupProps> = ({
             Current Configuration
           </Typography>
           <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="body2" color="text.secondary">
                 Name: {config.name}
               </Typography>
@@ -215,7 +215,7 @@ export const ConfigurationBackup: React.FC<ConfigurationBackupProps> = ({
                 Risk Level: {config.riskManagement.maxRiskPerTrade}% per trade
               </Typography>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="body2" color="text.secondary">
                 Status: <Chip 
                   label={config.isActive ? 'Active' : 'Inactive'} 

@@ -6,11 +6,11 @@
 
 import { EventEmitter } from 'events';
 import { createClient, RedisClientType } from 'redis';
-import { ExchangeManager, ExchangeName } from './exchanges/ExchangeManager';
-import { DataNormalizer } from './exchanges/DataNormalizer';
 import { CandleData, TickerData, OrderBookData, TradeData, Timeframe } from '../types/market';
 import { config } from '../config/config';
 import { logger } from '../utils/logger';
+
+export type ExchangeName = 'binance' | 'kucoin';
 
 export interface LiveMarketDataConfig {
   exchanges: {
@@ -70,7 +70,6 @@ export interface AggregatedMarketData {
 }
 
 export class LiveMarketDataService extends EventEmitter {
-  private exchangeManager: ExchangeManager;
   private redis: RedisClientType;
   private config: LiveMarketDataConfig;
   private isRunning: boolean = false;
@@ -103,23 +102,6 @@ export class LiveMarketDataService extends EventEmitter {
     }
     
     this.redis = createClient(redisConfig);
-    
-    // Initialize exchange manager with mainnet configuration
-    this.exchangeManager = new ExchangeManager({
-      exchanges: {
-        binance: {
-          ...config.exchanges.binance,
-          testnet: false, // Force mainnet
-        },
-        kucoin: {
-          ...config.exchanges.kucoin,
-          sandbox: false, // Force mainnet
-        },
-      },
-      defaultExchange: 'binance',
-    });
-    
-    this.setupEventHandlers();
   }
 
   /**

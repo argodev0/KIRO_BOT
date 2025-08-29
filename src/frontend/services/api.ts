@@ -124,4 +124,41 @@ export const analyticsAPI = {
     api.get(`/analytics/patterns/${symbol}`, { params: { timeframe } }),
 };
 
+// Configuration API
+export const configAPI = {
+  getConfigs: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get('/config', { params }),
+  
+  getConfig: (id: string) =>
+    api.get(`/config/${id}`),
+  
+  createConfig: (config: any) =>
+    api.post('/config', config),
+  
+  updateConfig: (id: string, config: any) =>
+    api.put(`/config/${id}`, config),
+  
+  deleteConfig: (id: string) =>
+    api.delete(`/config/${id}`),
+  
+  validateConfig: (config: any) =>
+    api.post('/config/validate', config),
+  
+  controlBot: (id: string, action: { action: string; confirmation?: boolean; reason?: string }) =>
+    api.post(`/config/${id}/control`, action),
+  
+  getBotStatus: (id: string) =>
+    api.get(`/config/${id}/status`),
+  
+  backupConfig: (id: string, backup: { name: string; description?: string }) =>
+    api.post(`/config/${id}/backup`, backup),
+  
+  restoreConfig: (id: string, backupId: string) =>
+    api.post(`/config/${id}/restore`, { backupId }),
+  
+  getTemplates: (category?: string) =>
+    api.get('/config/templates', { params: { category } }),
+};
+
+export { api };
 export default api;

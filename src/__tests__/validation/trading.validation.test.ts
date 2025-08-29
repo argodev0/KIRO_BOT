@@ -6,7 +6,7 @@
 import {
   validateTradingSignal,
   validateOrderRequest,
-  validateOrderResponse,
+
   validatePosition,
   validatePortfolio,
   validateRiskParameters,
@@ -284,7 +284,7 @@ describe('Trading Validation', () => {
     });
 
     it('should allow optional fields to be missing', () => {
-      const { fee, signalId, orderId, realizedPnl, ...minimalExecution } = validExecution;
+      const { fee, ...minimalExecution } = validExecution;
       const { error } = validateTradeExecution(minimalExecution);
       expect(error).toBeUndefined();
     });

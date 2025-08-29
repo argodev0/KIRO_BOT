@@ -1,0 +1,142 @@
+{
+  "timestamp": "2025-08-29T02:09:36.422Z",
+  "summary": {
+    "totalTests": 16,
+    "totalPassed": 16,
+    "totalFailed": 0,
+    "categories": {
+      "sqlInjection": {
+        "passed": 9,
+        "failed": 0,
+        "total": 9
+      },
+      "xss": {
+        "passed": 3,
+        "failed": 0,
+        "total": 3
+      },
+      "pathTraversal": {
+        "passed": 2,
+        "failed": 0,
+        "total": 2
+      },
+      "commandInjection": {
+        "passed": 2,
+        "failed": 0,
+        "total": 2
+      }
+    }
+  },
+  "details": {
+    "sqlInjection": {
+      "passed": 9,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "SQL Injection Pattern Detection",
+          "status": "PASSED",
+          "result": "SQL injection patterns properly defined"
+        },
+        {
+          "name": "SQL Injection Prevention Function",
+          "status": "PASSED",
+          "result": "SQL injection prevention function implemented"
+        },
+        {
+          "name": "SQL Injection Response Handling",
+          "status": "PASSED",
+          "result": "SQL injection response handling implemented"
+        },
+        {
+          "name": "Advanced Threat Detection Function",
+          "status": "PASSED",
+          "result": "Advanced threat detection implemented"
+        },
+        {
+          "name": "NoSQL Injection Detection",
+          "status": "PASSED",
+          "result": "NoSQL injection detection implemented"
+        },
+        {
+          "name": "Prototype Pollution Detection",
+          "status": "PASSED",
+          "result": "Prototype pollution detection implemented"
+        },
+        {
+          "name": "Comprehensive Validation Export",
+          "status": "PASSED",
+          "result": "Comprehensive validation middleware exported"
+        },
+        {
+          "name": "File Upload Validation",
+          "status": "PASSED",
+          "result": "File upload validation implemented"
+        },
+        {
+          "name": "API Key Format Validation",
+          "status": "PASSED",
+          "result": "API key format validation implemented"
+        }
+      ]
+    },
+    "xss": {
+      "passed": 3,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "XSS Pattern Detection",
+          "status": "PASSED",
+          "result": "XSS patterns properly defined"
+        },
+        {
+          "name": "XSS Prevention Function",
+          "status": "PASSED",
+          "result": "XSS prevention function implemented"
+        },
+        {
+          "name": "HTML Entity Encoding",
+          "status": "PASSED",
+          "result": "HTML entity encoding implemented"
+        }
+      ]
+    },
+    "pathTraversal": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Path Traversal Pattern Detection",
+          "status": "PASSED",
+          "result": "Path traversal patterns properly defined"
+        },
+        {
+          "name": "Path Traversal Prevention Function",
+          "status": "PASSED",
+          "result": "Path traversal prevention function implemented"
+        }
+      ]
+    },
+    "commandInjection": {
+      "passed": 2,
+      "failed": 0,
+      "tests": [
+        {
+          "name": "Command Injection Pattern Detection",
+          "status": "PASSED",
+          "result": "Command injection patterns properly defined"
+        },
+        {
+          "name": "Command Injection Prevention Function",
+          "status": "PASSED",
+          "result": "Command injection prevention function implemented"
+        }
+      ]
+    }
+  },
+  "compliance": {
+    "sqlInjectionPrevention": true,
+    "xssPrevention": true,
+    "pathTraversalPrevention": true,
+    "commandInjectionPrevention": true
+  }
+}

@@ -5,6 +5,7 @@
 
 import { DataProcessingPipeline, PipelineConfig } from '../../services/DataProcessingPipeline';
 import { CandleData } from '../../types/market';
+import { ExchangeManager } from '../../services/exchanges/ExchangeManager';
 
 // Mock external dependencies
 jest.mock('redis', () => ({

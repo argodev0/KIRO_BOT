@@ -1,6 +1,6 @@
 import { MonitoringService } from '../../services/MonitoringService';
 import { SystemPerformanceMonitor } from '../../services/SystemPerformanceMonitor';
-import { logger } from '../../utils/logger';
+
 
 // Mock logger to avoid console output during tests
 jest.mock('../../utils/logger', () => ({

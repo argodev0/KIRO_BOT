@@ -2,6 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '@/middleware/auth';
 import { logger } from '@/utils/logger';
 import { PrismaClient } from '@prisma/client';
+import { virtualPortfolioManager } from '@/services/VirtualPortfolioManager';
 
 const prisma = new PrismaClient();
 
@@ -393,6 +394,215 @@ export class TradingController {
       res.status(500).json({
         error: 'ORDER_STATUS_FAILED',
         message: 'Failed to get order status'
+      });
+    }
+  }
+
+  /**
+   * Get virtual portfolio summary
+   */
+  static async getVirtualPortfolio(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+        return;
+      }
+
+      const userId = req.user.userId;
+
+      // Initialize portfolio if it doesn't exist
+      let portfolio = virtualPortfolioManager.getPortfolioSummary(userId);
+      if (!portfolio) {
+        await virtualPortfolioManager.initializeUserPortfolio(userId);
+        portfolio = virtualPortfolioManager.getPortfolioSummary(userId);
+      }
+
+      if (!portfolio) {
+        res.status(500).json({
+          error: 'PORTFOLIO_INITIALIZATION_FAILED',
+          message: 'Failed to initialize virtual portfolio'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...portfolio,
+          isPaperTrading: true,
+          safetyStatus: 'PAPER_TRADING_ACTIVE'
+        }
+      });
+    } catch (error) {
+      logger.error('Get virtual portfolio error:', error);
+      res.status(500).json({
+        error: 'PORTFOLIO_FETCH_FAILED',
+        message: 'Failed to fetch virtual portfolio'
+      });
+    }
+  }
+
+  /**
+   * Get paper trading history
+   */
+  static async getPaperTradingHistory(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+        return;
+      }
+
+      const { page = 1, limit = 20, symbol } = req.query;
+      const userId = req.user.userId;
+
+      const portfolio = virtualPortfolioManager.getPortfolioSummary(userId);
+      if (!portfolio) {
+        res.status(404).json({
+          error: 'PORTFOLIO_NOT_FOUND',
+          message: 'Virtual portfolio not found'
+        });
+        return;
+      }
+
+      let trades = portfolio.tradeHistory;
+
+      // Filter by symbol if provided
+      if (symbol) {
+        trades = trades.filter(trade => trade.symbol === symbol);
+      }
+
+      // Pagination
+      const startIndex = (Number(page) - 1) * Number(limit);
+      const endIndex = startIndex + Number(limit);
+      const paginatedTrades = trades.slice(startIndex, endIndex);
+
+      res.json({
+        success: true,
+        data: paginatedTrades.map(trade => ({
+          ...trade,
+          isPaperTrade: true,
+          safetyStatus: 'SIMULATED'
+        })),
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total: trades.length,
+          totalPages: Math.ceil(trades.length / Number(limit)),
+          hasNext: endIndex < trades.length,
+          hasPrev: Number(page) > 1
+        }
+      });
+    } catch (error) {
+      logger.error('Get paper trading history error:', error);
+      res.status(500).json({
+        error: 'HISTORY_FETCH_FAILED',
+        message: 'Failed to fetch paper trading history'
+      });
+    }
+  }
+
+  /**
+   * Get portfolio performance metrics
+   */
+  static async getPortfolioPerformance(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+        return;
+      }
+
+      const userId = req.user.userId;
+      const portfolio = virtualPortfolioManager.getPortfolioSummary(userId);
+
+      if (!portfolio) {
+        res.status(404).json({
+          error: 'PORTFOLIO_NOT_FOUND',
+          message: 'Virtual portfolio not found'
+        });
+        return;
+      }
+
+      const config = virtualPortfolioManager.getConfig();
+      const performance = portfolio.performance;
+
+      // Calculate additional risk metrics
+      const riskMetrics = {
+        maxDrawdownPercent: (performance.maxDrawdown / config.initialBalance) * 100,
+        currentDrawdownPercent: (performance.currentDrawdown / config.initialBalance) * 100,
+        riskRewardRatio: performance.averageLoss > 0 ? performance.averageWin / performance.averageLoss : 0,
+        portfolioUtilization: ((config.initialBalance - portfolio.availableBalance) / config.initialBalance) * 100,
+        totalReturnPercent: performance.totalReturnPercent,
+        annualizedReturn: performance.totalReturnPercent * (365 / Math.max(1, (Date.now() - Date.now()) / (1000 * 60 * 60 * 24))), // Simplified calculation
+      };
+
+      res.json({
+        success: true,
+        data: {
+          performance,
+          riskMetrics,
+          config: {
+            initialBalance: config.initialBalance,
+            baseCurrency: config.baseCurrency,
+            tradingFee: config.tradingFee,
+            maxLeverage: config.maxLeverage
+          },
+          isPaperTrading: true,
+          safetyStatus: 'PAPER_TRADING_ACTIVE'
+        }
+      });
+    } catch (error) {
+      logger.error('Get portfolio performance error:', error);
+      res.status(500).json({
+        error: 'PERFORMANCE_FETCH_FAILED',
+        message: 'Failed to fetch portfolio performance'
+      });
+    }
+  }
+
+  /**
+   * Get current virtual positions
+   */
+  static async getVirtualPositions(req: AuthenticatedRequest, res: Response): Promise<void> {
+    try {
+      if (!req.user) {
+        res.status(401).json({ error: 'UNAUTHORIZED', message: 'Authentication required' });
+        return;
+      }
+
+      const userId = req.user.userId;
+      const portfolio = virtualPortfolioManager.getPortfolioSummary(userId);
+
+      if (!portfolio) {
+        res.status(404).json({
+          error: 'PORTFOLIO_NOT_FOUND',
+          message: 'Virtual portfolio not found'
+        });
+        return;
+      }
+
+      const positions = portfolio.positions.map(position => ({
+        ...position,
+        isPaperPosition: true,
+        safetyStatus: 'SIMULATED',
+        riskLevel: Math.abs(position.unrealizedPnl) > (portfolio.totalBalance * 0.05) ? 'HIGH' : 
+                   Math.abs(position.unrealizedPnl) > (portfolio.totalBalance * 0.02) ? 'MEDIUM' : 'LOW'
+      }));
+
+      res.json({
+        success: true,
+        data: positions,
+        summary: {
+          totalPositions: positions.length,
+          totalUnrealizedPnl: portfolio.totalUnrealizedPnl,
+          totalRealizedPnl: portfolio.totalRealizedPnl,
+          isPaperTrading: true
+        }
+      });
+    } catch (error) {
+      logger.error('Get virtual positions error:', error);
+      res.status(500).json({
+        error: 'POSITIONS_FETCH_FAILED',
+        message: 'Failed to fetch virtual positions'
       });
     }
   }

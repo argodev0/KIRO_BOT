@@ -6,7 +6,7 @@
     {
       "name": "API Health Check",
       "status": "FAILED",
-      "duration": 60,
+      "duration": 54,
       "error": "connect ECONNREFUSED 127.0.0.1:3000",
       "critical": true
     }

@@ -1,0 +1,307 @@
+{
+  "timestamp": "2025-08-27T11:15:37.702Z",
+  "config": {
+    "host": "localhost",
+    "port": 3000,
+    "protocol": "http",
+    "timeout": 10000
+  },
+  "summary": {
+    "total": 24,
+    "passed": 0,
+    "failed": 24,
+    "critical_failed": 16,
+    "success_rate": "0.0",
+    "total_time": 118
+  },
+  "results": [
+    {
+      "endpoint": "/api/v1/health",
+      "name": "Basic Health Check",
+      "critical": true,
+      "success": false,
+      "responseTime": 44,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/detailed",
+      "name": "Detailed Health Check",
+      "critical": true,
+      "success": false,
+      "responseTime": 7,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/ready",
+      "name": "Readiness Probe",
+      "critical": true,
+      "success": false,
+      "responseTime": 5,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/live",
+      "name": "Liveness Probe",
+      "critical": true,
+      "success": false,
+      "responseTime": 4,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/startup",
+      "name": "Startup Probe",
+      "critical": false,
+      "success": false,
+      "responseTime": 3,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/deep",
+      "name": "Deep Health Check",
+      "critical": false,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/system",
+      "name": "System Health",
+      "critical": true,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/all-services",
+      "name": "All Services Health",
+      "critical": true,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/infrastructure",
+      "name": "Infrastructure Health",
+      "critical": true,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/external-services",
+      "name": "External Services Health",
+      "critical": false,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/application",
+      "name": "Application Health",
+      "critical": true,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/database",
+      "name": "Database Health",
+      "critical": true,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/redis",
+      "name": "Redis Health",
+      "critical": false,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/exchanges",
+      "name": "Exchanges Health",
+      "critical": false,
+      "success": false,
+      "responseTime": 3,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/websocket",
+      "name": "WebSocket Health",
+      "critical": false,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/paper-trading-safety",
+      "name": "Paper Trading Safety",
+      "critical": true,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/status",
+      "name": "API Status",
+      "critical": true,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/status/endpoints",
+      "name": "Endpoints Status",
+      "critical": false,
+      "success": false,
+      "responseTime": 4,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/status/services",
+      "name": "Services Status",
+      "critical": true,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/status/paper-trading",
+      "name": "Paper Trading Status",
+      "critical": true,
+      "success": false,
+      "responseTime": 2,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/status/health-summary",
+      "name": "Health Summary",
+      "critical": true,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/status/connectivity",
+      "name": "Connectivity Status",
+      "critical": true,
+      "success": false,
+      "responseTime": 3,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/metrics",
+      "name": "Prometheus Metrics",
+      "critical": false,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    },
+    {
+      "endpoint": "/api/v1/health/services",
+      "name": "Service Status",
+      "critical": true,
+      "success": false,
+      "responseTime": 1,
+      "error": "connect ECONNREFUSED 127.0.0.1:3000",
+      "issues": [
+        "Request failed: connect ECONNREFUSED 127.0.0.1:3000"
+      ],
+      "passed": false
+    }
+  ]
+}

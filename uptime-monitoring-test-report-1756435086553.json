@@ -1,0 +1,89 @@
+{
+  "timestamp": "2025-08-29T02:38:03.634Z",
+  "tests": {
+    "healthEndpoints": {
+      "name": "Health Endpoints",
+      "status": "PASSED",
+      "details": "4/4 endpoints working",
+      "endpoints": {
+        "Basic Health": "PASSED",
+        "Detailed Health": "PASSED",
+        "Readiness Probe": "PASSED",
+        "Liveness Probe": "PASSED"
+      }
+    },
+    "metricsEndpoint": {
+      "name": "Metrics Endpoint",
+      "status": "PASSED",
+      "details": "Metrics endpoint provides uptime and system metrics"
+    },
+    "uptimeCalculation": {
+      "name": "Uptime Calculation",
+      "status": "PASSED",
+      "details": "Uptime correctly calculated: 1.13 seconds"
+    },
+    "availabilityTracking": {
+      "name": "Availability Tracking",
+      "status": "PASSED",
+      "details": "Availability: 100%, Avg response: 6.20ms",
+      "checks": [
+        {
+          "timestamp": "2025-08-29T02:38:04.708Z",
+          "status": "UP",
+          "responseTime": 4
+        },
+        {
+          "timestamp": "2025-08-29T02:38:04.922Z",
+          "status": "UP",
+          "responseTime": 9
+        },
+        {
+          "timestamp": "2025-08-29T02:38:05.133Z",
+          "status": "UP",
+          "responseTime": 11
+        },
+        {
+          "timestamp": "2025-08-29T02:38:05.338Z",
+          "status": "UP",
+          "responseTime": 4
+        },
+        {
+          "timestamp": "2025-08-29T02:38:05.541Z",
+          "status": "UP",
+          "responseTime": 3
+        }
+      ]
+    },
+    "serviceDiscovery": {
+      "name": "Service Discovery",
+      "status": "PASSED",
+      "details": "2/2 services discovered",
+      "services": [
+        {
+          "name": "api",
+          "status": "DISCOVERED",
+          "endpoint": "localhost:3999/health",
+          "responseTime": 2
+        },
+        {
+          "name": "metrics",
+          "status": "DISCOVERED",
+          "endpoint": "localhost:3999/metrics",
+          "responseTime": 2
+        }
+      ]
+    },
+    "downtimeDetection": {
+      "name": "Downtime Detection",
+      "status": "PASSED",
+      "details": "Downtime and recovery correctly detected"
+    }
+  },
+  "summary": {
+    "totalTests": 6,
+    "passedTests": 6,
+    "failedTests": 0,
+    "warnings": [],
+    "errors": []
+  }
+}

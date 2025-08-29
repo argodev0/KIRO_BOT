@@ -59,6 +59,16 @@ Object.defineProperty(global, 'crypto', {
   },
 });
 
+// Mock TextEncoder and TextDecoder for Node.js environment
+if (typeof TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util');
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+} else {
+  global.TextEncoder = TextEncoder;
+  global.TextDecoder = TextDecoder;
+}
+
 // Mock localStorage
 const localStorageMock = {
   getItem: jest.fn(),

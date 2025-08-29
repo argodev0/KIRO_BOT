@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-08-29T02:35:58.005Z",
+  "tests": {
+    "backupScriptExists": {
+      "name": "Backup Script Exists",
+      "status": "PASSED",
+      "details": "Backup script found"
+    },
+    "backupScriptPermissions": {
+      "name": "Backup Script Permissions",
+      "status": "PASSED",
+      "details": "Script is executable"
+    },
+    "backupDirectoryCreation": {
+      "name": "Backup Directory Creation",
+      "status": "PASSED",
+      "details": "Backup directory exists and is writable"
+    },
+    "backupScriptConfiguration": {
+      "name": "Backup Script Configuration",
+      "status": "PASSED",
+      "details": "Configuration command executed successfully"
+    },
+    "applicationBackupCapability": {
+      "name": "Application Backup Capability",
+      "status": "PASSED",
+      "details": "Test backup created and verified (0.78 MB)"
+    },
+    "backupRetentionLogic": {
+      "name": "Backup Retention Logic",
+      "status": "PASSED",
+      "details": "Retention logic working: identified 2 files for cleanup"
+    },
+    "backupHealthCheck": {
+      "name": "Backup Health Check",
+      "status": "PASSED",
+      "details": "Health check files created and updated (last run: 2025-08-29T02:35:59.163Z)"
+    }
+  },
+  "summary": {
+    "totalTests": 7,
+    "passedTests": 7,
+    "failedTests": 0,
+    "warnings": [],
+    "errors": []
+  }
+}

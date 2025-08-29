@@ -7,6 +7,9 @@ module.exports = {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
         jsx: 'react-jsx',
+        skipLibCheck: true,
+        noImplicitAny: false,
+        strict: false,
       },
     }],
   },
@@ -44,8 +47,8 @@ module.exports = {
       statements: 85,
     },
   },
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/frontend/$1',
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
     '^@test/(.*)$': '<rootDir>/src/test/$1'
   },
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],

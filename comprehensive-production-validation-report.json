@@ -1,0 +1,29 @@
+{
+  "timestamp": "2025-08-26T15:50:14.861Z",
+  "overallStatus": true,
+  "safetyScore": 98,
+  "checksPassedRatio": "7/7",
+  "validationResults": {
+    "paperTradingSafety": true,
+    "monitoringConfiguration": true,
+    "sslConfiguration": true,
+    "databaseConfiguration": true,
+    "securityCompliance": true,
+    "exchangeConfiguration": true,
+    "environmentVariableValidation": true
+  },
+  "errors": [],
+  "warnings": [
+    "No exchange APIs configured - market data will be limited"
+  ],
+  "configurationSummary": {
+    "paperTradingMode": true,
+    "realTradingBlocked": true,
+    "forcePaperTrading": true,
+    "tradingSimulationOnly": true,
+    "monitoringEnabled": true,
+    "sslEnabled": true,
+    "databaseSsl": true,
+    "securityHardening": true
+  }
+}

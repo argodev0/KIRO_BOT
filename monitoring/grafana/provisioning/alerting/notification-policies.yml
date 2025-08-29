@@ -1,0 +1,63 @@
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: default-receiver
+    group_by:
+      - grafana_folder
+      - alertname
+    group_wait: 10s
+    group_interval: 5m
+    repeat_interval: 12h
+    routes:
+      - receiver: critical-alerts
+        object_matchers:
+          - - severity
+            - =
+            - critical
+        group_wait: 5s
+        group_interval: 1m
+        repeat_interval: 5m
+        continue: false
+        
+      - receiver: trading-team-alerts
+        object_matchers:
+          - - team
+            - =
+            - trading
+        group_wait: 10s
+        group_interval: 2m
+        repeat_interval: 30m
+        continue: false
+        
+      - receiver: security-alerts
+        object_matchers:
+          - - team
+            - =
+            - security
+        group_wait: 0s
+        group_interval: 30s
+        repeat_interval: 1m
+        continue: false
+        
+      - receiver: infrastructure-alerts
+        object_matchers:
+          - - team
+            - =
+            - infrastructure
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 1h
+        continue: false
+        
+      - receiver: performance-alerts
+        object_matchers:
+          - - team
+            - =
+            - performance
+        group_wait: 1m
+        group_interval: 10m
+        repeat_interval: 2h
+        continue: false
+
+resetPolicies: false

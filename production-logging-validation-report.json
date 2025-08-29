@@ -1,0 +1,78 @@
+{
+  "timestamp": "2025-08-27T12:11:19.788Z",
+  "testDuration": 11,
+  "results": {
+    "structuredLogging": {
+      "passed": true,
+      "details": [
+        "✅ Logger utility exists",
+        "✅ Winston logging library configured",
+        "✅ JSON structured format configured",
+        "✅ Timestamp format configured",
+        "✅ Error stack traces enabled",
+        "✅ Multiple log levels configured",
+        "✅ Environment-specific formatting configured"
+      ]
+    },
+    "logRotation": {
+      "passed": true,
+      "details": [
+        "✅ Daily rotate file transport configured",
+        "✅ Rotation size and file limits configured",
+        "✅ Audit file tracking configured",
+        "✅ Log retention service implemented",
+        "✅ Retention policies defined",
+        "✅ Automatic cleanup scheduling implemented",
+        "✅ Log compression support implemented",
+        "✅ Logs directory exists",
+        "✅ Log files present (12 files)"
+      ]
+    },
+    "centralizedLogging": {
+      "passed": true,
+      "details": [
+        "✅ Monitoring stack configuration exists",
+        "✅ Elasticsearch service configured",
+        "✅ Logstash service configured",
+        "✅ Kibana service configured",
+        "✅ Logstash pipeline configuration exists",
+        "✅ Logstash input sources configured",
+        "✅ Logstash filters configured",
+        "✅ Elasticsearch output configured",
+        "✅ Trading-specific log parsing configured",
+        "✅ Elasticsearch index template exists",
+        "✅ Index mappings configured",
+        "✅ Trading-specific field mappings configured",
+        "✅ Security field mappings configured",
+        "✅ Audit field mappings configured"
+      ]
+    },
+    "auditLogging": {
+      "passed": true,
+      "details": [
+        "✅ Audit log service implemented",
+        "✅ Trading audit event logging implemented",
+        "✅ Security audit event logging implemented",
+        "✅ Configuration audit event logging implemented",
+        "✅ Authentication audit logging implemented",
+        "✅ Paper trading safety audit logging implemented",
+        "✅ Audit logging middleware implemented",
+        "✅ HTTP request audit middleware implemented",
+        "✅ Trading-specific audit middleware implemented",
+        "✅ Configuration audit middleware implemented",
+        "✅ Audit logging middleware integrated in main app",
+        "✅ Logging management API implemented",
+        "✅ Logging configuration API endpoints implemented",
+        "✅ Log retention API endpoints implemented",
+        "✅ Logging health API endpoints implemented"
+      ]
+    },
+    "overall": {
+      "passed": true,
+      "score": 100
+    }
+  },
+  "environment": {
+    "baseUrl": "http://localhost:3000"
+  }
+}

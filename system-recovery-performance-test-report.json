@@ -1,0 +1,493 @@
+{
+  "timestamp": "2025-08-29T03:20:58.159Z",
+  "summary": {
+    "totalPassed": 69,
+    "totalFailed": 0,
+    "totalCritical": 0,
+    "overallSuccess": true
+  },
+  "tests": [
+    {
+      "timestamp": "2025-08-29T03:20:58.123Z",
+      "level": "info",
+      "message": "Testing AutoRecoveryService structure and methods...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.124Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: handleFailure",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.125Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: addRecoveryAction",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.125Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: executeRecoveryAction",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.126Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: recoverDatabaseConnection",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.126Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: recoverExchangeConnection",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.126Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: recoverWebSocketConnection",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.127Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: recoverMemoryUsage",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.128Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: getFailureHistory",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.128Z",
+      "level": "success",
+      "message": "AutoRecoveryService method found: getRecoveryActions",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.128Z",
+      "level": "success",
+      "message": "Recovery action type found: database_reconnect",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.129Z",
+      "level": "success",
+      "message": "Recovery action type found: exchange_reconnect",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.129Z",
+      "level": "success",
+      "message": "Recovery action type found: websocket_reconnect",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "success",
+      "message": "Recovery action type found: memory_cleanup",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "success",
+      "message": "Recovery action type found: service_restart",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "success",
+      "message": "Recovery action type found: trading_halt_recovery",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "success",
+      "message": "Recovery action type found: rate_limit_recovery",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "success",
+      "message": "AutoRecoveryService uses EventEmitter for recovery events",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "success",
+      "message": "AutoRecoveryService integrates with MonitoringService",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.130Z",
+      "level": "info",
+      "message": "AutoRecoveryService completeness: 100.0%",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.134Z",
+      "level": "info",
+      "message": "Testing PerformanceMonitoringService structure and methods...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.135Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: recordLatency",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.135Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: recordThroughput",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.135Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: recordError",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.136Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: getPerformanceMetrics",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.136Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: calculateLatencyMetrics",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.137Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: calculateThroughputMetrics",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.137Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: calculateErrorRateMetrics",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.137Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: getResourceMetrics",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.137Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: checkPerformanceThresholds",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.137Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService method found: updateThresholds",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.140Z",
+      "level": "success",
+      "message": "Performance interface/type found: PerformanceThresholds",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "Performance interface/type found: PerformanceMetrics",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "Performance interface/type found: latency",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "Performance interface/type found: throughput",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "Performance interface/type found: errorRate",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "Performance interface/type found: resources",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService has configurable thresholds",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "success",
+      "message": "PerformanceMonitoringService emits performance alerts",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.141Z",
+      "level": "info",
+      "message": "PerformanceMonitoringService completeness: 100.0%",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.142Z",
+      "level": "info",
+      "message": "Testing paper trading safety mechanisms...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.142Z",
+      "level": "success",
+      "message": "Paper trading safety feature found: isPaperTrade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.142Z",
+      "level": "success",
+      "message": "Paper trading safety feature found: blockRealTrades",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.142Z",
+      "level": "success",
+      "message": "Paper trading safety feature found: validateTradingMode",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.143Z",
+      "level": "success",
+      "message": "Paper trading safety feature found: PAPER_TRADING_MODE",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.144Z",
+      "level": "success",
+      "message": "Paper trading safety feature found: simulateOrder",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.145Z",
+      "level": "success",
+      "message": "Paper trading safety feature found: virtualBalance",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.145Z",
+      "level": "success",
+      "message": "Trade simulation feature found: simulateOrderExecution",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.145Z",
+      "level": "success",
+      "message": "Trade simulation feature found: isPaperTrade: true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.145Z",
+      "level": "success",
+      "message": "Trade simulation feature found: virtualPortfolio",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.146Z",
+      "level": "success",
+      "message": "Trade simulation feature found: simulatedTrade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.146Z",
+      "level": "success",
+      "message": "Environment safety setting found: PAPER_TRADING_MODE=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.147Z",
+      "level": "success",
+      "message": "Environment safety setting found: ALLOW_REAL_TRADES=false",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.150Z",
+      "level": "success",
+      "message": "Environment safety setting found: TRADING_SIMULATION_ONLY=true",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.150Z",
+      "level": "info",
+      "message": "Paper trading safety score: 100.0%",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.150Z",
+      "level": "info",
+      "message": "Testing SystemPerformanceMonitor service...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.151Z",
+      "level": "success",
+      "message": "System monitoring feature found: memoryUsage",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.151Z",
+      "level": "success",
+      "message": "System monitoring feature found: cpuUsage",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.152Z",
+      "level": "success",
+      "message": "System monitoring feature found: diskUsage",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.152Z",
+      "level": "success",
+      "message": "System monitoring feature found: networkLatency",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.152Z",
+      "level": "success",
+      "message": "System monitoring feature found: responseTime",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.152Z",
+      "level": "success",
+      "message": "System monitoring feature found: throughput",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.153Z",
+      "level": "success",
+      "message": "System monitoring feature found: errorRate",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.153Z",
+      "level": "success",
+      "message": "System monitoring feature found: activeConnections",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.153Z",
+      "level": "success",
+      "message": "SystemPerformanceMonitor has alerting capabilities",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.153Z",
+      "level": "info",
+      "message": "SystemPerformanceMonitor completeness: 100.0%",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.157Z",
+      "level": "info",
+      "message": "Testing operational readiness components...",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.157Z",
+      "level": "success",
+      "message": "Operational script found: production-validation-suite.js",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.157Z",
+      "level": "success",
+      "message": "Operational script found: paper-trading-safety-verification.js",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.157Z",
+      "level": "success",
+      "message": "Operational script found: performance-benchmarking.js",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.157Z",
+      "level": "success",
+      "message": "Operational script found: production-readiness-validation.js",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.157Z",
+      "level": "success",
+      "message": "Operational script found: production-smoke-tests.js",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "success",
+      "message": "Monitoring config found: prometheus.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "success",
+      "message": "Monitoring config found: production-monitoring.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "success",
+      "message": "Monitoring config found: grafana.ini",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "success",
+      "message": "Docker config found: docker-compose.prod.yml",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "success",
+      "message": "Docker config found: Dockerfile.backend",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "success",
+      "message": "Docker config found: Dockerfile.frontend",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T03:20:58.158Z",
+      "level": "info",
+      "message": "Operational readiness score: 100.0%",
+      "details": null
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "INFO",
+      "category": "Success",
+      "message": "All system recovery and performance components are properly implemented",
+      "action": "System is ready for recovery and performance validation"
+    }
+  ]
+}

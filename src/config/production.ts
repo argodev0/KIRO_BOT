@@ -18,8 +18,8 @@ const paperTradingSafetySchema = z.object({
   FORCE_PAPER_TRADING: z.string().refine(val => val === 'true', {
     message: 'CRITICAL: Force paper trading must be enabled'
   }),
-  PAPER_TRADING_VALIDATION: z.enum(['strict', 'moderate'], {
-    errorMap: () => ({ message: 'Paper trading validation must be strict or moderate' })
+  PAPER_TRADING_VALIDATION: z.enum(['strict', 'moderate']).refine(val => ['strict', 'moderate'].includes(val), {
+    message: 'Paper trading validation must be strict or moderate'
   })
 });
 
@@ -99,11 +99,11 @@ const monitoringConfigSchema = z.object({
   HEALTH_CHECK_ENABLED: z.string().refine(val => val === 'true', {
     message: 'Health checks must be enabled in production'
   }),
-  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug'], {
-    errorMap: () => ({ message: 'Log level must be error, warn, info, or debug' })
+  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).refine(val => ['error', 'warn', 'info', 'debug'].includes(val), {
+    message: 'Log level must be error, warn, info, or debug'
   }),
-  LOG_FORMAT: z.enum(['json', 'text'], {
-    errorMap: () => ({ message: 'Log format must be json or text' })
+  LOG_FORMAT: z.enum(['json', 'text']).refine(val => ['json', 'text'].includes(val), {
+    message: 'Log format must be json or text'
   })
 });
 
@@ -130,7 +130,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Validate paper trading safety first (most critical)
     const paperTradingResult = paperTradingSafetySchema.safeParse(process.env);
     if (!paperTradingResult.success) {
-      const errors = paperTradingResult.error.errors.map(e => e.message);
+      const errors = paperTradingResult.error.issues.map(e => e.message);
       logger.error('CRITICAL PAPER TRADING SAFETY VALIDATION FAILED:', errors);
       throw new Error(`Paper Trading Safety Validation Failed: ${errors.join(', ')}`);
     }
@@ -138,7 +138,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Validate SSL configuration
     const sslResult = sslConfigSchema.safeParse(process.env);
     if (!sslResult.success) {
-      const errors = sslResult.error.errors.map(e => e.message);
+      const errors = sslResult.error.issues.map(e => e.message);
       logger.error('SSL Configuration validation failed:', errors);
       throw new Error(`SSL Configuration Failed: ${errors.join(', ')}`);
     }
@@ -146,7 +146,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Validate exchange API safety
     const exchangeResult = exchangeApiSafetySchema.safeParse(process.env);
     if (!exchangeResult.success) {
-      const errors = exchangeResult.error.errors.map(e => e.message);
+      const errors = exchangeResult.error.issues.map(e => e.message);
       logger.error('CRITICAL EXCHANGE API SAFETY VALIDATION FAILED:', errors);
       throw new Error(`Exchange API Safety Validation Failed: ${errors.join(', ')}`);
     }
@@ -154,7 +154,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Validate security configuration
     const securityResult = securityConfigSchema.safeParse(process.env);
     if (!securityResult.success) {
-      const errors = securityResult.error.errors.map(e => e.message);
+      const errors = securityResult.error.issues.map(e => e.message);
       logger.error('Security configuration validation failed:', errors);
       throw new Error(`Security Configuration Failed: ${errors.join(', ')}`);
     }
@@ -162,7 +162,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Validate database configuration
     const databaseResult = databaseConfigSchema.safeParse(process.env);
     if (!databaseResult.success) {
-      const errors = databaseResult.error.errors.map(e => e.message);
+      const errors = databaseResult.error.issues.map(e => e.message);
       logger.error('Database configuration validation failed:', errors);
       throw new Error(`Database Configuration Failed: ${errors.join(', ')}`);
     }
@@ -170,7 +170,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Validate monitoring configuration
     const monitoringResult = monitoringConfigSchema.safeParse(process.env);
     if (!monitoringResult.success) {
-      const errors = monitoringResult.error.errors.map(e => e.message);
+      const errors = monitoringResult.error.issues.map(e => e.message);
       logger.error('Monitoring configuration validation failed:', errors);
       throw new Error(`Monitoring Configuration Failed: ${errors.join(', ')}`);
     }
@@ -178,7 +178,7 @@ export function validateProductionConfig(): ProductionConfig {
     // Final complete validation
     const result = productionConfigSchema.safeParse(process.env);
     if (!result.success) {
-      const errors = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+      const errors = result.error.issues.map(e => `${e.path.join('.')}: ${e.message}`);
       logger.error('Production configuration validation failed:', errors);
       throw new Error(`Production Configuration Validation Failed: ${errors.join(', ')}`);
     }

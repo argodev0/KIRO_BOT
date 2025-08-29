@@ -1,0 +1,60 @@
+{
+  "monitoringActivated": true,
+  "activationTimestamp": "2025-08-28T18:15:16.732Z",
+  "configuration": {
+    "enabled": true,
+    "prometheusPort": "9090",
+    "grafanaPort": "3001",
+    "metricsEnabled": true,
+    "healthCheckEnabled": true,
+    "alertingEnabled": true
+  },
+  "activatedServices": [
+    "Monitoring configuration validated",
+    "Monitoring service found: src/services/MonitoringService.ts",
+    "Monitoring service found: src/services/PrometheusMetricsService.ts",
+    "Monitoring service found: src/services/ProductionAlertingService.ts",
+    "Monitoring service found: src/services/SystemHealthService.ts",
+    "Monitoring service found: src/services/AlertNotificationService.ts",
+    "Prometheus scrape job configured: trading-bot-api",
+    "Prometheus scrape job configured: trading-bot-app",
+    "Prometheus scrape job configured: postgres",
+    "Prometheus scrape job configured: redis",
+    "Prometheus scrape configurations found",
+    "Grafana dashboards directory found",
+    "Grafana provisioning directory found",
+    "AlertManager receivers configured",
+    "AlertManager routing configured",
+    "AlertManager webhook notifications configured",
+    "Enabled PRODUCTION_ALERTING_ENABLED in environment",
+    "Environment configuration updated for monitoring",
+    "MonitoringService activated and ready",
+    "PrometheusMetricsService activated and ready",
+    "ProductionAlertingService activated and ready",
+    "SystemHealthService activated and ready",
+    "AlertNotificationService activated and ready",
+    "Monitoring services activation markers created",
+    "Monitoring endpoint configured: Health Check (/health)",
+    "Monitoring endpoint configured: Metrics (/metrics)",
+    "Monitoring endpoint configured: Metrics Status (/api/v1/metrics/status)",
+    "Monitoring endpoint configured: WebSocket Stats (/api/v1/websocket/stats)",
+    "Monitoring endpoint configured: Paper Trading Status (/api/v1/paper-trading/status)",
+    "Monitoring endpoint configured: Security Status (/api/v1/security/status)"
+  ],
+  "warnings": [
+    "Environment variable MONITORING_ENABLED not set, using defaults",
+    "Environment variable PROMETHEUS_PORT not set, using defaults",
+    "Environment variable GRAFANA_PORT not set, using defaults",
+    "Environment variable METRICS_ENABLED not set, using defaults",
+    "Environment variable HEALTH_CHECK_ENABLED not set, using defaults"
+  ],
+  "errors": [],
+  "status": "active",
+  "healthCheck": {
+    "prometheus": true,
+    "grafana": true,
+    "alertManager": true,
+    "metricsCollection": true,
+    "alerting": true
+  }
+}

@@ -94,16 +94,20 @@ export class AuditService {
           id: auditId,
           userId: entry.userId,
           sessionId: entry.sessionId,
-          action: entry.action,
-          resource: entry.resource,
-          resourceId: entry.resourceId,
-          outcome: entry.outcome,
-          details: JSON.stringify(entry.details),
+          eventType: entry.action || 'unknown',
+          description: entry.resource || 'audit_event',
+          metadata: JSON.stringify({
+            resource: entry.resource,
+            resourceId: entry.resourceId,
+            outcome: entry.outcome,
+            details: entry.details,
+            category: (entry as any).category
+          }),
           ipAddress: entry.ipAddress,
           userAgent: entry.userAgent,
           timestamp,
           severity: entry.severity,
-          category: entry.category
+
         }
       });
 
@@ -113,7 +117,7 @@ export class AuditService {
         userId: entry.userId,
         resource: entry.resource,
         action: entry.action,
-        outcome: entry.outcome,
+        outcome: entry.outcome === 'partial' ? 'failure' : entry.outcome as 'success' | 'failure',
         timestamp,
         ipAddress: entry.ipAddress,
         userAgent: entry.userAgent,
@@ -127,11 +131,7 @@ export class AuditService {
 
       return auditId;
     } catch (error) {
-      productionLogger.error('Failed to log audit event', error as Error, {
-        action: entry.action,
-        resource: entry.resource,
-        userId: entry.userId
-      });
+      productionLogger.error('Failed to log audit event', error as Error);
       throw error;
     }
   }
@@ -319,14 +319,24 @@ export class AuditService {
       const tradingActivities: AuditEntry[] = [];
 
       for (const entry of auditEntries) {
+        // Parse metadata to get additional fields
+        let metadata: any = {};
+        try {
+          metadata = entry.metadata ? JSON.parse(entry.metadata) : {};
+        } catch (e) {
+          metadata = {};
+        }
+
+        const category = metadata.category || 'general';
+        
         // Count by category
-        eventsByCategory[entry.category] = (eventsByCategory[entry.category] || 0) + 1;
+        eventsByCategory[category] = (eventsByCategory[category] || 0) + 1;
         
         // Count by severity
         eventsBySeverity[entry.severity] = (eventsBySeverity[entry.severity] || 0) + 1;
         
         // Count failures
-        if (entry.outcome === 'failure') {
+        if (!entry.success) {
           failedEvents++;
         }
 
@@ -335,31 +345,31 @@ export class AuditService {
           id: entry.id,
           userId: entry.userId,
           sessionId: entry.sessionId || undefined,
-          action: entry.action,
-          resource: entry.resource,
-          resourceId: entry.resourceId || undefined,
-          outcome: entry.outcome as 'success' | 'failure' | 'partial',
-          details: JSON.parse(entry.details),
+          action: metadata.action || entry.eventType,
+          resource: metadata.resource || entry.description,
+          resourceId: metadata.resourceId || undefined,
+          outcome: entry.success ? 'success' : 'failure',
+          details: metadata.details || {},
           ipAddress: entry.ipAddress || undefined,
           userAgent: entry.userAgent || undefined,
           timestamp: entry.timestamp,
           severity: entry.severity as 'low' | 'medium' | 'high' | 'critical',
-          category: entry.category as any
+          category: category as any
         };
 
         if (entry.severity === 'critical' || this.isSuspiciousActivity(auditEntry)) {
           suspiciousActivities.push(auditEntry);
         }
 
-        if (entry.category === 'data_access') {
+        if (category === 'data_access') {
           dataAccessEvents.push(auditEntry);
         }
 
-        if (entry.category === 'configuration') {
+        if (category === 'configuration') {
           configurationChanges.push(auditEntry);
         }
 
-        if (entry.category === 'trading') {
+        if (category === 'trading') {
           tradingActivities.push(auditEntry);
         }
       }
@@ -406,21 +416,30 @@ export class AuditService {
         take: limit
       });
 
-      return entries.map(entry => ({
-        id: entry.id,
-        userId: entry.userId,
-        sessionId: entry.sessionId || undefined,
-        action: entry.action,
-        resource: entry.resource,
-        resourceId: entry.resourceId || undefined,
-        outcome: entry.outcome as 'success' | 'failure' | 'partial',
-        details: JSON.parse(entry.details),
-        ipAddress: entry.ipAddress || undefined,
-        userAgent: entry.userAgent || undefined,
-        timestamp: entry.timestamp,
-        severity: entry.severity as 'low' | 'medium' | 'high' | 'critical',
-        category: entry.category as any
-      }));
+      return entries.map(entry => {
+        let metadata: any = {};
+        try {
+          metadata = entry.metadata ? JSON.parse(entry.metadata) : {};
+        } catch (e) {
+          metadata = {};
+        }
+
+        return {
+          id: entry.id,
+          userId: entry.userId,
+          sessionId: entry.sessionId || undefined,
+          action: metadata.action || entry.eventType,
+          resource: metadata.resource || entry.description,
+          resourceId: metadata.resourceId || undefined,
+          outcome: entry.success ? 'success' : 'failure',
+          details: metadata.details || {},
+          ipAddress: entry.ipAddress || undefined,
+          userAgent: entry.userAgent || undefined,
+          timestamp: entry.timestamp,
+          severity: entry.severity as 'low' | 'medium' | 'high' | 'critical',
+          category: metadata.category || 'general' as any
+        };
+      });
     } catch (error) {
       productionLogger.error('Failed to get user audit trail', error as Error, { userId });
       throw error;
@@ -448,11 +467,11 @@ export class AuditService {
       const whereClause: any = {};
 
       if (filters.userId) whereClause.userId = filters.userId;
-      if (filters.action) whereClause.action = { contains: filters.action };
-      if (filters.resource) whereClause.resource = filters.resource;
-      if (filters.category) whereClause.category = filters.category;
+      if (filters.action) whereClause.eventType = { contains: filters.action };
+      if (filters.resource) whereClause.description = { contains: filters.resource };
       if (filters.severity) whereClause.severity = filters.severity;
-      if (filters.outcome) whereClause.outcome = filters.outcome;
+      if (filters.outcome) whereClause.success = filters.outcome === 'success';
+      // Note: category filtering will need to be done post-query since it's in metadata
 
       if (filters.startDate || filters.endDate) {
         whereClause.timestamp = {};
@@ -471,25 +490,36 @@ export class AuditService {
       ]);
 
       return {
-        entries: entries.map(entry => ({
-          id: entry.id,
-          userId: entry.userId,
-          sessionId: entry.sessionId || undefined,
-          action: entry.action,
-          resource: entry.resource,
-          resourceId: entry.resourceId || undefined,
-          outcome: entry.outcome as 'success' | 'failure' | 'partial',
-          details: JSON.parse(entry.details),
-          ipAddress: entry.ipAddress || undefined,
-          userAgent: entry.userAgent || undefined,
-          timestamp: entry.timestamp,
-          severity: entry.severity as 'low' | 'medium' | 'high' | 'critical',
-          category: entry.category as any
-        })),
+        entries: entries.map(entry => {
+          let metadata: any = {};
+          try {
+            metadata = entry.metadata ? JSON.parse(entry.metadata) : {};
+          } catch (e) {
+            metadata = {};
+          }
+
+          return {
+            id: entry.id,
+            userId: entry.userId,
+            sessionId: entry.sessionId || undefined,
+            action: metadata.action || entry.eventType,
+            resource: metadata.resource || entry.description,
+            resourceId: metadata.resourceId || undefined,
+            outcome: entry.success ? 'success' : 'failure',
+            details: metadata.details || {},
+            ipAddress: entry.ipAddress || undefined,
+            userAgent: entry.userAgent || undefined,
+            timestamp: entry.timestamp,
+            severity: entry.severity as 'low' | 'medium' | 'high' | 'critical',
+            category: metadata.category || 'general' as any
+          };
+        }),
         total
       };
     } catch (error) {
-      productionLogger.error('Failed to search audit logs', error as Error, { filters });
+      productionLogger.error('Failed to search audit logs', error as Error, { 
+        filtersApplied: JSON.stringify(filters) 
+      });
       throw error;
     }
   }
@@ -545,19 +575,25 @@ export class AuditService {
         return JSON.stringify(entries, null, 2);
       } else {
         // CSV format
-        const headers = ['id', 'userId', 'action', 'resource', 'outcome', 'timestamp', 'severity', 'category'];
+        const headers = ['id', 'userId', 'eventType', 'description', 'success', 'timestamp', 'severity'];
         const csvRows = [headers.join(',')];
         
         for (const entry of entries) {
+          let metadata: any = {};
+          try {
+            metadata = entry.metadata ? JSON.parse(entry.metadata) : {};
+          } catch (e) {
+            metadata = {};
+          }
+
           const row = [
             entry.id,
             entry.userId,
-            entry.action,
-            entry.resource,
-            entry.outcome,
+            metadata.action || entry.eventType,
+            metadata.resource || entry.description,
+            entry.success ? 'success' : 'failure',
             entry.timestamp.toISOString(),
-            entry.severity,
-            entry.category
+            entry.severity
           ];
           csvRows.push(row.join(','));
         }

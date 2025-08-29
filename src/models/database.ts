@@ -17,31 +17,7 @@ const logger = {
 class DatabaseClient extends PrismaClient {
   constructor() {
     super({
-      log: [
-        { level: 'query', emit: 'event' },
-        { level: 'error', emit: 'event' },
-        { level: 'info', emit: 'event' },
-        { level: 'warn', emit: 'event' },
-      ],
-    });
-
-    // Log database queries in development
-    if (process.env.NODE_ENV === 'development') {
-      this.$on('query', (e) => {
-        logger.debug('Database Query', {
-          query: e.query,
-          params: e.params,
-          duration: e.duration,
-        });
-      });
-    }
-
-    // Log database errors
-    this.$on('error', (e) => {
-      logger.error('Database Error', {
-        message: e.message,
-        target: e.target,
-      });
+      log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
     });
   }
 

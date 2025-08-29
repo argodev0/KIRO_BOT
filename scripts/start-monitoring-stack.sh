@@ -1,9 +1,15 @@
 #!/bin/bash
 
 # Trading Bot Monitoring Stack Startup Script
-# This script starts the complete monitoring infrastructure
+# This script starts the complete monitoring infrastructure including Grafana dashboards
 
 set -e
+
+echo "🚀 Starting Trading Bot Monitoring Stack..."
+
+# Configuration
+MONITORING_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../monitoring" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -12,360 +18,224 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Logging functions
-log_info() {
+# Function to print colored output
+print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-log_success() {
+print_success() {
     echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-log_warning() {
+print_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-log_error() {
+print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-MONITORING_DIR="$PROJECT_ROOT/monitoring"
-ENVIRONMENT="${1:-development}"
+# Function to check if a service is running
+check_service() {
+    local service_name=$1
+    local port=$2
+    
+    if curl -s "http://localhost:$port" > /dev/null 2>&1; then
+        print_success "$service_name is running on port $port"
+        return 0
+    else
+        print_warning "$service_name is not responding on port $port"
+        return 1
+    fi
+}
 
-log_info "Starting Trading Bot Monitoring Stack"
-log_info "Environment: $ENVIRONMENT"
-log_info "Project Root: $PROJECT_ROOT"
+# Function to wait for service to be ready
+wait_for_service() {
+    local service_name=$1
+    local port=$2
+    local max_attempts=30
+    local attempt=1
+    
+    print_status "Waiting for $service_name to be ready..."
+    
+    while [ $attempt -le $max_attempts ]; do
+        if check_service "$service_name" "$port"; then
+            return 0
+        fi
+        
+        echo -n "."
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+    
+    print_error "$service_name failed to start within expected time"
+    return 1
+}
 
 # Check if Docker is running
-check_docker() {
-    log_info "Checking Docker availability..."
-    
-    if ! command -v docker &> /dev/null; then
-        log_error "Docker is not installed or not in PATH"
-        exit 1
-    fi
-    
-    if ! docker info &> /dev/null; then
-        log_error "Docker daemon is not running"
-        exit 1
-    fi
-    
-    if ! command -v docker-compose &> /dev/null; then
-        log_error "Docker Compose is not installed or not in PATH"
-        exit 1
-    fi
-    
-    log_success "Docker and Docker Compose are available"
-}
+if ! docker info > /dev/null 2>&1; then
+    print_error "Docker is not running. Please start Docker first."
+    exit 1
+fi
 
-# Create necessary directories
-create_directories() {
-    log_info "Creating necessary directories..."
-    
-    local dirs=(
-        "$MONITORING_DIR/prometheus/data"
-        "$MONITORING_DIR/grafana/data"
-        "$MONITORING_DIR/alertmanager/data"
-        "$MONITORING_DIR/elasticsearch/data"
-        "$MONITORING_DIR/logs"
-    )
-    
-    for dir in "${dirs[@]}"; do
-        if [ ! -d "$dir" ]; then
-            mkdir -p "$dir"
-            log_info "Created directory: $dir"
-        fi
-    done
-    
-    # Set proper permissions for Grafana
-    if [ -d "$MONITORING_DIR/grafana/data" ]; then
-        sudo chown -R 472:472 "$MONITORING_DIR/grafana/data" 2>/dev/null || true
-    fi
-    
-    log_success "Directories created and configured"
-}
+# Check if Docker Compose is available
+if ! command -v docker-compose > /dev/null 2>&1; then
+    print_error "Docker Compose is not installed. Please install Docker Compose first."
+    exit 1
+fi
+
+# Navigate to monitoring directory
+cd "$MONITORING_DIR"
+
+print_status "Checking monitoring configuration..."
 
 # Validate configuration files
-validate_config() {
-    log_info "Validating monitoring configuration..."
-    
-    local required_files=(
-        "$MONITORING_DIR/prometheus/prometheus-prod.yml"
-        "$MONITORING_DIR/alertmanager/alertmanager-prod.yml"
-        "$MONITORING_DIR/grafana/provisioning/datasources/datasource.yml"
-        "$MONITORING_DIR/grafana/provisioning/dashboards/dashboard.yml"
-    )
-    
-    for file in "${required_files[@]}"; do
-        if [ ! -f "$file" ]; then
-            log_error "Required configuration file missing: $file"
-            exit 1
-        fi
-    done
-    
-    # Check if dashboards exist
-    local dashboard_dir="$MONITORING_DIR/grafana/dashboards"
-    if [ ! -d "$dashboard_dir" ] || [ -z "$(ls -A "$dashboard_dir" 2>/dev/null)" ]; then
-        log_warning "No Grafana dashboards found in $dashboard_dir"
-    else
-        local dashboard_count=$(ls -1 "$dashboard_dir"/*.json 2>/dev/null | wc -l)
-        log_success "Found $dashboard_count Grafana dashboards"
-    fi
-    
-    log_success "Configuration validation completed"
-}
+if [ ! -f "docker-compose.monitoring.yml" ]; then
+    print_error "docker-compose.monitoring.yml not found in $MONITORING_DIR"
+    exit 1
+fi
 
-# Set environment variables
-setup_environment() {
-    log_info "Setting up environment variables..."
-    
-    # Create .env file for monitoring stack if it doesn't exist
-    local env_file="$MONITORING_DIR/.env"
-    
-    if [ ! -f "$env_file" ]; then
-        log_info "Creating monitoring environment file..."
-        cat > "$env_file" << EOF
-# Monitoring Stack Environment Variables
-GRAFANA_ADMIN_PASSWORD=admin123
-GRAFANA_SECRET_KEY=$(openssl rand -base64 32)
-ELASTIC_PASSWORD=elastic123
-SMTP_HOST=localhost
-SMTP_USER=alerts@yourdomain.com
-SMTP_PASSWORD=your-smtp-password
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
-EOF
-        log_success "Created monitoring environment file"
-    else
-        log_info "Using existing monitoring environment file"
-    fi
-    
-    # Export environment variables
-    export COMPOSE_PROJECT_NAME="trading-bot-monitoring"
-    export COMPOSE_FILE="$MONITORING_DIR/production-monitoring.yml"
-    
-    if [ "$ENVIRONMENT" = "development" ]; then
-        export COMPOSE_FILE="$MONITORING_DIR/docker-compose.monitoring.yml"
-    fi
-}
+if [ ! -f "prometheus.yml" ]; then
+    print_error "prometheus.yml not found in $MONITORING_DIR"
+    exit 1
+fi
+
+if [ ! -d "grafana/dashboards" ]; then
+    print_error "Grafana dashboards directory not found"
+    exit 1
+fi
+
+print_success "Configuration files validated"
+
+# Stop any existing monitoring services
+print_status "Stopping existing monitoring services..."
+docker-compose -f docker-compose.monitoring.yml down --remove-orphans > /dev/null 2>&1 || true
+
+# Pull latest images
+print_status "Pulling latest Docker images..."
+docker-compose -f docker-compose.monitoring.yml pull
 
 # Start monitoring services
-start_services() {
-    log_info "Starting monitoring services..."
-    
-    cd "$MONITORING_DIR"
-    
-    # Pull latest images
-    log_info "Pulling latest Docker images..."
-    docker-compose pull
-    
-    # Start services in the correct order
-    log_info "Starting core monitoring services..."
-    
-    # Start Prometheus first
-    docker-compose up -d prometheus
-    sleep 10
-    
-    # Start Grafana
-    docker-compose up -d grafana
-    sleep 10
-    
-    # Start AlertManager
-    docker-compose up -d alertmanager
-    sleep 5
-    
-    # Start exporters
-    docker-compose up -d node-exporter cadvisor
-    sleep 5
-    
-    # Start ELK stack (if configured)
-    if docker-compose config --services | grep -q elasticsearch; then
-        log_info "Starting ELK stack..."
-        docker-compose up -d elasticsearch
-        sleep 30  # Elasticsearch needs more time to start
-        docker-compose up -d logstash kibana
-        sleep 10
-    fi
-    
-    # Start remaining services
-    docker-compose up -d
-    
-    log_success "All monitoring services started"
-}
+print_status "Starting monitoring services..."
+docker-compose -f docker-compose.monitoring.yml up -d
 
 # Wait for services to be ready
-wait_for_services() {
-    log_info "Waiting for services to be ready..."
-    
-    local services=(
-        "prometheus:9090"
-        "grafana:3001"
-        "alertmanager:9093"
-    )
-    
-    for service in "${services[@]}"; do
-        local name="${service%:*}"
-        local port="${service#*:}"
-        
-        log_info "Waiting for $name to be ready on port $port..."
-        
-        local max_attempts=30
-        local attempt=1
-        
-        while [ $attempt -le $max_attempts ]; do
-            if curl -s "http://localhost:$port" > /dev/null 2>&1; then
-                log_success "$name is ready"
-                break
-            fi
-            
-            if [ $attempt -eq $max_attempts ]; then
-                log_error "$name failed to start within timeout"
-                return 1
-            fi
-            
-            sleep 2
-            ((attempt++))
-        done
-    done
-    
-    log_success "All services are ready"
-}
+print_status "Waiting for services to start..."
 
-# Configure Grafana dashboards
-configure_grafana() {
-    log_info "Configuring Grafana dashboards..."
-    
-    # Wait a bit more for Grafana to fully initialize
-    sleep 10
-    
-    # Check if dashboards are properly provisioned
-    local grafana_url="http://admin:admin123@localhost:3001"
-    
-    # Test Grafana API
-    if curl -s "$grafana_url/api/health" > /dev/null 2>&1; then
-        log_success "Grafana API is accessible"
-        
-        # List dashboards
-        local dashboard_count=$(curl -s "$grafana_url/api/search" | jq length 2>/dev/null || echo "0")
-        log_info "Grafana has $dashboard_count dashboards loaded"
-        
+# Wait for Prometheus
+if wait_for_service "Prometheus" "9090"; then
+    print_success "Prometheus is ready at http://localhost:9090"
+else
+    print_error "Prometheus failed to start"
+    exit 1
+fi
+
+# Wait for Grafana
+if wait_for_service "Grafana" "3001"; then
+    print_success "Grafana is ready at http://localhost:3001"
+else
+    print_error "Grafana failed to start"
+    exit 1
+fi
+
+# Wait for other services
+wait_for_service "AlertManager" "9093" || print_warning "AlertManager may not be ready"
+wait_for_service "Node Exporter" "9100" || print_warning "Node Exporter may not be ready"
+wait_for_service "cAdvisor" "8080" || print_warning "cAdvisor may not be ready"
+
+# Test Grafana dashboards
+print_status "Testing Grafana dashboard configuration..."
+if command -v node > /dev/null 2>&1; then
+    cd "$SCRIPT_DIR"
+    if node test-grafana-dashboards.js; then
+        print_success "Grafana dashboard tests passed"
     else
-        log_warning "Grafana API not accessible, dashboards may need manual configuration"
+        print_warning "Some Grafana dashboard tests failed, but services are running"
     fi
-}
+else
+    print_warning "Node.js not found, skipping dashboard tests"
+fi
 
-# Validate Prometheus targets
-validate_prometheus() {
-    log_info "Validating Prometheus configuration..."
-    
-    local prometheus_url="http://localhost:9090"
-    
-    # Check Prometheus targets
-    if curl -s "$prometheus_url/api/v1/targets" > /dev/null 2>&1; then
-        log_success "Prometheus API is accessible"
-        
-        # Check if targets are up (simplified check)
-        local targets_response=$(curl -s "$prometheus_url/api/v1/targets" 2>/dev/null || echo '{"data":{"activeTargets":[]}}')
-        log_info "Prometheus targets configured"
-        
+# Display service status
+echo ""
+echo "=".repeat(60) 2>/dev/null || echo "============================================================"
+echo "🎯 MONITORING STACK STATUS"
+echo "=".repeat(60) 2>/dev/null || echo "============================================================"
+
+# Check all services
+services=(
+    "Prometheus:9090"
+    "Grafana:3001"
+    "AlertManager:9093"
+    "Node Exporter:9100"
+    "cAdvisor:8080"
+    "Elasticsearch:9200"
+    "Kibana:5601"
+    "Jaeger:16686"
+)
+
+for service in "${services[@]}"; do
+    IFS=':' read -r name port <<< "$service"
+    if check_service "$name" "$port"; then
+        echo "✅ $name: http://localhost:$port"
     else
-        log_warning "Prometheus API not accessible"
+        echo "❌ $name: Not responding"
     fi
-}
+done
 
-# Display service URLs
-display_urls() {
-    log_info "Monitoring stack is ready!"
+echo ""
+echo "=".repeat(60) 2>/dev/null || echo "============================================================"
+echo "📊 GRAFANA DASHBOARDS"
+echo "=".repeat(60) 2>/dev/null || echo "============================================================"
+echo "🔗 Access Grafana at: http://localhost:3001"
+echo "👤 Username: admin"
+echo "🔑 Password: admin123"
+echo ""
+echo "Available Dashboards:"
+echo "• Trading Bot Overview"
+echo "• System Metrics"
+echo "• Real-time Data Feeds"
+echo "• Paper Trading Safety"
+echo "• Trading Metrics"
+echo "• Performance Analytics"
+echo ""
+
+# Display alerting information
+echo "🚨 ALERTING CONFIGURATION"
+echo "=".repeat(60) 2>/dev/null || echo "============================================================"
+echo "📧 AlertManager: http://localhost:9093"
+echo "🔔 Critical alerts configured for:"
+echo "  • Paper trading mode disabled"
+echo "  • Real trading attempts"
+echo "  • Service downtime"
+echo "  • High resource usage"
+echo "  • Market data feed issues"
+echo ""
+
+# Show logs command
+echo "📋 USEFUL COMMANDS"
+echo "=".repeat(60) 2>/dev/null || echo "============================================================"
+echo "View logs: docker-compose -f $MONITORING_DIR/docker-compose.monitoring.yml logs -f [service]"
+echo "Stop stack: docker-compose -f $MONITORING_DIR/docker-compose.monitoring.yml down"
+echo "Restart service: docker-compose -f $MONITORING_DIR/docker-compose.monitoring.yml restart [service]"
+echo ""
+
+print_success "Monitoring stack started successfully!"
+print_status "All services are running and ready for use."
+
+# Optional: Open Grafana in browser (if running on desktop)
+if command -v xdg-open > /dev/null 2>&1; then
+    read -p "Open Grafana in browser? (y/n): " -n 1 -r
     echo
-    echo "=== Service URLs ==="
-    echo "📊 Grafana:        http://localhost:3001 (admin/admin123)"
-    echo "🔍 Prometheus:     http://localhost:9090"
-    echo "🚨 AlertManager:   http://localhost:9093"
-    echo "📈 Node Exporter:  http://localhost:9100"
-    echo "🐳 cAdvisor:       http://localhost:8080"
-    
-    if docker-compose ps | grep -q kibana; then
-        echo "📋 Kibana:         http://localhost:5601"
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        xdg-open http://localhost:3001
     fi
-    
-    if docker-compose ps | grep -q jaeger; then
-        echo "🔗 Jaeger:         http://localhost:16686"
-    fi
-    
+elif command -v open > /dev/null 2>&1; then
+    read -p "Open Grafana in browser? (y/n): " -n 1 -r
     echo
-    echo "=== Quick Commands ==="
-    echo "View logs:         docker-compose logs -f [service]"
-    echo "Stop stack:        docker-compose down"
-    echo "Restart service:   docker-compose restart [service]"
-    echo "View status:       docker-compose ps"
-    echo
-}
-
-# Show service status
-show_status() {
-    log_info "Current service status:"
-    cd "$MONITORING_DIR"
-    docker-compose ps
-}
-
-# Main execution
-main() {
-    log_info "=== Trading Bot Monitoring Stack Setup ==="
-    
-    check_docker
-    create_directories
-    validate_config
-    setup_environment
-    start_services
-    wait_for_services
-    configure_grafana
-    validate_prometheus
-    show_status
-    display_urls
-    
-    log_success "Monitoring stack setup completed successfully!"
-    
-    # Run validation script if available
-    if [ -f "$SCRIPT_DIR/validate-monitoring-setup.js" ]; then
-        log_info "Running monitoring validation..."
-        node "$SCRIPT_DIR/validate-monitoring-setup.js" || log_warning "Validation completed with warnings"
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        open http://localhost:3001
     fi
-}
+fi
 
-# Handle script arguments
-case "${1:-start}" in
-    "start")
-        main
-        ;;
-    "stop")
-        log_info "Stopping monitoring stack..."
-        cd "$MONITORING_DIR"
-        docker-compose down
-        log_success "Monitoring stack stopped"
-        ;;
-    "restart")
-        log_info "Restarting monitoring stack..."
-        cd "$MONITORING_DIR"
-        docker-compose down
-        sleep 5
-        main
-        ;;
-    "status")
-        show_status
-        ;;
-    "logs")
-        cd "$MONITORING_DIR"
-        docker-compose logs -f "${2:-}"
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|restart|status|logs [service]}"
-        echo "  start    - Start the monitoring stack (default)"
-        echo "  stop     - Stop the monitoring stack"
-        echo "  restart  - Restart the monitoring stack"
-        echo "  status   - Show service status"
-        echo "  logs     - Show logs for all services or specific service"
-        exit 1
-        ;;
-esac
+exit 0

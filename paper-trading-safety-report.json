@@ -1,306 +1,295 @@
 {
-  "passed": 26,
-  "failed": 19,
-  "critical": 4,
+  "passed": 29,
+  "failed": 18,
+  "critical": 1,
   "tests": [
     {
-      "timestamp": "2025-08-23T21:21:04.624Z",
+      "timestamp": "2025-08-29T07:50:10.637Z",
       "level": "info",
       "message": "Verifying environment configuration for paper trading safety...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.625Z",
+      "timestamp": "2025-08-29T07:50:10.638Z",
       "level": "info",
       "message": "Environment safety check passed: PAPER_TRADING_MODE=true",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.625Z",
+      "timestamp": "2025-08-29T07:50:10.638Z",
       "level": "info",
       "message": "Environment safety check passed: ALLOW_REAL_TRADES=false",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.625Z",
+      "timestamp": "2025-08-29T07:50:10.638Z",
       "level": "info",
       "message": "Environment safety check passed: NODE_ENV=production",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.625Z",
-      "level": "critical",
-      "message": "Environment safety check FAILED: TRADING_SIMULATION_ONLY must be true",
-      "details": {
-        "expected": "true",
-        "found": "NOT_FOUND"
-      }
-    },
-    {
-      "timestamp": "2025-08-23T21:21:04.626Z",
-      "level": "critical",
-      "message": "DANGEROUS: Found potentially unsafe environment variable: BINANCE_API_SECRET",
+      "timestamp": "2025-08-29T07:50:10.639Z",
+      "level": "info",
+      "message": "Environment safety check passed: TRADING_SIMULATION_ONLY=true",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.626Z",
-      "level": "critical",
-      "message": "DANGEROUS: Found potentially unsafe environment variable: KUCOIN_API_SECRET",
-      "details": null
-    },
-    {
-      "timestamp": "2025-08-23T21:21:04.629Z",
+      "timestamp": "2025-08-29T07:50:10.642Z",
       "level": "info",
       "message": "Verifying code-level safety mechanisms...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.629Z",
-      "level": "error",
-      "message": "Code safety pattern MISSING: Paper trading mode enforcement",
+      "timestamp": "2025-08-29T07:50:10.642Z",
+      "level": "info",
+      "message": "Code safety pattern found: Paper trading mode enforcement",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.630Z",
+      "timestamp": "2025-08-29T07:50:10.643Z",
       "level": "info",
       "message": "Code safety pattern found: Real trades blocking",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.630Z",
+      "timestamp": "2025-08-29T07:50:10.643Z",
       "level": "error",
       "message": "Code safety pattern MISSING: Real trade error throwing",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.630Z",
+      "timestamp": "2025-08-29T07:50:10.644Z",
       "level": "info",
       "message": "Code safety pattern found: Paper trade marking",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.630Z",
+      "timestamp": "2025-08-29T07:50:10.644Z",
       "level": "critical",
       "message": "DANGEROUS CODE PATTERN: Real trades enabled",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.631Z",
+      "timestamp": "2025-08-29T07:50:10.644Z",
       "level": "info",
       "message": "Trade simulation engine properly marks paper trades",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.631Z",
+      "timestamp": "2025-08-29T07:50:10.645Z",
       "level": "info",
       "message": "Trade simulation engine has simulation methods",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.631Z",
+      "timestamp": "2025-08-29T07:50:10.645Z",
       "level": "info",
       "message": "Verifying API key permission restrictions...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.632Z",
+      "timestamp": "2025-08-29T07:50:10.646Z",
       "level": "info",
       "message": "API permission check found: Read-only enforcement",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.632Z",
+      "timestamp": "2025-08-29T07:50:10.646Z",
       "level": "error",
       "message": "API permission check MISSING: Trading permission blocking",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.632Z",
+      "timestamp": "2025-08-29T07:50:10.646Z",
       "level": "error",
       "message": "API permission check MISSING: Withdrawal permission blocking",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.632Z",
+      "timestamp": "2025-08-29T07:50:10.646Z",
       "level": "error",
       "message": "API permission check MISSING: Permission validation function",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.633Z",
+      "timestamp": "2025-08-29T07:50:10.647Z",
       "level": "info",
       "message": "Exchange service uses testnet/sandbox: BinanceExchange.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.633Z",
+      "timestamp": "2025-08-29T07:50:10.647Z",
       "level": "info",
       "message": "Exchange service enforces read-only: BinanceExchange.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.633Z",
+      "timestamp": "2025-08-29T07:50:10.647Z",
       "level": "error",
       "message": "Exchange service contains dangerous method: cancelOrder in BinanceExchange.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.633Z",
+      "timestamp": "2025-08-29T07:50:10.648Z",
       "level": "info",
       "message": "Exchange service uses testnet/sandbox: KuCoinExchange.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.633Z",
+      "timestamp": "2025-08-29T07:50:10.648Z",
       "level": "info",
       "message": "Exchange service enforces read-only: KuCoinExchange.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.634Z",
+      "timestamp": "2025-08-29T07:50:10.648Z",
       "level": "error",
       "message": "Exchange service contains dangerous method: cancelOrder in KuCoinExchange.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.634Z",
+      "timestamp": "2025-08-29T07:50:10.649Z",
       "level": "info",
       "message": "Verifying database safety mechanisms...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.634Z",
+      "timestamp": "2025-08-29T07:50:10.649Z",
       "level": "error",
       "message": "Database safety field MISSING: isPaperTrade",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.635Z",
+      "timestamp": "2025-08-29T07:50:10.650Z",
       "level": "error",
       "message": "Database safety field MISSING: simulatedTrade",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.635Z",
+      "timestamp": "2025-08-29T07:50:10.650Z",
       "level": "error",
       "message": "Database safety field MISSING: virtualBalance",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.635Z",
+      "timestamp": "2025-08-29T07:50:10.650Z",
       "level": "error",
       "message": "Database safety field MISSING: paperTradingMode",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.635Z",
+      "timestamp": "2025-08-29T07:50:10.650Z",
       "level": "error",
       "message": "Database initialization missing paper trading configuration",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.635Z",
+      "timestamp": "2025-08-29T07:50:10.651Z",
       "level": "info",
       "message": "Verifying frontend safety indicators...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.636Z",
+      "timestamp": "2025-08-29T07:50:10.651Z",
       "level": "info",
       "message": "Frontend safety element found: PAPER TRADING MODE",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.636Z",
+      "timestamp": "2025-08-29T07:50:10.651Z",
       "level": "error",
       "message": "Frontend safety element MISSING: SIMULATION ONLY",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.636Z",
+      "timestamp": "2025-08-29T07:50:10.651Z",
       "level": "info",
       "message": "Frontend safety element found: NO REAL MONEY",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.636Z",
+      "timestamp": "2025-08-29T07:50:10.653Z",
       "level": "error",
       "message": "Frontend safety element MISSING: backgroundColor.*red",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.637Z",
+      "timestamp": "2025-08-29T07:50:10.654Z",
       "level": "info",
       "message": "Trading page includes paper trading indicator",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.637Z",
+      "timestamp": "2025-08-29T07:50:10.654Z",
       "level": "info",
       "message": "Trading page includes confirmation/warning dialogs",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.637Z",
+      "timestamp": "2025-08-29T07:50:10.654Z",
       "level": "info",
       "message": "Portfolio display clearly indicates virtual/simulated balances",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.637Z",
+      "timestamp": "2025-08-29T07:50:10.655Z",
       "level": "info",
       "message": "Verifying paper trading safety test coverage...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.638Z",
-      "level": "info",
-      "message": "Test scenario found in PaperTradingGuardTests.test.ts: api permission",
+      "timestamp": "2025-08-29T07:50:10.655Z",
+      "level": "error",
+      "message": "Paper trading test file not found: src/__tests__/comprehensive/PaperTradingGuardTests.test.ts",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:04.639Z",
+      "timestamp": "2025-08-29T07:50:10.656Z",
       "level": "info",
       "message": "Test scenario found in paperTradingSafety.test.ts: virtual balance",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:34.669Z",
+      "timestamp": "2025-08-29T07:50:40.692Z",
       "level": "error",
       "message": "Could not execute paper trading tests",
       "details": "spawnSync /bin/sh ETIMEDOUT"
     },
     {
-      "timestamp": "2025-08-23T21:21:34.669Z",
+      "timestamp": "2025-08-29T07:50:40.694Z",
       "level": "info",
       "message": "Verifying configuration files for safety...",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:34.670Z",
+      "timestamp": "2025-08-29T07:50:40.694Z",
       "level": "error",
       "message": "Production config safety setting MISSING: paperTradingMode: true",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:34.670Z",
+      "timestamp": "2025-08-29T07:50:40.694Z",
       "level": "error",
       "message": "Production config safety setting MISSING: allowRealTrades: false",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:34.670Z",
+      "timestamp": "2025-08-29T07:50:40.694Z",
       "level": "error",
       "message": "Production config safety setting MISSING: tradingSimulation: true",
       "details": null
     },
     {
-      "timestamp": "2025-08-23T21:21:34.670Z",
-      "level": "error",
-      "message": "Docker production configuration not found",
-      "details": {
-        "file": "docker-compose.prod.yml"
-      }
+      "timestamp": "2025-08-29T07:50:40.694Z",
+      "level": "info",
+      "message": "Docker production config enforces paper trading mode",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-29T07:50:40.694Z",
+      "level": "info",
+      "message": "Docker production config blocks real trades",
+      "details": null
     }
   ]
 }

@@ -8,7 +8,7 @@ import { AnalyticsService } from '../services/AnalyticsService';
 import { VisualizationService } from '../services/VisualizationService';
 import { ReportGeneratorService } from '../services/ReportGeneratorService';
 import { AnalyticsPeriod, ReportType, ChartType } from '../types/analytics';
-import { AuthRequest } from '../types/auth';
+import { AuthenticatedRequest } from '../types/auth';
 import { logger } from '../utils/logger';
 import { db } from '../models/database';
 
@@ -26,7 +26,7 @@ export class AnalyticsController {
   /**
    * Get comprehensive performance analytics
    */
-  getPerformanceAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getPerformanceAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -63,7 +63,7 @@ export class AnalyticsController {
   /**
    * Get pattern-specific analytics
    */
-  getPatternAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getPatternAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -107,7 +107,7 @@ export class AnalyticsController {
   /**
    * Get Elliott Wave analytics
    */
-  getElliottWaveAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getElliottWaveAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -144,7 +144,7 @@ export class AnalyticsController {
   /**
    * Get Fibonacci analytics
    */
-  getFibonacciAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getFibonacciAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -181,7 +181,7 @@ export class AnalyticsController {
   /**
    * Get grid trading analytics
    */
-  getGridAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getGridAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -218,7 +218,7 @@ export class AnalyticsController {
   /**
    * Get portfolio performance over time
    */
-  getPortfolioPerformance = async (req: AuthRequest, res: Response): Promise<void> => {
+  getPortfolioPerformance = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -267,7 +267,7 @@ export class AnalyticsController {
   /**
    * Get performance visualization charts
    */
-  getPerformanceCharts = async (req: AuthRequest, res: Response): Promise<void> => {
+  getPerformanceCharts = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -310,7 +310,7 @@ export class AnalyticsController {
   /**
    * Generate analytics report
    */
-  generateReport = async (req: AuthRequest, res: Response): Promise<void> => {
+  generateReport = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -359,7 +359,7 @@ export class AnalyticsController {
   /**
    * Get trade execution analytics
    */
-  getTradeExecutionAnalytics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getTradeExecutionAnalytics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -425,7 +425,7 @@ export class AnalyticsController {
   /**
    * Get risk metrics
    */
-  getRiskMetrics = async (req: AuthRequest, res: Response): Promise<void> => {
+  getRiskMetrics = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 
@@ -474,7 +474,7 @@ export class AnalyticsController {
   /**
    * Get performance comparison
    */
-  getPerformanceComparison = async (req: AuthRequest, res: Response): Promise<void> => {
+  getPerformanceComparison = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
       const userId = req.user!.userId;
       const { 

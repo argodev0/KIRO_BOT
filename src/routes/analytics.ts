@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import { AnalyticsController } from '../controllers/AnalyticsController';
-import { authenticateToken } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import { validateRequest } from '../middleware/validation';
 import { analyticsValidation } from '../validation/analytics.validation';
 
@@ -13,7 +13,7 @@ const router = Router();
 const analyticsController = new AnalyticsController();
 
 // Apply authentication to all analytics routes
-router.use(authenticateToken);
+router.use(authenticate);
 
 /**
  * @swagger

@@ -402,7 +402,7 @@ export function validateProductionSecurityConfig(): { valid: boolean; errors: st
   }
 
   // Validate paper trading mode in production
-  if (config.env === 'production' && !config.paperTradingMode) {
+  if (config.env === 'production' && !config.paperTrading.enabled) {
     errors.push('Paper trading mode must be enabled in production');
   }
 

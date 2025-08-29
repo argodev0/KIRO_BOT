@@ -583,7 +583,7 @@ export class KuCoinExchange extends BaseExchange {
   }
 
   // Enhanced connection monitoring with automatic reconnection
-  private startConnectionMonitoring(): void {
+  protected startConnectionMonitoring(): void {
     setInterval(async () => {
       try {
         // Check WebSocket connections

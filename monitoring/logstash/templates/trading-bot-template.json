@@ -1,0 +1,192 @@
+{
+  "index_patterns": ["trading-bot-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 1,
+      "index.refresh_interval": "5s",
+      "index.max_result_window": 50000
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "timestamp": {
+          "type": "date"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "message": {
+          "type": "text",
+          "analyzer": "standard"
+        },
+        "service": {
+          "type": "keyword"
+        },
+        "environment": {
+          "type": "keyword"
+        },
+        "hostname": {
+          "type": "keyword"
+        },
+        "pid": {
+          "type": "integer"
+        },
+        "requestId": {
+          "type": "keyword"
+        },
+        "userId": {
+          "type": "keyword"
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "eventType": {
+          "type": "keyword"
+        },
+        "stack": {
+          "type": "text"
+        },
+        "error": {
+          "properties": {
+            "name": {
+              "type": "keyword"
+            },
+            "message": {
+              "type": "text"
+            },
+            "stack": {
+              "type": "text"
+            }
+          }
+        },
+        "trading": {
+          "properties": {
+            "symbol": {
+              "type": "keyword"
+            },
+            "action": {
+              "type": "keyword"
+            },
+            "quantity": {
+              "type": "float"
+            },
+            "price": {
+              "type": "float"
+            },
+            "exchange": {
+              "type": "keyword"
+            },
+            "orderId": {
+              "type": "keyword"
+            },
+            "tradeId": {
+              "type": "keyword"
+            },
+            "strategy": {
+              "type": "keyword"
+            },
+            "confidence": {
+              "type": "float"
+            },
+            "paperTrade": {
+              "type": "boolean"
+            }
+          }
+        },
+        "security": {
+          "properties": {
+            "eventType": {
+              "type": "keyword"
+            },
+            "severity": {
+              "type": "keyword"
+            },
+            "sourceIp": {
+              "type": "ip"
+            },
+            "userAgent": {
+              "type": "text"
+            },
+            "endpoint": {
+              "type": "keyword"
+            },
+            "method": {
+              "type": "keyword"
+            },
+            "statusCode": {
+              "type": "integer"
+            }
+          }
+        },
+        "performance": {
+          "properties": {
+            "metricName": {
+              "type": "keyword"
+            },
+            "metricValue": {
+              "type": "float"
+            },
+            "unit": {
+              "type": "keyword"
+            },
+            "duration": {
+              "type": "float"
+            },
+            "endpoint": {
+              "type": "keyword"
+            },
+            "method": {
+              "type": "keyword"
+            }
+          }
+        },
+        "audit": {
+          "properties": {
+            "action": {
+              "type": "keyword"
+            },
+            "resource": {
+              "type": "keyword"
+            },
+            "resourceId": {
+              "type": "keyword"
+            },
+            "oldValue": {
+              "type": "object",
+              "enabled": false
+            },
+            "newValue": {
+              "type": "object",
+              "enabled": false
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": "text"
+            }
+          }
+        },
+        "geoip": {
+          "properties": {
+            "location": {
+              "type": "geo_point"
+            },
+            "country_name": {
+              "type": "keyword"
+            },
+            "city_name": {
+              "type": "keyword"
+            },
+            "continent_code": {
+              "type": "keyword"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,8 +9,8 @@
         },
         "enable": true,
         "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
+        "iconColor": "rgba(255, 96, 96, 1)",
+        "name": "Safety Alerts",
         "type": "dashboard"
       }
     ]
@@ -18,9 +18,9 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 5,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
     {
       "datasource": {
@@ -38,12 +38,12 @@
                 "0": {
                   "color": "red",
                   "index": 0,
-                  "text": "DISABLED"
+                  "text": "REAL TRADING"
                 },
                 "1": {
                   "color": "green",
                   "index": 1,
-                  "text": "ENABLED"
+                  "text": "PAPER TRADING"
                 }
               },
               "type": "value"
@@ -68,7 +68,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
+        "w": 8,
         "x": 0,
         "y": 0
       },
@@ -96,11 +96,11 @@
           },
           "expr": "paper_trading_mode_enabled",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Paper Trading Mode",
           "refId": "A"
         }
       ],
-      "title": "Paper Trading Mode",
+      "title": "Trading Mode Status",
       "type": "stat"
     },
     {
@@ -113,58 +113,38 @@
           "color": {
             "mode": "thresholds"
           },
-          "mappings": [
-            {
-              "options": {
-                "0": {
-                  "color": "green",
-                  "index": 0,
-                  "text": "BLOCKED"
-                }
-              },
-              "type": "value"
-            },
-            {
-              "options": {
-                "from": 1,
-                "result": {
-                  "color": "red",
-                  "index": 1,
-                  "text": "DANGER"
-                },
-                "to": 999999
-              },
-              "type": "range"
-            }
-          ],
+          "mappings": [],
+          "max": 100,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "red",
-                "value": 1
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "green",
+                "value": 90
               }
             ]
           },
-          "unit": "short"
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 6,
+        "w": 8,
+        "x": 8,
         "y": 0
       },
       "id": 2,
       "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "center",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -173,7 +153,8 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto"
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
       },
       "pluginVersion": "9.3.0",
       "targets": [
@@ -182,14 +163,14 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "real_trading_attempts_blocked_total",
+          "expr": "paper_trading_safety_score",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Safety Score",
           "refId": "A"
         }
       ],
-      "title": "Real Trading Attempts Blocked",
-      "type": "stat"
+      "title": "Paper Trading Safety Score",
+      "type": "gauge"
     },
     {
       "datasource": {
@@ -221,15 +202,15 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 12,
+        "w": 8,
+        "x": 16,
         "y": 0
       },
       "id": 3,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -247,74 +228,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "api_key_permission_violations_total",
+          "expr": "sum(rate(security_events{event_type=\"real_trading_attempt\"}[5m]))",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Real Trading Attempts",
           "refId": "A"
         }
       ],
-      "title": "API Key Permission Violations",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "center",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.3.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "paper_trades_executed_total",
-          "interval": "",
-          "legendFormat": "",
-          "refId": "A"
-        }
-      ],
-      "title": "Paper Trades Executed",
+      "title": "Real Trading Attempts (Last 5m)",
       "type": "stat"
     },
     {
@@ -379,7 +299,7 @@
         "x": 0,
         "y": 6
       },
-      "id": 5,
+      "id": 4,
       "options": {
         "legend": {
           "calcs": [],
@@ -397,9 +317,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(paper_trades_executed_total[5m])",
+          "expr": "rate(paper_trades_total{exchange=\"binance\"}[5m])",
           "interval": "",
-          "legendFormat": "Paper Trades/sec",
+          "legendFormat": "Binance Paper Trades/sec",
           "refId": "A"
         },
         {
@@ -407,9 +327,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(real_trading_attempts_blocked_total[5m])",
+          "expr": "rate(paper_trades_total{exchange=\"kucoin\"}[5m])",
           "interval": "",
-          "legendFormat": "Real Trading Blocked/sec",
+          "legendFormat": "KuCoin Paper Trades/sec",
           "refId": "B"
         }
       ],
@@ -478,6 +398,95 @@
         "x": 12,
         "y": 6
       },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "virtual_balance_total{currency=\"USD\"}",
+          "interval": "",
+          "legendFormat": "{{user_id}} Virtual Balance",
+          "refId": "A"
+        }
+      ],
+      "title": "Virtual Portfolio Balances",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 14
+      },
       "id": 6,
       "options": {
         "legend": {
@@ -496,13 +505,102 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "virtual_portfolio_balance",
+          "expr": "paper_trading_pnl{period=\"24h\"}",
           "interval": "",
-          "legendFormat": "{{user_id}} Balance",
+          "legendFormat": "{{user_id}} Daily P&L",
           "refId": "A"
         }
       ],
-      "title": "Virtual Portfolio Balances",
+      "title": "Paper Trading P&L (24h)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 14
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "paper_trading_win_rate{strategy=\"all\"}",
+          "interval": "",
+          "legendFormat": "{{user_id}} Win Rate",
+          "refId": "A"
+        }
+      ],
+      "title": "Paper Trading Win Rates",
       "type": "timeseries"
     },
     {
@@ -563,11 +661,11 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 12,
         "x": 0,
-        "y": 14
+        "y": 22
       },
-      "id": 7,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -585,9 +683,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "paper_trading_guard_validations_total",
+          "expr": "rate(security_events{event_type=\"real_trading_attempt\"}[5m])",
           "interval": "",
-          "legendFormat": "Guard Validations",
+          "legendFormat": "Real Trading Attempts",
           "refId": "A"
         },
         {
@@ -595,9 +693,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "api_key_validations_total",
+          "expr": "rate(security_events{event_type=\"api_key_violation\"}[5m])",
           "interval": "",
-          "legendFormat": "API Key Validations",
+          "legendFormat": "API Key Violations",
           "refId": "B"
         },
         {
@@ -605,13 +703,102 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "environment_validations_total",
+          "expr": "rate(security_events{event_type=\"environment_violation\"}[5m])",
           "interval": "",
-          "legendFormat": "Environment Validations",
+          "legendFormat": "Environment Violations",
           "refId": "C"
         }
       ],
-      "title": "Safety Mechanism Validations",
+      "title": "Security Events",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "paper_trading_drawdown",
+          "interval": "",
+          "legendFormat": "{{user_id}} Max Drawdown",
+          "refId": "A"
+        }
+      ],
+      "title": "Paper Trading Drawdown",
       "type": "timeseries"
     }
   ],

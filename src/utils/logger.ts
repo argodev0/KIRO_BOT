@@ -43,17 +43,17 @@ const productionFormat = winston.format.combine(
     };
 
     // Add stack trace for errors
-    if (info.stack) {
-      logEntry.stack = info.stack;
+    if ((info as any).stack) {
+      (logEntry as any).stack = (info as any).stack;
     }
 
     // Add request context if available
-    if (info.requestId) {
-      logEntry.requestId = info.requestId;
+    if ((info as any).requestId) {
+      (logEntry as any).requestId = (info as any).requestId;
     }
 
-    if (info.userId) {
-      logEntry.userId = info.userId;
+    if ((info as any).userId) {
+      (logEntry as any).userId = (info as any).userId;
     }
 
     return JSON.stringify(logEntry);
@@ -81,7 +81,7 @@ const developmentFormat = winston.format.combine(
 );
 
 // Choose format based on environment
-const logFormat = config.env === 'production' ? productionFormat : developmentFormat;
+const logFormat = process.env.NODE_ENV === 'production' ? productionFormat : developmentFormat;
 
 // Define transports with enhanced configuration
 const transports: winston.transport[] = [];
@@ -89,7 +89,7 @@ const transports: winston.transport[] = [];
 // Console transport (always enabled)
 transports.push(
   new winston.transports.Console({
-    format: config.env === 'production' 
+    format: process.env.NODE_ENV === 'production' 
       ? winston.format.combine(
           winston.format.timestamp(),
           winston.format.json()
@@ -98,12 +98,12 @@ transports.push(
           winston.format.colorize(),
           winston.format.simple()
         ),
-    level: config.env === 'production' ? 'info' : 'debug'
+    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug'
   })
 );
 
 // File transports for production
-if (config.env === 'production' || config.env === 'staging') {
+if (process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging') {
   // Error log file
   transports.push(
     new DailyRotateFile({
@@ -180,15 +180,15 @@ if (config.env === 'production' || config.env === 'staging') {
 
 // Create logger instance with enhanced configuration
 export const logger = winston.createLogger({
-  level: config.monitoring?.logLevel || (config.env === 'production' ? 'info' : 'debug'),
+  level: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
   levels,
   format: logFormat,
   transports,
   exitOnError: false,
-  silent: config.env === 'test',
+  silent: process.env.NODE_ENV === 'test',
   defaultMeta: {
     service: 'kiro-bot',
-    environment: config.env,
+    environment: process.env.NODE_ENV || 'development',
     hostname: os.hostname(),
     pid: process.pid
   }
@@ -255,7 +255,7 @@ export const logAuditEvent = (event: string, details: any = {}) => {
 };
 
 // Handle uncaught exceptions and unhandled rejections
-if (config.env === 'production') {
+if (process.env.NODE_ENV === 'production') {
   process.on('uncaughtException', (error) => {
     logger.error('Uncaught Exception:', {
       error: error.message,

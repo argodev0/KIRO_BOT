@@ -129,7 +129,7 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
 
             <Grid container spacing={3}>
               {/* Basic Settings */}
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   select
@@ -143,7 +143,7 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
                 </TextField>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <FormControlLabel
                   control={
                     <Switch
@@ -158,13 +158,13 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
               {/* API Credentials */}
               {exchange.enabled && (
                 <>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Typography variant="subtitle2" gutterBottom>
                       API Credentials
                     </Typography>
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       fullWidth
                       label="API Key"
@@ -185,7 +185,7 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
                     />
                   </Grid>
 
-                  <Grid item xs={12} md={6}>
+                  <Grid size={{ xs: 12, md: 6 }}>
                     <TextField
                       fullWidth
                       label="API Secret"
@@ -199,13 +199,13 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
               )}
 
               {/* Rate Limits */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Rate Limits
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -217,7 +217,7 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -230,13 +230,13 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
               </Grid>
 
               {/* Fees */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Trading Fees
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -248,7 +248,7 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
                 />
               </Grid>
 
-              <Grid item xs={12} md={6}>
+              <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
                   fullWidth
                   type="number"
@@ -261,7 +261,7 @@ export const ExchangeConfigPanel: React.FC<ExchangeConfigPanelProps> = ({
               </Grid>
 
               {/* Trading Symbols */}
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="subtitle2" gutterBottom>
                   Trading Symbols
                 </Typography>

@@ -69,7 +69,7 @@ describe('PerformanceMonitoringService', () => {
 
       // Simulate low throughput scenario
       setTimeout(() => {
-        const metrics = performanceService.getPerformanceMetrics();
+        performanceService.getPerformanceMetrics();
         // This would trigger the alert in the monitoring interval
       }, 100);
     });

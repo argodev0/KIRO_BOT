@@ -1,0 +1,37 @@
+{
+  "totalScore": 100,
+  "maxScore": 100,
+  "percentage": 100,
+  "passed": true,
+  "minimumRequired": 90,
+  "components": {
+    "environment": {
+      "score": 30,
+      "maxScore": 30,
+      "passed": true
+    },
+    "paperTradingGuard": {
+      "score": 25,
+      "maxScore": 25,
+      "passed": true
+    },
+    "apiPermissions": {
+      "score": 20,
+      "maxScore": 20,
+      "passed": true
+    },
+    "systemIntegrity": {
+      "score": 15,
+      "maxScore": 15,
+      "passed": true
+    },
+    "productionSafety": {
+      "score": 10,
+      "maxScore": 10,
+      "passed": true
+    }
+  },
+  "violations": [],
+  "recommendations": [],
+  "lastValidation": 1756331407442
+}

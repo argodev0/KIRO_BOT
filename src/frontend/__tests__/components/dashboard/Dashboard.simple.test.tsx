@@ -89,8 +89,8 @@ describe('Dashboard Simple Tests', () => {
     );
 
     // Wait for the component to render
-    await screen.findByText('Portfolio Overview');
-    expect(screen.getByText('Portfolio Overview')).toBeInTheDocument();
+    await screen.findByText('Virtual Portfolio');
+    expect(screen.getByText('Virtual Portfolio')).toBeInTheDocument();
   });
 
   test('displays market data section', async () => {
@@ -100,8 +100,8 @@ describe('Dashboard Simple Tests', () => {
       </TestWrapper>
     );
 
-    await screen.findByText('Market Data');
-    expect(screen.getByText('Market Data')).toBeInTheDocument();
+    await screen.findByText('Live Market Data');
+    expect(screen.getByText('Live Market Data')).toBeInTheDocument();
   });
 
   test('displays trade history section', async () => {
@@ -122,7 +122,8 @@ describe('Dashboard Simple Tests', () => {
       </TestWrapper>
     );
 
-    await screen.findByText('Alerts & Notifications');
-    expect(screen.getByText('Alerts & Notifications')).toBeInTheDocument();
+    const alertsElements = await screen.findAllByText('Alerts & Notifications');
+    expect(alertsElements.length).toBeGreaterThan(0);
+    expect(alertsElements[0]).toBeInTheDocument();
   });
 });

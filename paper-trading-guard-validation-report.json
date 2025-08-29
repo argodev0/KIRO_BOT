@@ -1,0 +1,295 @@
+{
+  "passed": 48,
+  "failed": 0,
+  "critical": 0,
+  "tests": [
+    {
+      "timestamp": "2025-08-26T11:52:40.093Z",
+      "level": "info",
+      "message": "Required method found: interceptTradingOperations",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.094Z",
+      "level": "info",
+      "message": "Required method found: validatePaperTradingMode",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.094Z",
+      "level": "info",
+      "message": "Required method found: logPaperTradeAttempt",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.094Z",
+      "level": "info",
+      "message": "Required method found: validateTradeRequest",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.094Z",
+      "level": "info",
+      "message": "Required method found: throwRealTradeErrorIfUnsafe",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.094Z",
+      "level": "info",
+      "message": "Required method found: blockRealMoneyOperations",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.094Z",
+      "level": "info",
+      "message": "Required method found: convertToPaperTrade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.095Z",
+      "level": "info",
+      "message": "Enhanced error code found: TRADING_SIMULATION_ONLY_REQUIRED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.095Z",
+      "level": "info",
+      "message": "Enhanced error code found: PAPER_TRADING_MODE_REQUIRED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.095Z",
+      "level": "info",
+      "message": "Enhanced error code found: UNSAFE_OPERATION_BLOCKED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.095Z",
+      "level": "info",
+      "message": "Enhanced error code found: REAL_MONEY_INDICATOR_DETECTED",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.095Z",
+      "level": "info",
+      "message": "Comprehensive logging implementation found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.095Z",
+      "level": "info",
+      "message": "Real trade error throwing mechanism found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.096Z",
+      "level": "info",
+      "message": "Trade request validation found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.096Z",
+      "level": "info",
+      "message": "TRADING_SIMULATION_ONLY validation implemented",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.096Z",
+      "level": "info",
+      "message": "PAPER_TRADING_MODE validation implemented",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.096Z",
+      "level": "info",
+      "message": "ALLOW_REAL_TRADES blocking implemented",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.097Z",
+      "level": "info",
+      "message": "Real money operation blocking found: withdraw",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.097Z",
+      "level": "info",
+      "message": "Real money operation blocking found: transfer",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.097Z",
+      "level": "info",
+      "message": "Real money operation blocking found: deposit",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.097Z",
+      "level": "info",
+      "message": "Real money operation blocking found: futures",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.097Z",
+      "level": "info",
+      "message": "Real money operation blocking found: margin",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.097Z",
+      "level": "info",
+      "message": "Real money indicator detection found: real_trade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.098Z",
+      "level": "info",
+      "message": "Real money indicator detection found: live_trade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.098Z",
+      "level": "info",
+      "message": "Real money indicator detection found: production_trade",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.098Z",
+      "level": "info",
+      "message": "Real money indicator detection found: mainnet",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.098Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: timestamp",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.098Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: path",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: method",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: body",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: query",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: headers",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: ip",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: sessionId",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Comprehensive logging field found: userId",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Security event logging implemented",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Security audit log functionality found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.099Z",
+      "level": "info",
+      "message": "Paper trading statistics method found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.100Z",
+      "level": "info",
+      "message": "Security audit log export method found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.100Z",
+      "level": "info",
+      "message": "Safety score calculation found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.100Z",
+      "level": "info",
+      "message": "Paper trading guard middleware imported in main application",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.100Z",
+      "level": "info",
+      "message": "Paper trading guard middleware applied to application",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.100Z",
+      "level": "info",
+      "message": "Paper trading mode validation called on startup",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.101Z",
+      "level": "info",
+      "message": "Paper trading guard tests found",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.101Z",
+      "level": "info",
+      "message": "Test scenario found: Environment Validation",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.101Z",
+      "level": "info",
+      "message": "Test scenario found: API Permission Validation",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.101Z",
+      "level": "info",
+      "message": "Test scenario found: Configuration Management",
+      "details": null
+    },
+    {
+      "timestamp": "2025-08-26T11:52:40.101Z",
+      "level": "info",
+      "message": "Test scenario found: Statistics and Monitoring",
+      "details": null
+    }
+  ]
+}

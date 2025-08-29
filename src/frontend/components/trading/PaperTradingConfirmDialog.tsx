@@ -10,17 +10,12 @@ import {
   Alert,
   Chip,
   Divider,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
 } from '@mui/material';
 import {
   Security,
-  Warning,
-  CheckCircle,
   TrendingUp,
-  AccountBalance,
+  TrendingDown,
+  Warning,
 } from '@mui/icons-material';
 
 interface TradeDetails {
@@ -52,12 +47,12 @@ const PaperTradingConfirmDialog: React.FC<PaperTradingConfirmDialogProps> = ({
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 8,
     }).format(amount);
   };
 
-  const formatQuantity = (quantity: number): string => {
-    return quantity.toFixed(6);
+  const formatCrypto = (amount: number, symbol: string): string => {
+    return `${amount.toFixed(8)} ${symbol.replace('USDT', '')}`;
   };
 
   return (
@@ -68,19 +63,20 @@ const PaperTradingConfirmDialog: React.FC<PaperTradingConfirmDialogProps> = ({
       fullWidth
       PaperProps={{
         sx: {
-          border: 2,
+          borderRadius: 2,
+          border: '2px solid',
           borderColor: 'warning.main',
         }
       }}
     >
-      <DialogTitle>
+      <DialogTitle sx={{ pb: 1 }}>
         <Box display="flex" alignItems="center" gap={1}>
           <Security color="warning" />
           <Typography variant="h6" fontWeight="bold">
             Confirm Paper Trade
           </Typography>
           <Chip
-            label="VIRTUAL TRADE"
+            label="SIMULATION"
             color="warning"
             size="small"
             variant="filled"
@@ -89,152 +85,103 @@ const PaperTradingConfirmDialog: React.FC<PaperTradingConfirmDialogProps> = ({
       </DialogTitle>
 
       <DialogContent>
-        {/* Paper Trading Warning */}
-        <Alert
-          severity="warning"
-          icon={<Security />}
+        {/* Safety Warning */}
+        <Alert 
+          severity="warning" 
+          icon={<Warning />}
           sx={{ mb: 3, backgroundColor: 'rgba(255, 152, 0, 0.1)' }}
         >
           <Typography variant="body2" fontWeight="bold">
-            PAPER TRADING MODE ACTIVE
+            PAPER TRADING MODE - NO REAL MONEY INVOLVED
           </Typography>
-          <Typography variant="body2">
-            This is a simulated trade. No real money will be used or at risk.
+          <Typography variant="caption">
+            This is a simulated trade using live market data for educational purposes only
           </Typography>
         </Alert>
 
         {/* Trade Details */}
-        <Box mb={3}>
+        <Box sx={{ mb: 3 }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
             Trade Details
           </Typography>
           
-          <List dense>
-            <ListItem>
-              <ListItemIcon>
-                <TrendingUp color="primary" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Symbol"
-                secondary={tradeDetails.symbol.replace('USDT', '/USDT')}
-              />
-            </ListItem>
-            
-            <ListItem>
-              <ListItemText
-                primary="Side"
-                secondary={
-                  <Chip
-                    label={tradeDetails.side.toUpperCase()}
-                    color={tradeDetails.side === 'buy' ? 'success' : 'error'}
-                    size="small"
-                  />
-                }
-              />
-            </ListItem>
-            
-            <ListItem>
-              <ListItemText
-                primary="Type"
-                secondary={tradeDetails.type.toUpperCase()}
-              />
-            </ListItem>
-            
-            <ListItem>
-              <ListItemText
-                primary="Quantity"
-                secondary={formatQuantity(tradeDetails.quantity)}
-              />
-            </ListItem>
-            
-            {tradeDetails.price && (
-              <ListItem>
-                <ListItemText
-                  primary="Price"
-                  secondary={formatCurrency(tradeDetails.price)}
-                />
-              </ListItem>
+          <Box display="flex" alignItems="center" gap={2} mb={2}>
+            {tradeDetails.side === 'buy' ? (
+              <TrendingUp color="success" fontSize="large" />
+            ) : (
+              <TrendingDown color="error" fontSize="large" />
             )}
-            
-            <ListItem>
-              <ListItemIcon>
-                <AccountBalance color="warning" />
-              </ListItemIcon>
-              <ListItemText
-                primary="Estimated Value (Virtual)"
-                secondary={formatCurrency(tradeDetails.estimatedValue)}
-              />
-            </ListItem>
-          </List>
+            <Box>
+              <Typography variant="h6" color={tradeDetails.side === 'buy' ? 'success.main' : 'error.main'}>
+                {tradeDetails.side.toUpperCase()} {tradeDetails.symbol.replace('USDT', '/USDT')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {tradeDetails.type.toUpperCase()} Order
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ bgcolor: 'background.default', p: 2, borderRadius: 1 }}>
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography variant="body2" color="text.secondary">
+                Quantity:
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                {formatCrypto(tradeDetails.quantity, tradeDetails.symbol)}
+              </Typography>
+            </Box>
+
+            {tradeDetails.price && (
+              <Box display="flex" justifyContent="space-between" mb={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Price:
+                </Typography>
+                <Typography variant="body2" fontWeight="bold">
+                  {formatCurrency(tradeDetails.price)}
+                </Typography>
+              </Box>
+            )}
+
+            <Box display="flex" justifyContent="space-between" mb={1}>
+              <Typography variant="body2" color="text.secondary">
+                Estimated Value:
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                {formatCurrency(tradeDetails.estimatedValue)}
+              </Typography>
+            </Box>
+
+            <Divider sx={{ my: 1 }} />
+
+            <Box display="flex" justifyContent="space-between">
+              <Typography variant="body2" color="text.secondary">
+                Estimated Fees:
+              </Typography>
+              <Typography variant="body2" fontWeight="bold">
+                {formatCurrency(tradeDetails.estimatedValue * 0.001)} (0.1%)
+              </Typography>
+            </Box>
+          </Box>
         </Box>
 
-        <Divider sx={{ my: 2 }} />
-
-        {/* Safety Confirmations */}
-        <Box mb={2}>
+        {/* Virtual Portfolio Impact */}
+        <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-            Paper Trading Safety Confirmations:
+            Virtual Portfolio Impact
           </Typography>
-          
-          <List dense>
-            <ListItem>
-              <ListItemIcon>
-                <CheckCircle color="success" fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography variant="body2">
-                    ✓ This trade will be executed in simulation mode only
-                  </Typography>
-                }
-              />
-            </ListItem>
-            
-            <ListItem>
-              <ListItemIcon>
-                <CheckCircle color="success" fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography variant="body2">
-                    ✓ No real money will be used or transferred
-                  </Typography>
-                }
-              />
-            </ListItem>
-            
-            <ListItem>
-              <ListItemIcon>
-                <CheckCircle color="success" fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography variant="body2">
-                    ✓ Virtual portfolio balances will be updated
-                  </Typography>
-                }
-              />
-            </ListItem>
-            
-            <ListItem>
-              <ListItemIcon>
-                <CheckCircle color="success" fontSize="small" />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography variant="body2">
-                    ✓ Trade will be logged as a paper trade
-                  </Typography>
-                }
-              />
-            </ListItem>
-          </List>
+          <Alert severity="info" sx={{ backgroundColor: 'rgba(33, 150, 243, 0.1)' }}>
+            <Typography variant="body2">
+              This trade will be executed in your virtual portfolio using simulated funds. 
+              Your virtual balance will be updated to reflect this paper trade.
+            </Typography>
+          </Alert>
         </Box>
 
-        {/* Final Warning */}
-        <Alert severity="info" icon={<Warning />}>
+        {/* Live Data Notice */}
+        <Alert severity="success" sx={{ backgroundColor: 'rgba(76, 175, 80, 0.1)' }}>
           <Typography variant="body2">
-            By confirming, you acknowledge this is a paper trade for educational purposes only.
+            <strong>Live Market Data:</strong> This simulation uses real-time market prices 
+            and conditions for accurate paper trading experience.
           </Typography>
         </Alert>
       </DialogContent>
@@ -243,7 +190,8 @@ const PaperTradingConfirmDialog: React.FC<PaperTradingConfirmDialogProps> = ({
         <Button
           onClick={onClose}
           variant="outlined"
-          color="inherit"
+          size="large"
+          sx={{ minWidth: 120 }}
         >
           Cancel
         </Button>
@@ -251,8 +199,9 @@ const PaperTradingConfirmDialog: React.FC<PaperTradingConfirmDialogProps> = ({
           onClick={onConfirm}
           variant="contained"
           color="warning"
+          size="large"
           startIcon={<Security />}
-          sx={{ fontWeight: 'bold' }}
+          sx={{ minWidth: 160 }}
         >
           Execute Paper Trade
         </Button>

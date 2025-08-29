@@ -1,321 +1,369 @@
 /**
  * Exchange Manager
- * Manages multiple exchange connections and provides unified interface
+ * Manages connections and interactions with multiple cryptocurrency exchanges
  */
 
 import { EventEmitter } from 'events';
-import { BaseExchange, ExchangeConfig } from './BaseExchange';
-import { BinanceExchange } from './BinanceExchange';
-import { KuCoinExchange } from './KuCoinExchange';
-import { CandleData, TickerData, OrderBookData, TradeData } from '../../types/market';
-import { OrderRequest, OrderResponse, Position } from '../../types/trading';
+import { BinanceWebSocketService } from '../BinanceWebSocketService';
+import { KuCoinWebSocketService } from '../KuCoinWebSocketService';
+import { CandleData, TickerData, OrderBookData, TradeData, Timeframe } from '../../types/market';
+import { logger } from '../../utils/logger';
 
 export type ExchangeName = 'binance' | 'kucoin';
 
-export interface ExchangeManagerConfig {
+export interface ExchangeConfig {
   exchanges: {
-    [key in ExchangeName]?: ExchangeConfig & { 
+    binance?: {
       enabled: boolean;
-      passphrase?: string; // For KuCoin
+      testnet?: boolean;
+      apiKey?: string;
+      apiSecret?: string;
+      readOnly?: boolean;
+    };
+    kucoin?: {
+      enabled: boolean;
+      sandbox?: boolean;
+      apiKey?: string;
+      apiSecret?: string;
+      passphrase?: string;
+      readOnly?: boolean;
     };
   };
-  defaultExchange?: ExchangeName;
+  defaultExchange: ExchangeName;
+}
+
+export interface ExchangeStatus {
+  name: ExchangeName;
+  connected: boolean;
+  healthy: boolean;
+  lastPing: number;
+  subscriptions: number;
+  dataRate: number;
 }
 
 export class ExchangeManager extends EventEmitter {
-  private exchanges: Map<ExchangeName, BaseExchange> = new Map();
-  private config: ExchangeManagerConfig;
-  private defaultExchange: ExchangeName;
+  private config: ExchangeConfig;
+  private exchanges: Map<ExchangeName, any> = new Map();
+  private connectionStatus: Map<ExchangeName, boolean> = new Map();
+  private isInitialized: boolean = false;
 
-  constructor(config: ExchangeManagerConfig) {
+  constructor(config: ExchangeConfig) {
     super();
     this.config = config;
-    this.defaultExchange = config.defaultExchange || 'binance';
   }
 
   /**
-   * Initialize all enabled exchanges
+   * Initialize all configured exchanges
    */
   async initialize(): Promise<void> {
-    const initPromises: Promise<void>[] = [];
-
-    for (const [exchangeName, exchangeConfig] of Object.entries(this.config.exchanges)) {
-      if (exchangeConfig.enabled) {
-        const exchange = this.createExchange(exchangeName as ExchangeName, exchangeConfig);
-        this.exchanges.set(exchangeName as ExchangeName, exchange);
-        
-        // Set up event forwarding
-        this.setupEventForwarding(exchange, exchangeName as ExchangeName);
-        
-        // Connect to exchange
-        initPromises.push(exchange.connect());
-      }
+    if (this.isInitialized) {
+      logger.warn('ExchangeManager is already initialized');
+      return;
     }
 
-    await Promise.all(initPromises);
-    this.emit('initialized');
+    try {
+      logger.info('🔗 Initializing Exchange Manager...');
+
+      // Initialize Binance if enabled
+      if (this.config.exchanges.binance?.enabled) {
+        await this.initializeBinance();
+      }
+
+      // Initialize KuCoin if enabled
+      if (this.config.exchanges.kucoin?.enabled) {
+        await this.initializeKuCoin();
+      }
+
+      this.isInitialized = true;
+      this.emit('initialized');
+      
+      logger.info('✅ Exchange Manager initialized successfully');
+    } catch (error) {
+      logger.error('❌ Failed to initialize Exchange Manager:', error);
+      throw error;
+    }
   }
 
   /**
-   * Disconnect from all exchanges
+   * Shutdown all exchange connections
    */
   async shutdown(): Promise<void> {
-    const disconnectPromises: Promise<void>[] = [];
-
-    for (const exchange of this.exchanges.values()) {
-      disconnectPromises.push(exchange.disconnect());
+    if (!this.isInitialized) {
+      return;
     }
 
-    await Promise.all(disconnectPromises);
-    this.exchanges.clear();
-    this.emit('shutdown');
+    try {
+      logger.info('🛑 Shutting down Exchange Manager...');
+
+      const shutdownPromises: Promise<void>[] = [];
+
+      for (const [name, exchange] of this.exchanges) {
+        if (exchange && typeof exchange.stop === 'function') {
+          shutdownPromises.push(exchange.stop());
+        }
+      }
+
+      await Promise.all(shutdownPromises);
+
+      this.exchanges.clear();
+      this.connectionStatus.clear();
+      this.isInitialized = false;
+
+      this.emit('shutdown');
+      logger.info('✅ Exchange Manager shutdown completed');
+    } catch (error) {
+      logger.error('❌ Error during Exchange Manager shutdown:', error);
+      throw error;
+    }
   }
 
   /**
-   * Get exchange instance
-   */
-  getExchange(name: ExchangeName): BaseExchange | undefined {
-    return this.exchanges.get(name);
-  }
-
-  /**
-   * Get all available exchanges
+   * Get available exchanges
    */
   getAvailableExchanges(): ExchangeName[] {
     return Array.from(this.exchanges.keys());
   }
 
   /**
-   * Check if exchange is connected
+   * Check if an exchange is connected
    */
-  isExchangeConnected(name: ExchangeName): boolean {
-    const exchange = this.exchanges.get(name);
-    return exchange ? exchange.isConnected() : false;
+  isExchangeConnected(exchange: ExchangeName): boolean {
+    return this.connectionStatus.get(exchange) || false;
   }
 
   /**
-   * Get market data from specific exchange or default
+   * Get exchange instance
    */
-  async getTicker(symbol: string, exchange?: ExchangeName): Promise<TickerData> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getTicker(symbol);
-  }
-
-  async getOrderBook(symbol: string, limit?: number, exchange?: ExchangeName): Promise<OrderBookData> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getOrderBook(symbol, limit);
-  }
-
-  async getCandles(
-    symbol: string,
-    timeframe: string,
-    limit?: number,
-    startTime?: number,
-    endTime?: number,
-    exchange?: ExchangeName
-  ): Promise<CandleData[]> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getCandles(symbol, timeframe, limit, startTime, endTime);
-  }
-
-  async getRecentTrades(symbol: string, limit?: number, exchange?: ExchangeName): Promise<TradeData[]> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getRecentTrades(symbol, limit);
+  getExchange(exchange: ExchangeName): any {
+    return this.exchanges.get(exchange);
   }
 
   /**
-   * Subscribe to market data streams
+   * Subscribe to ticker data
    */
   async subscribeToTicker(symbol: string, exchange?: ExchangeName): Promise<void> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.subscribeToTicker(symbol);
+    const targetExchange = exchange || this.config.defaultExchange;
+    const exchangeInstance = this.exchanges.get(targetExchange);
+
+    if (!exchangeInstance) {
+      throw new Error(`Exchange ${targetExchange} is not available`);
+    }
+
+    if (typeof exchangeInstance.subscribeToTicker === 'function') {
+      await exchangeInstance.subscribeToTicker(symbol);
+    } else {
+      throw new Error(`Exchange ${targetExchange} does not support ticker subscriptions`);
+    }
   }
 
+  /**
+   * Subscribe to order book data
+   */
   async subscribeToOrderBook(symbol: string, exchange?: ExchangeName): Promise<void> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.subscribeToOrderBook(symbol);
+    const targetExchange = exchange || this.config.defaultExchange;
+    const exchangeInstance = this.exchanges.get(targetExchange);
+
+    if (!exchangeInstance) {
+      throw new Error(`Exchange ${targetExchange} is not available`);
+    }
+
+    if (typeof exchangeInstance.subscribeToOrderBook === 'function') {
+      await exchangeInstance.subscribeToOrderBook(symbol);
+    } else {
+      throw new Error(`Exchange ${targetExchange} does not support order book subscriptions`);
+    }
   }
 
+  /**
+   * Subscribe to trade data
+   */
   async subscribeToTrades(symbol: string, exchange?: ExchangeName): Promise<void> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.subscribeToTrades(symbol);
-  }
+    const targetExchange = exchange || this.config.defaultExchange;
+    const exchangeInstance = this.exchanges.get(targetExchange);
 
-  async subscribeToCandles(symbol: string, timeframe: string, exchange?: ExchangeName): Promise<void> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.subscribeToCandles(symbol, timeframe);
-  }
-
-  /**
-   * Trading operations
-   */
-  async placeOrder(order: OrderRequest, exchange?: ExchangeName): Promise<OrderResponse> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.placeOrder(order);
-  }
-
-  async cancelOrder(orderId: string, symbol: string, exchange?: ExchangeName): Promise<boolean> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.cancelOrder(orderId, symbol);
-  }
-
-  async getOrder(orderId: string, symbol: string, exchange?: ExchangeName): Promise<OrderResponse> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getOrder(orderId, symbol);
-  }
-
-  async getOpenOrders(symbol?: string, exchange?: ExchangeName): Promise<OrderResponse[]> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getOpenOrders(symbol);
-  }
-
-  async getOrderHistory(symbol?: string, limit?: number, exchange?: ExchangeName): Promise<OrderResponse[]> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getOrderHistory(symbol, limit);
-  }
-
-  /**
-   * Account operations
-   */
-  async getBalance(exchange?: ExchangeName): Promise<Record<string, number>> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getBalance();
-  }
-
-  async getPositions(exchange?: ExchangeName): Promise<Position[]> {
-    const exchangeInstance = this.getExchangeInstance(exchange);
-    return exchangeInstance.getPositions();
-  }
-
-  /**
-   * Multi-exchange operations
-   */
-  async getTickerFromAllExchanges(symbol: string): Promise<Record<ExchangeName, TickerData>> {
-    const results: Record<string, TickerData> = {};
-    const promises: Promise<void>[] = [];
-
-    for (const [name, exchange] of this.exchanges) {
-      promises.push(
-        exchange.getTicker(symbol)
-          .then(ticker => { results[name] = ticker; })
-          .catch(error => { 
-            console.error(`Failed to get ticker from ${name}:`, error);
-          })
-      );
+    if (!exchangeInstance) {
+      throw new Error(`Exchange ${targetExchange} is not available`);
     }
 
-    await Promise.all(promises);
-    return results as Record<ExchangeName, TickerData>;
-  }
-
-  async getCandlesFromAllExchanges(
-    symbol: string,
-    timeframe: string,
-    limit?: number
-  ): Promise<Record<ExchangeName, CandleData[]>> {
-    const results: Record<string, CandleData[]> = {};
-    const promises: Promise<void>[] = [];
-
-    for (const [name, exchange] of this.exchanges) {
-      promises.push(
-        exchange.getCandles(symbol, timeframe, limit)
-          .then(candles => { results[name] = candles; })
-          .catch(error => { 
-            console.error(`Failed to get candles from ${name}:`, error);
-          })
-      );
+    if (typeof exchangeInstance.subscribeToTrades === 'function') {
+      await exchangeInstance.subscribeToTrades(symbol);
+    } else {
+      throw new Error(`Exchange ${targetExchange} does not support trade subscriptions`);
     }
-
-    await Promise.all(promises);
-    return results as Record<ExchangeName, CandleData[]>;
   }
 
   /**
-   * Health check for all exchanges
+   * Subscribe to candle data
    */
-  async healthCheck(): Promise<Record<ExchangeName, boolean>> {
-    const results: Record<string, boolean> = {};
-    const promises: Promise<void>[] = [];
+  async subscribeToCandles(symbol: string, timeframe: Timeframe, exchange?: ExchangeName): Promise<void> {
+    const targetExchange = exchange || this.config.defaultExchange;
+    const exchangeInstance = this.exchanges.get(targetExchange);
 
-    for (const [name, exchange] of this.exchanges) {
-      promises.push(
-        exchange.healthCheck()
-          .then(isHealthy => { results[name] = isHealthy; })
-          .catch(() => { results[name] = false; })
-      );
+    if (!exchangeInstance) {
+      throw new Error(`Exchange ${targetExchange} is not available`);
     }
 
-    await Promise.all(promises);
-    return results as Record<ExchangeName, boolean>;
+    if (typeof exchangeInstance.subscribeToCandles === 'function') {
+      await exchangeInstance.subscribeToCandles(symbol, timeframe);
+    } else {
+      throw new Error(`Exchange ${targetExchange} does not support candle subscriptions`);
+    }
   }
 
   /**
-   * Get exchange statistics
+   * Get exchange status
    */
-  getStatistics(): Record<ExchangeName, { connected: boolean; subscriptions: number }> {
-    const stats: Record<string, { connected: boolean; subscriptions: number }> = {};
+  getExchangeStatus(): Record<ExchangeName, ExchangeStatus> {
+    const status: Record<string, ExchangeStatus> = {};
 
     for (const [name, exchange] of this.exchanges) {
-      stats[name] = {
-        connected: exchange.isConnected(),
-        subscriptions: 0, // Would need to track this in BaseExchange
+      const connected = this.connectionStatus.get(name) || false;
+      let healthy = false;
+      let subscriptions = 0;
+
+      if (exchange && typeof exchange.isHealthy === 'function') {
+        healthy = exchange.isHealthy();
+      }
+
+      if (exchange && typeof exchange.getConnectionStats === 'function') {
+        const stats = exchange.getConnectionStats();
+        subscriptions = stats.totalConnections || 0;
+      }
+
+      status[name] = {
+        name,
+        connected,
+        healthy,
+        lastPing: Date.now(),
+        subscriptions,
+        dataRate: 0 // Would be calculated from actual data flow
       };
     }
 
-    return stats as Record<ExchangeName, { connected: boolean; subscriptions: number }>;
+    return status as Record<ExchangeName, ExchangeStatus>;
+  }
+
+  /**
+   * Perform health check on all exchanges
+   */
+  async healthCheck(): Promise<Record<ExchangeName, boolean>> {
+    const health: Record<string, boolean> = {};
+
+    for (const [name, exchange] of this.exchanges) {
+      try {
+        if (exchange && typeof exchange.isHealthy === 'function') {
+          health[name] = exchange.isHealthy();
+        } else {
+          health[name] = this.connectionStatus.get(name) || false;
+        }
+      } catch (error) {
+        logger.error(`Health check failed for ${name}:`, error);
+        health[name] = false;
+      }
+    }
+
+    return health as Record<ExchangeName, boolean>;
   }
 
   // Private methods
-  private createExchange(name: ExchangeName, config: any): BaseExchange {
-    switch (name) {
-      case 'binance':
-        return new BinanceExchange(config);
-      case 'kucoin':
-        return new KuCoinExchange(config);
-      default:
-        throw new Error(`Unsupported exchange: ${name}`);
+
+  private async initializeBinance(): Promise<void> {
+    try {
+      logger.info('🟡 Initializing Binance exchange...');
+
+      const binanceService = new BinanceWebSocketService({
+        majorTradingPairs: ['BTCUSDT', 'ETHUSDT', 'BNBUSDT'],
+        defaultTimeframes: ['1m', '5m', '15m', '1h']
+      });
+
+      await binanceService.start();
+      this.exchanges.set('binance', binanceService);
+      this.connectionStatus.set('binance', true);
+
+      // Set up event forwarding
+      binanceService.on('ticker', (data) => {
+        this.emit('ticker', { exchange: 'binance', data });
+      });
+
+      binanceService.on('candle', (data) => {
+        this.emit('candle', { exchange: 'binance', data });
+      });
+
+      binanceService.on('orderbook', (data) => {
+        this.emit('orderbook', { exchange: 'binance', data });
+      });
+
+      binanceService.on('trade', (data) => {
+        this.emit('trade', { exchange: 'binance', data });
+      });
+
+      binanceService.on('streamConnected', (data) => {
+        this.emit('exchangeConnected', 'binance');
+      });
+
+      binanceService.on('streamDisconnected', (data) => {
+        this.connectionStatus.set('binance', false);
+        this.emit('exchangeDisconnected', 'binance');
+      });
+
+      binanceService.on('streamError', (data) => {
+        this.emit('exchangeError', { exchange: 'binance', error: data.error });
+      });
+
+      logger.info('✅ Binance exchange initialized');
+    } catch (error) {
+      logger.error('❌ Failed to initialize Binance exchange:', error);
+      throw error;
     }
   }
 
-  private setupEventForwarding(exchange: BaseExchange, name: ExchangeName): void {
-    // Forward all exchange events with exchange name prefix
-    exchange.on('ticker', (data) => {
-      this.emit('ticker', { exchange: name, data });
-    });
+  private async initializeKuCoin(): Promise<void> {
+    try {
+      logger.info('🟢 Initializing KuCoin exchange...');
 
-    exchange.on('orderbook', (data) => {
-      this.emit('orderbook', { exchange: name, data });
-    });
+      const kucoinService = new KuCoinWebSocketService({
+        majorTradingPairs: ['BTC-USDT', 'ETH-USDT', 'BNB-USDT'],
+        defaultTimeframes: ['1m', '5m', '15m', '1h']
+      });
 
-    exchange.on('trade', (data) => {
-      this.emit('trade', { exchange: name, data });
-    });
+      await kucoinService.start();
+      this.exchanges.set('kucoin', kucoinService);
+      this.connectionStatus.set('kucoin', true);
 
-    exchange.on('candle', (data) => {
-      this.emit('candle', { exchange: name, data });
-    });
+      // Set up event forwarding
+      kucoinService.on('ticker', (data) => {
+        this.emit('ticker', { exchange: 'kucoin', data });
+      });
 
-    exchange.on('connected', () => {
-      this.emit('exchangeConnected', name);
-    });
+      kucoinService.on('candle', (data) => {
+        this.emit('candle', { exchange: 'kucoin', data });
+      });
 
-    exchange.on('disconnected', () => {
-      this.emit('exchangeDisconnected', name);
-    });
+      kucoinService.on('orderbook', (data) => {
+        this.emit('orderbook', { exchange: 'kucoin', data });
+      });
 
-    exchange.on('error', (error) => {
-      this.emit('exchangeError', { exchange: name, error });
-    });
-  }
+      kucoinService.on('trade', (data) => {
+        this.emit('trade', { exchange: 'kucoin', data });
+      });
 
-  private getExchangeInstance(exchange?: ExchangeName): BaseExchange {
-    const exchangeName = exchange || this.defaultExchange;
-    const exchangeInstance = this.exchanges.get(exchangeName);
-    
-    if (!exchangeInstance) {
-      throw new Error(`Exchange ${exchangeName} is not available or not connected`);
+      kucoinService.on('streamConnected', (data) => {
+        this.emit('exchangeConnected', 'kucoin');
+      });
+
+      kucoinService.on('streamDisconnected', (data) => {
+        this.connectionStatus.set('kucoin', false);
+        this.emit('exchangeDisconnected', 'kucoin');
+      });
+
+      kucoinService.on('streamError', (data) => {
+        this.emit('exchangeError', { exchange: 'kucoin', error: data.error });
+      });
+
+      logger.info('✅ KuCoin exchange initialized');
+    } catch (error) {
+      logger.error('❌ Failed to initialize KuCoin exchange:', error);
+      throw error;
     }
-    
-    return exchangeInstance;
   }
 }

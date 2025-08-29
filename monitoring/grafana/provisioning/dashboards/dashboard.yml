@@ -19,3 +19,21 @@ providers:
     allowUiUpdates: true
     options:
       path: /var/lib/grafana/dashboards
+  - name: 'system-dashboards'
+    orgId: 1
+    folder: 'System Monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+  - name: 'performance-dashboards'
+    orgId: 1
+    folder: 'Performance Analytics'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

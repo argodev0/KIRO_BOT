@@ -1,0 +1,206 @@
+config:
+  target: 'https://localhost:3000'
+  phases:
+    # Warm-up phase
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm-up"
+    
+    # Normal load phase
+    - duration: 120
+      arrivalRate: 20
+      name: "Normal Load"
+    
+    # Peak load phase
+    - duration: 60
+      arrivalRate: 50
+      name: "Peak Load"
+    
+    # Stress test phase
+    - duration: 60
+      arrivalRate: 100
+      name: "Stress Test"
+    
+    # Cool-down phase
+    - duration: 30
+      arrivalRate: 10
+      name: "Cool-down"
+
+  # HTTP configuration
+  http:
+    timeout: 30
+    pool: 50
+    maxSockets: 50
+    
+  # TLS configuration for HTTPS
+  tls:
+    rejectUnauthorized: false
+    
+  # Payload configuration
+  payload:
+    path: "./test-data/symbols.csv"
+    fields:
+      - "symbol"
+      - "timeframe"
+    
+  # Variables
+  variables:
+    symbols:
+      - "BTCUSDT"
+      - "ETHUSDT"
+      - "ADAUSDT"
+      - "DOTUSDT"
+      - "LINKUSDT"
+    timeframes:
+      - "1m"
+      - "5m"
+      - "15m"
+      - "1h"
+      - "4h"
+    indicators:
+      - "rsi"
+      - "macd"
+      - "bollinger"
+      - "ema"
+      - "sma"
+
+scenarios:
+  # API Load Testing Scenarios
+  - name: "Health Check Load Test"
+    weight: 10
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+            - hasProperty: "status"
+          capture:
+            - json: "$.uptime"
+              as: "uptime"
+
+  - name: "Market Data Load Test"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/market/ticker/{{ $randomString() }}"
+          expect:
+            - statusCode: [200, 404]
+          capture:
+            - json: "$.price"
+              as: "price"
+      - think: 1
+      - get:
+          url: "/api/market/candles/{{ symbols[$randomInt(0, 4)] }}?timeframe={{ timeframes[$randomInt(0, 4)] }}&limit=100"
+          expect:
+            - statusCode: 200
+
+  - name: "Technical Indicators Load Test"
+    weight: 25
+    flow:
+      - get:
+          url: "/api/indicators/{{ indicators[$randomInt(0, 4)] }}/{{ symbols[$randomInt(0, 4)] }}?period=14&limit=100"
+          expect:
+            - statusCode: [200, 404]
+          capture:
+            - json: "$.data"
+              as: "indicatorData"
+      - think: 2
+
+  - name: "Trading Operations Load Test"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/positions"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/config/trading-mode"
+          expect:
+            - statusCode: 200
+            - hasProperty: "paperTradingMode"
+      - think: 1
+
+  - name: "Analytics Load Test"
+    weight: 15
+    flow:
+      - get:
+          url: "/api/analytics/performance"
+          expect:
+            - statusCode: 200
+      - get:
+          url: "/api/analytics/aggregation?type=volume&range=1h"
+          expect:
+            - statusCode: [200, 404]
+      - think: 3
+
+  # WebSocket Load Testing Scenario
+  - name: "WebSocket Load Test"
+    weight: 10
+    engine: ws
+    flow:
+      - connect:
+          url: "wss://localhost:3000/ws/market-data"
+      - send:
+          payload: |
+            {
+              "type": "subscribe",
+              "channels": ["ticker", "trades"],
+              "symbols": ["BTCUSDT", "ETHUSDT", "ADAUSDT"]
+            }
+      - think: 5
+      - send:
+          payload: |
+            {
+              "type": "ping",
+              "timestamp": {{ $timestamp() }}
+            }
+      - think: 10
+      - send:
+          payload: |
+            {
+              "type": "unsubscribe",
+              "channels": ["ticker"],
+              "symbols": ["BTCUSDT"]
+            }
+      - think: 5
+
+# Performance metrics and monitoring
+metrics:
+  - name: "response_time_p95"
+    unit: "ms"
+  - name: "response_time_p99"
+    unit: "ms"
+  - name: "error_rate"
+    unit: "percent"
+  - name: "throughput"
+    unit: "req/sec"
+
+# Custom functions for advanced scenarios
+functions:
+  generateRandomSymbol: |
+    function(context, events, done) {
+      const symbols = ['BTCUSDT', 'ETHUSDT', 'ADAUSDT', 'DOTUSDT', 'LINKUSDT', 'BNBUSDT', 'XRPUSDT', 'SOLUSDT'];
+      context.vars.randomSymbol = symbols[Math.floor(Math.random() * symbols.length)];
+      return done();
+    }
+  
+  generateRandomTimeframe: |
+    function(context, events, done) {
+      const timeframes = ['1m', '5m', '15m', '1h', '4h', '1d'];
+      context.vars.randomTimeframe = timeframes[Math.floor(Math.random() * timeframes.length)];
+      return done();
+    }
+  
+  validatePaperTradingMode: |
+    function(context, events, done) {
+      if (context.vars.paperTradingMode !== true) {
+        events.emit('error', 'Paper trading mode not enabled');
+      }
+      return done();
+    }
+
+# Plugins for enhanced monitoring
+plugins:
+  expect: {}
+  metrics-by-endpoint: {}
+  hdrhistogram: {}

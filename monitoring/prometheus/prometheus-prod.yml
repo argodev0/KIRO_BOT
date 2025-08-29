@@ -36,6 +36,13 @@ scrape_configs:
     metrics_path: '/metrics'
     scrape_interval: 10s
     scrape_timeout: 5s
+    
+  # Trading Bot Metrics Status
+  - job_name: 'trading-bot-metrics-status'
+    static_configs:
+      - targets: ['trading-bot-backend:3000']
+    metrics_path: '/api/v1/metrics/status'
+    scrape_interval: 30s
 
   # Trading Bot Frontend
   - job_name: 'trading-bot-frontend'

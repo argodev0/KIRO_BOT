@@ -82,7 +82,7 @@ export class NotificationService extends EventEmitter {
 
   private initializeServices(): void {
     // Initialize email service
-    this.emailTransporter = nodemailer.createTransporter({
+    this.emailTransporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: false,
@@ -123,8 +123,8 @@ export class NotificationService extends EventEmitter {
           <li><strong>Symbol:</strong> {{symbol}}</li>
           <li><strong>Side:</strong> {{side}}</li>
           <li><strong>Quantity:</strong> {{quantity}}</li>
-          <li><strong>Price:</strong> ${{price}}</li>
-          <li><strong>Total:</strong> ${{total}}</li>
+          <li><strong>Price:</strong> $\{{price}}</li>
+          <li><strong>Total:</strong> $\{{total}}</li>
         </ul>
         <p>Time: {{timestamp}}</p>
       `,
@@ -144,9 +144,9 @@ export class NotificationService extends EventEmitter {
           <li><strong>Symbol:</strong> {{symbol}}</li>
           <li><strong>Direction:</strong> {{direction}}</li>
           <li><strong>Confidence:</strong> {{confidence}}%</li>
-          <li><strong>Entry Price:</strong> ${{entryPrice}}</li>
-          <li><strong>Stop Loss:</strong> ${{stopLoss}}</li>
-          <li><strong>Take Profit:</strong> ${{takeProfit}}</li>
+          <li><strong>Entry Price:</strong> $\{{entryPrice}}</li>
+          <li><strong>Stop Loss:</strong> $\{{stopLoss}}</li>
+          <li><strong>Take Profit:</strong> $\{{takeProfit}}</li>
         </ul>
       `,
       smsTemplate: 'Signal: {{direction}} {{symbol}} at ${{entryPrice}} ({{confidence}}%)',

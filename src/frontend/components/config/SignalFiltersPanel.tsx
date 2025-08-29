@@ -55,7 +55,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -69,7 +69,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
 
             {signalFilters.confidence.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography gutterBottom>
                     Minimum Confidence: {signalFilters.confidence.minConfidence}%
                   </Typography>
@@ -89,7 +89,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -101,7 +101,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -125,7 +125,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -139,7 +139,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
 
             {signalFilters.technical.enabled && (
               <>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Required Indicators
                   </Typography>
@@ -161,7 +161,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   </Box>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -185,7 +185,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -199,7 +199,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
 
             {signalFilters.patterns.enabled && (
               <>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Allowed Patterns
                   </Typography>
@@ -221,7 +221,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   </Box>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography gutterBottom>
                     Minimum Pattern Strength: {signalFilters.patterns.minPatternStrength}%
                   </Typography>
@@ -241,7 +241,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -265,7 +265,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -279,7 +279,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
 
             {signalFilters.confluence.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -291,7 +291,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography gutterBottom>
                     Confluence Weight: {signalFilters.confluence.confluenceWeight}
                   </Typography>
@@ -310,7 +310,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Required Factor Types
                   </Typography>
@@ -344,7 +344,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -358,7 +358,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
 
             {signalFilters.timeframe.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Primary Timeframe</InputLabel>
                     <Select
@@ -374,7 +374,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   </FormControl>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -386,7 +386,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Confirmation Timeframes
                   </Typography>
@@ -420,7 +420,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -434,7 +434,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
 
             {signalFilters.volume.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography gutterBottom>
                     Minimum Volume Ratio: {signalFilters.volume.minVolumeRatio}x
                   </Typography>
@@ -454,7 +454,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -466,7 +466,7 @@ export const SignalFiltersPanel: React.FC<SignalFiltersPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch

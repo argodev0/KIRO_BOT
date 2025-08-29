@@ -1,19 +1,15 @@
-# Production Monitoring Stack
-# Docker Compose configuration for comprehensive monitoring
-
 version: '3.8'
 
 services:
-  # Prometheus - Metrics Collection
+  # Prometheus for metrics collection
   prometheus:
-    image: prom/prometheus:v2.40.0
-    container_name: prometheus-prod
-    restart: unless-stopped
+    image: prom/prometheus:v2.45.0
+    container_name: kiro-bot-prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus-prod.yml:/etc/prometheus/prometheus.yml
-      - ./prometheus/rules:/etc/prometheus/rules
+      - ./prometheus/prometheus-prod.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/rules:/etc/prometheus/rules:ro
       - prometheus_data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -21,88 +17,115 @@ services:
       - '--web.console.libraries=/etc/prometheus/console_libraries'
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=30d'
+      - '--storage.tsdb.retention.size=10GB'
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
+      - '--alertmanager.notification-queue-capacity=10000'
+      - '--query.max-concurrency=20'
+      - '--query.timeout=2m'
     networks:
       - monitoring
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.yourdomain.com`)"
-      - "traefik.http.routers.prometheus.tls=true"
-
-  # Grafana - Visualization
-  grafana:
-    image: grafana/grafana:9.3.0
-    container_name: grafana-prod
+      - trading-bot
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=9090"
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.0.0
+    container_name: kiro-bot-grafana
     ports:
       - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD}
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SECURITY_SECRET_KEY=${GRAFANA_SECRET_KEY}
-      - GF_SMTP_ENABLED=true
-      - GF_SMTP_HOST=${SMTP_HOST}
-      - GF_SMTP_USER=${SMTP_USER}
-      - GF_SMTP_PASSWORD=${SMTP_PASSWORD}
-      - GF_SMTP_FROM_ADDRESS=alerts@yourdomain.com
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_USERS_ALLOW_ORG_CREATE=false
+      - GF_USERS_AUTO_ASSIGN_ORG=true
+      - GF_USERS_AUTO_ASSIGN_ORG_ROLE=Viewer
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel
+      - GF_FEATURE_TOGGLES_ENABLE=ngalert
+      - GF_UNIFIED_ALERTING_ENABLED=true
+      - GF_ALERTING_ENABLED=false
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s:%(http_port)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     networks:
       - monitoring
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.yourdomain.com`)"
-      - "traefik.http.routers.grafana.tls=true"
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  # AlertManager - Alert Routing
+  # AlertManager for alert handling
   alertmanager:
     image: prom/alertmanager:v0.25.0
-    container_name: alertmanager-prod
-    restart: unless-stopped
+    container_name: kiro-bot-alertmanager
     ports:
       - "9093:9093"
     volumes:
-      - ./alertmanager/alertmanager-prod.yml:/etc/alertmanager/alertmanager.yml
+      - ./alertmanager/alertmanager-prod.yml:/etc/alertmanager/alertmanager.yml:ro
       - alertmanager_data:/alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
-      - '--web.external-url=https://alerts.yourdomain.com'
+      - '--web.external-url=http://localhost:9093'
+      - '--cluster.listen-address=0.0.0.0:9094'
+      - '--log.level=info'
     networks:
       - monitoring
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.alertmanager.rule=Host(`alerts.yourdomain.com`)"
-      - "traefik.http.routers.alertmanager.tls=true"
-
-  # Node Exporter - System Metrics
-  node-exporter:
-    image: prom/node-exporter:v1.5.0
-    container_name: node-exporter-prod
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Node Exporter for system metrics
+  node-exporter:
+    image: prom/node-exporter:v1.6.0
+    container_name: kiro-bot-node-exporter
     ports:
       - "9100:9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
       - /:/rootfs:ro
+      - /etc/hostname:/etc/nodename:ro
+      - /etc/localtime:/etc/localtime:ro
     command:
       - '--path.procfs=/host/proc'
       - '--path.rootfs=/rootfs'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/var/lib/node_exporter/textfile_collector'
+      - '--collector.systemd'
+      - '--collector.processes'
     networks:
       - monitoring
-
-  # cAdvisor - Container Metrics
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:v0.46.0
-    container_name: cadvisor-prod
     restart: unless-stopped
+    pid: host
+
+  # cAdvisor for container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: kiro-bot-cadvisor
     ports:
       - "8080:8080"
     volumes:
@@ -116,108 +139,132 @@ services:
       - /dev/kmsg
     networks:
       - monitoring
-
-  # Elasticsearch - Log Storage
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.0
-    container_name: elasticsearch-prod
     restart: unless-stopped
-    environment:
-      - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    ports:
-      - "9200:9200"
-    networks:
-      - monitoring
+    command:
+      - '--housekeeping_interval=30s'
+      - '--max_housekeeping_interval=35s'
+      - '--event_storage_event_limit=default=0'
+      - '--event_storage_age_limit=default=0'
+      - '--disable_metrics=percpu,sched,tcp,udp,disk,diskIO,accelerator,hugetlb,referenced_memory,cpu_topology,resctrl'
 
-  # Logstash - Log Processing
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.5.0
-    container_name: logstash-prod
-    restart: unless-stopped
-    volumes:
-      - ./logstash/config/logstash-prod.yml:/usr/share/logstash/config/logstash.yml
-      - ./logstash/pipeline:/usr/share/logstash/pipeline
-    ports:
-      - "5044:5044"
-      - "5000:5000/tcp"
-      - "5000:5000/udp"
-      - "9600:9600"
-    environment:
-      - "LS_JAVA_OPTS=-Xmx1g -Xms1g"
-    networks:
-      - monitoring
-    depends_on:
-      - elasticsearch
-
-  # Kibana - Log Visualization
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.5.0
-    container_name: kibana-prod
-    restart: unless-stopped
-    ports:
-      - "5601:5601"
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTICSEARCH_PASSWORD=${ELASTIC_PASSWORD}
-    networks:
-      - monitoring
-    depends_on:
-      - elasticsearch
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.kibana.rule=Host(`logs.yourdomain.com`)"
-      - "traefik.http.routers.kibana.tls=true"
-
-  # Jaeger - Distributed Tracing
-  jaeger:
-    image: jaegertracing/all-in-one:1.39
-    container_name: jaeger-prod
-    restart: unless-stopped
-    ports:
-      - "16686:16686"
-      - "14268:14268"
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    networks:
-      - monitoring
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.jaeger.rule=Host(`tracing.yourdomain.com`)"
-      - "traefik.http.routers.jaeger.tls=true"
-
-  # Uptime Kuma - Uptime Monitoring
-  uptime-kuma:
-    image: louislam/uptime-kuma:1.18.5
-    container_name: uptime-kuma-prod
-    restart: unless-stopped
-    ports:
-      - "3002:3001"
-    volumes:
-      - uptime_data:/app/data
-    networks:
-      - monitoring
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.uptime.rule=Host(`uptime.yourdomain.com`)"
-      - "traefik.http.routers.uptime.tls=true"
-
-  # Blackbox Exporter - External Monitoring
+  # Blackbox Exporter for external monitoring
   blackbox-exporter:
-    image: prom/blackbox-exporter:v0.22.0
-    container_name: blackbox-exporter-prod
-    restart: unless-stopped
+    image: prom/blackbox-exporter:v0.24.0
+    container_name: kiro-bot-blackbox-exporter
     ports:
       - "9115:9115"
     volumes:
-      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml
+      - ./blackbox/blackbox.yml:/etc/blackbox_exporter/config.yml:ro
     networks:
       - monitoring
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+
+  # Postgres Exporter for database metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.12.0
+    container_name: kiro-bot-postgres-exporter
+    ports:
+      - "9187:9187"
+    environment:
+      - DATA_SOURCE_NAME=${POSTGRES_EXPORTER_DSN:-postgresql://postgres:password@postgres:5432/kiro_bot?sslmode=disable}
+      - PG_EXPORTER_EXTEND_QUERY_PATH=/etc/postgres_exporter/queries.yaml
+    volumes:
+      - ./postgres-exporter/queries.yaml:/etc/postgres_exporter/queries.yaml:ro
+    networks:
+      - monitoring
+      - trading-bot
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  # Redis Exporter for cache metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.52.0
+    container_name: kiro-bot-redis-exporter
+    ports:
+      - "9121:9121"
+    environment:
+      - REDIS_ADDR=${REDIS_URL:-redis://redis:6379}
+      - REDIS_EXPORTER_LOG_FORMAT=json
+    networks:
+      - monitoring
+      - trading-bot
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  # Nginx Exporter for web server metrics
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:0.11.0
+    container_name: kiro-bot-nginx-exporter
+    ports:
+      - "9113:9113"
+    command:
+      - '-nginx.scrape-uri=http://nginx:8080/nginx_status'
+    networks:
+      - monitoring
+      - trading-bot
+    restart: unless-stopped
+
+  # Loki for log aggregation
+  loki:
+    image: grafana/loki:2.8.0
+    container_name: kiro-bot-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Promtail for log collection
+  promtail:
+    image: grafana/promtail:2.8.0
+    container_name: kiro-bot-promtail
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - monitoring
+    restart: unless-stopped
+    depends_on:
+      - loki
+
+  # Jaeger for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.46
+    container_name: kiro-bot-jaeger
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Pushgateway for batch job metrics
+  pushgateway:
+    image: prom/pushgateway:v1.6.0
+    container_name: kiro-bot-pushgateway
+    ports:
+      - "9091:9091"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    command:
+      - '--web.enable-admin-api'
+      - '--persistence.file=/tmp/pushgateway.data'
+      - '--persistence.interval=5m'
 
 volumes:
   prometheus_data:
@@ -226,14 +273,13 @@ volumes:
     driver: local
   alertmanager_data:
     driver: local
-  elasticsearch_data:
-    driver: local
-  uptime_data:
+  loki_data:
     driver: local
 
 networks:
   monitoring:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+    name: kiro-bot-monitoring
+  trading-bot:
+    external: true
+    name: kiro-bot-network

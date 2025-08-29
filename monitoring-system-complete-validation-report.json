@@ -1,0 +1,249 @@
+{
+  "timestamp": "2025-08-29T02:24:17.016Z",
+  "overallStatus": "passed",
+  "phases": {
+    "monitoringComponents": {
+      "status": "passed",
+      "message": "Monitoring components validation passed",
+      "details": {
+        "timestamp": "2025-08-29T02:24:17.024Z",
+        "overallStatus": "passed",
+        "tests": {
+          "configurationFiles": {
+            "status": "passed",
+            "message": "4/4 configuration files are valid",
+            "details": [
+              {
+                "file": "monitoring/production-monitoring.yml",
+                "status": "passed",
+                "message": "Configuration file is valid",
+                "size": 8294
+              },
+              {
+                "file": "monitoring/prometheus/prometheus-prod.yml",
+                "status": "passed",
+                "message": "Configuration file is valid",
+                "size": 3967
+              },
+              {
+                "file": "monitoring/alertmanager/alertmanager-prod.yml",
+                "status": "passed",
+                "message": "Configuration file is valid",
+                "size": 8672
+              },
+              {
+                "file": "monitoring/grafana/grafana.ini",
+                "status": "passed",
+                "message": "Configuration file exists",
+                "size": 2199
+              }
+            ],
+            "timestamp": "2025-08-29T02:24:17.067Z"
+          },
+          "monitoringService": {
+            "status": "passed",
+            "message": "5/5 monitoring service checks passed",
+            "details": [
+              {
+                "test": "src/services/MonitoringService.ts exists and has exports",
+                "status": "passed",
+                "details": {
+                  "size": 20819,
+                  "hasExports": true
+                }
+              },
+              {
+                "test": "src/services/SystemPerformanceMonitor.ts exists and has exports",
+                "status": "passed",
+                "details": {
+                  "size": 11223,
+                  "hasExports": true
+                }
+              },
+              {
+                "test": "src/services/SystemHealthService.ts exists and has exports",
+                "status": "passed",
+                "details": {
+                  "size": 26956,
+                  "hasExports": true
+                }
+              },
+              {
+                "test": "src/controllers/HealthController.ts exists and has exports",
+                "status": "passed",
+                "details": {
+                  "size": 28781,
+                  "hasExports": true
+                }
+              },
+              {
+                "test": "TypeScript compilation (dist folder)",
+                "status": "passed",
+                "message": "Compiled JavaScript exists"
+              }
+            ],
+            "timestamp": "2025-08-29T02:24:17.072Z"
+          },
+          "healthEndpoints": {
+            "status": "skipped",
+            "message": "Application not running, endpoints not tested",
+            "details": {
+              "applicationRunning": false,
+              "results": []
+            },
+            "timestamp": "2025-08-29T02:24:17.115Z"
+          },
+          "alertConfigurations": {
+            "status": "passed",
+            "message": "88 alert rules configured across 3 files",
+            "details": [
+              {
+                "file": "monitoring/prometheus/rules/trading-bot-alerts.yml",
+                "status": "passed",
+                "message": "29 alert rules configured",
+                "rulesCount": 29
+              },
+              {
+                "file": "monitoring/prometheus/rules/paper-trading-safety-alerts.yml",
+                "status": "passed",
+                "message": "24 alert rules configured",
+                "rulesCount": 24
+              },
+              {
+                "file": "monitoring/prometheus/rules/real-time-data-alerts.yml",
+                "status": "passed",
+                "message": "35 alert rules configured",
+                "rulesCount": 35
+              }
+            ],
+            "timestamp": "2025-08-29T02:24:17.180Z"
+          },
+          "grafanaDashboards": {
+            "status": "passed",
+            "message": "6 dashboards with 49 total panels",
+            "details": [
+              {
+                "file": "paper-trading-safety.json",
+                "status": "passed",
+                "title": "Paper Trading Safety Dashboard",
+                "panelsCount": 9,
+                "message": "9 panels configured"
+              },
+              {
+                "file": "performance-analytics.json",
+                "status": "passed",
+                "title": "Performance Analytics Dashboard",
+                "panelsCount": 10,
+                "message": "10 panels configured"
+              },
+              {
+                "file": "real-time-data-feeds.json",
+                "status": "passed",
+                "title": "Real-time Data Feeds Dashboard",
+                "panelsCount": 10,
+                "message": "10 panels configured"
+              },
+              {
+                "file": "system-metrics.json",
+                "status": "passed",
+                "title": "System Metrics Dashboard",
+                "panelsCount": 6,
+                "message": "6 panels configured"
+              },
+              {
+                "file": "trading-bot-overview.json",
+                "status": "passed",
+                "title": "Trading Bot - Overview",
+                "panelsCount": 4,
+                "message": "4 panels configured"
+              },
+              {
+                "file": "trading-metrics.json",
+                "status": "passed",
+                "title": "Trading Metrics Dashboard",
+                "panelsCount": 10,
+                "message": "10 panels configured"
+              }
+            ],
+            "timestamp": "2025-08-29T02:24:17.195Z"
+          }
+        },
+        "errors": [],
+        "warnings": [],
+        "summary": {
+          "totalTests": 5,
+          "passed": 4,
+          "failed": 0,
+          "warnings": 0,
+          "skipped": 1,
+          "errors": 0,
+          "warningMessages": 0
+        }
+      },
+      "timestamp": "2025-08-29T02:24:17.202Z"
+    },
+    "healthEndpoints": {
+      "status": "unknown",
+      "message": "Health endpoints testing unknown",
+      "details": {
+        "timestamp": "2025-08-29T02:24:17.204Z",
+        "overallStatus": "unknown",
+        "tests": {},
+        "errors": [
+          {
+            "stage": "testing",
+            "error": "Failed to start application: Cannot access 'process' before initialization",
+            "timestamp": "2025-08-29T02:24:17.212Z"
+          }
+        ],
+        "warnings": [],
+        "summary": {}
+      },
+      "timestamp": "2025-08-29T02:24:17.214Z"
+    }
+  },
+  "errors": [],
+  "warnings": [],
+  "summary": {
+    "totalPhases": 2,
+    "passedPhases": 1,
+    "failedPhases": 0,
+    "warningPhases": 0,
+    "errors": 0,
+    "warnings": 0,
+    "breakdown": {
+      "configurationFiles": {
+        "status": "passed",
+        "message": "4/4 configuration files are valid",
+        "count": 4
+      },
+      "monitoringService": {
+        "status": "passed",
+        "message": "5/5 monitoring service checks passed",
+        "count": 5
+      },
+      "alertConfigurations": {
+        "status": "passed",
+        "message": "88 alert rules configured across 3 files",
+        "count": 3
+      },
+      "grafanaDashboards": {
+        "status": "passed",
+        "message": "6 dashboards with 49 total panels",
+        "count": 6
+      },
+      "healthEndpoints": {
+        "status": "not_found",
+        "count": 0
+      },
+      "metricsEndpoint": {
+        "status": "not_found",
+        "count": 0
+      },
+      "errorHandling": {
+        "status": "not_found",
+        "count": 0
+      }
+    }
+  }
+}

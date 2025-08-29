@@ -38,7 +38,7 @@ describe('Market Data Validation', () => {
       };
       const { error } = validateCandleData(invalidCandle);
       expect(error).toBeDefined();
-      expect(error?.message).toContain('High must be >= max(open, close)');
+      expect(error?.details?.[0]?.message).toContain('High must be >= max(open, close)');
     });
 
     it('should reject negative prices', () => {
@@ -92,7 +92,7 @@ describe('Market Data Validation', () => {
       };
       const { error } = validateTickerData(invalidTicker);
       expect(error).toBeDefined();
-      expect(error?.message).toContain('Bid must be less than ask');
+      expect(error?.details?.[0]?.message).toContain('Bid must be less than ask');
     });
 
     it('should allow optional fields to be missing', () => {
@@ -129,7 +129,7 @@ describe('Market Data Validation', () => {
       };
       const { error } = validateOrderBookData(invalidOrderBook);
       expect(error).toBeDefined();
-      expect(error?.message).toContain('Highest bid must be less than lowest ask');
+      expect(error?.details?.[0]?.message).toContain('Highest bid must be less than lowest ask');
     });
 
     it('should reject empty bids or asks', () => {

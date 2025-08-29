@@ -1,0 +1,84 @@
+{
+  "timestamp": "2025-08-29T07:50:10.481Z",
+  "overall": {
+    "passed": false,
+    "score": 0
+  },
+  "tests": {
+    "frontend_functionality": {
+      "name": "Web Interface Functionality",
+      "passed": false,
+      "details": {},
+      "errors": [
+        "Frontend not accessible: connect ECONNREFUSED 127.0.0.1:3002"
+      ]
+    },
+    "paper_trading_operations": {
+      "name": "Paper Trading Operations",
+      "passed": false,
+      "details": {},
+      "errors": [
+        "Paper trading functionality test failed: Request failed with status code 404"
+      ]
+    },
+    "paper_trading_safety": {
+      "name": "Paper Trading Safety Verification",
+      "passed": false,
+      "details": {
+        "error": "spawnSync /bin/sh ETIMEDOUT"
+      },
+      "errors": [
+        "spawnSync /bin/sh ETIMEDOUT"
+      ],
+      "startTime": 1756453810551,
+      "duration": 30033
+    },
+    "market_data_streaming": {
+      "name": "Real-time Market Data Streaming",
+      "passed": false,
+      "details": {},
+      "errors": [
+        "Live market data service validation failed: Request failed with status code 404"
+      ]
+    },
+    "critical_user_workflows": {
+      "name": "Critical User Workflows",
+      "passed": false,
+      "details": {},
+      "errors": [
+        "Trading workflow test failed: Request failed with status code 404"
+      ]
+    },
+    "e2e_tests": {
+      "name": "End-to-End Test Suite",
+      "passed": false,
+      "details": {
+        "error": "spawnSync /bin/sh ETIMEDOUT"
+      },
+      "errors": [
+        "spawnSync /bin/sh ETIMEDOUT"
+      ],
+      "startTime": 1756453840661,
+      "duration": 30030
+    }
+  },
+  "errors": [],
+  "warnings": [],
+  "recommendations": [
+    "CRITICAL: Paper trading safety failures detected - DO NOT USE IN PRODUCTION",
+    "Application validation score below threshold - review and fix issues"
+  ],
+  "startTime": 1756453810481,
+  "duration": 60242,
+  "summary": {
+    "totalTests": 6,
+    "passedTests": 0,
+    "skippedTests": 0,
+    "failedTests": 6,
+    "errors": 0,
+    "warnings": 0,
+    "overallScore": 0,
+    "passed": false,
+    "duration": 60
+  }
+}

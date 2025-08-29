@@ -23,7 +23,10 @@ export { KuCoinExchange } from './exchanges/KuCoinExchange';
 export { DataNormalizer } from './exchanges/DataNormalizer';
 
 // Indicator services
+export { TechnicalIndicatorEngine } from './TechnicalIndicatorEngine';
 export { RSICalculator } from './indicators/RSICalculator';
+export { MACDCalculator } from './indicators/MACDCalculator';
+export { BollingerBandsCalculator } from './indicators/BollingerBandsCalculator';
 export { WaveTrendCalculator } from './indicators/WaveTrendCalculator';
 export { PVTCalculator } from './indicators/PVTCalculator';
 export { SupportResistanceDetector } from './indicators/SupportResistanceDetector';
@@ -33,6 +36,9 @@ export { MarketRegimeClassifier } from './indicators/MarketRegimeClassifier';
 export { WebSocketServer } from './WebSocketServer';
 export { DataBroadcastService } from './DataBroadcastService';
 export { WebSocketClientManager } from './WebSocketClientManager';
+export { BinanceWebSocketService } from './BinanceWebSocketService';
+export { KuCoinWebSocketService } from './KuCoinWebSocketService';
+export { UnifiedMarketDataService } from './UnifiedMarketDataService';
 
 // Analytics services
 export { AnalyticsService } from './AnalyticsService';

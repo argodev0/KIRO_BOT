@@ -18,9 +18,9 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
+  "id": 4,
   "links": [],
-  "liveNow": false,
+  "liveNow": true,
   "panels": [
     {
       "datasource": {
@@ -67,7 +67,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 6,
         "x": 0,
         "y": 0
@@ -76,7 +76,7 @@
       "options": {
         "colorMode": "background",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -94,13 +94,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "exchange_connection_status{exchange=\"binance\"}",
+          "expr": "websocket_connections{exchange=\"binance\",status=\"connected\"}",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Binance WebSocket",
           "refId": "A"
         }
       ],
-      "title": "Binance Connection",
+      "title": "Binance Connection Status",
       "type": "stat"
     },
     {
@@ -148,7 +148,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 6,
         "x": 6,
         "y": 0
@@ -157,7 +157,7 @@
       "options": {
         "colorMode": "background",
         "graphMode": "none",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -175,13 +175,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "exchange_connection_status{exchange=\"kucoin\"}",
+          "expr": "websocket_connections{exchange=\"kucoin\",status=\"connected\"}",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "KuCoin WebSocket",
           "refId": "A"
         }
       ],
-      "title": "KuCoin Connection",
+      "title": "KuCoin Connection Status",
       "type": "stat"
     },
     {
@@ -204,16 +204,16 @@
               },
               {
                 "color": "red",
-                "value": 100
+                "value": 80
               }
             ]
           },
-          "unit": "ms"
+          "unit": "short"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 6,
         "x": 12,
         "y": 0
@@ -222,7 +222,7 @@
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -240,13 +240,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "avg(market_data_latency_ms)",
+          "expr": "sum(websocket_connections{status=\"connected\"})",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Total Connections",
           "refId": "A"
         }
       ],
-      "title": "Average Data Latency",
+      "title": "Total WebSocket Connections",
       "type": "stat"
     },
     {
@@ -266,15 +266,19 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
               }
             ]
           },
-          "unit": "short"
+          "unit": "ms"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
+        "h": 4,
         "w": 6,
         "x": 18,
         "y": 0
@@ -283,7 +287,7 @@
       "options": {
         "colorMode": "value",
         "graphMode": "area",
-        "justifyMode": "center",
+        "justifyMode": "auto",
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
@@ -301,13 +305,13 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "websocket_connections_active",
+          "expr": "avg(market_data_latency)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "Avg Latency",
           "refId": "A"
         }
       ],
-      "title": "Active WebSocket Connections",
+      "title": "Average Market Data Latency",
       "type": "stat"
     },
     {
@@ -362,7 +366,7 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "reqps"
         },
         "overrides": []
       },
@@ -370,7 +374,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 4
       },
       "id": 5,
       "options": {
@@ -390,7 +394,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(market_data_updates_total{exchange=\"binance\"}[5m])",
+          "expr": "rate(market_data_updates{exchange=\"binance\"}[5m])",
           "interval": "",
           "legendFormat": "Binance Updates/sec",
           "refId": "A"
@@ -400,7 +404,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(market_data_updates_total{exchange=\"kucoin\"}[5m])",
+          "expr": "rate(market_data_updates{exchange=\"kucoin\"}[5m])",
           "interval": "",
           "legendFormat": "KuCoin Updates/sec",
           "refId": "B"
@@ -469,7 +473,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 4
       },
       "id": 6,
       "options": {
@@ -489,9 +493,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "market_data_latency_ms{exchange=\"binance\"}",
+          "expr": "histogram_quantile(0.95, rate(market_data_latency_bucket{exchange=\"binance\"}[5m]))",
           "interval": "",
-          "legendFormat": "Binance Latency",
+          "legendFormat": "Binance 95th percentile",
           "refId": "A"
         },
         {
@@ -499,13 +503,23 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "market_data_latency_ms{exchange=\"kucoin\"}",
+          "expr": "histogram_quantile(0.95, rate(market_data_latency_bucket{exchange=\"kucoin\"}[5m]))",
           "interval": "",
-          "legendFormat": "KuCoin Latency",
+          "legendFormat": "KuCoin 95th percentile",
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.50, rate(market_data_latency_bucket[5m]))",
+          "interval": "",
+          "legendFormat": "Overall 50th percentile",
+          "refId": "C"
         }
       ],
-      "title": "Exchange Latency",
+      "title": "Market Data Latency Distribution",
       "type": "timeseries"
     },
     {
@@ -568,7 +582,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 14
+        "y": 12
       },
       "id": 7,
       "options": {
@@ -588,9 +602,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(websocket_messages_sent_total[5m])",
+          "expr": "rate(websocket_messages{exchange=\"binance\",direction=\"received\"}[5m])",
           "interval": "",
-          "legendFormat": "Messages Sent/sec",
+          "legendFormat": "Binance Messages/sec",
           "refId": "A"
         },
         {
@@ -598,9 +612,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(websocket_messages_received_total[5m])",
+          "expr": "rate(websocket_messages{exchange=\"kucoin\",direction=\"received\"}[5m])",
           "interval": "",
-          "legendFormat": "Messages Received/sec",
+          "legendFormat": "KuCoin Messages/sec",
           "refId": "B"
         }
       ],
@@ -667,7 +681,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 14
+        "y": 12
       },
       "id": 8,
       "options": {
@@ -687,13 +701,23 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(exchange_api_rate_limit_hits_total[5m])",
+          "expr": "rate(websocket_reconnections{exchange=\"binance\"}[5m])",
           "interval": "",
-          "legendFormat": "{{exchange}} Rate Limit Hits/sec",
+          "legendFormat": "Binance Reconnections/sec",
           "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(websocket_reconnections{exchange=\"kucoin\"}[5m])",
+          "interval": "",
+          "legendFormat": "KuCoin Reconnections/sec",
+          "refId": "B"
         }
       ],
-      "title": "API Rate Limit Hits",
+      "title": "WebSocket Reconnection Rate",
       "type": "timeseries"
     },
     {
@@ -748,15 +772,15 @@
               }
             ]
           },
-          "unit": "short"
+          "unit": "reqps"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 24,
+        "w": 12,
         "x": 0,
-        "y": 22
+        "y": 20
       },
       "id": 9,
       "options": {
@@ -776,9 +800,9 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(market_data_errors_total[5m])",
+          "expr": "rate(technical_indicator_calculations{indicator=\"rsi\"}[5m])",
           "interval": "",
-          "legendFormat": "{{exchange}} Errors/sec",
+          "legendFormat": "RSI Calculations/sec",
           "refId": "A"
         },
         {
@@ -786,13 +810,122 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "rate(websocket_connection_errors_total[5m])",
+          "expr": "rate(technical_indicator_calculations{indicator=\"macd\"}[5m])",
           "interval": "",
-          "legendFormat": "WebSocket Errors/sec",
+          "legendFormat": "MACD Calculations/sec",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(technical_indicator_calculations{indicator=\"bollinger\"}[5m])",
+          "interval": "",
+          "legendFormat": "Bollinger Bands Calculations/sec",
+          "refId": "C"
+        }
+      ],
+      "title": "Technical Indicator Calculation Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 20
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "cache_hit_rate{cache_type=\"redis\"}",
+          "interval": "",
+          "legendFormat": "Redis Cache Hit Rate",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "cache_hit_rate{cache_type=\"memory\"}",
+          "interval": "",
+          "legendFormat": "Memory Cache Hit Rate",
           "refId": "B"
         }
       ],
-      "title": "Data Feed Errors",
+      "title": "Cache Hit Rates",
       "type": "timeseries"
     }
   ],
@@ -802,7 +935,7 @@
   "tags": [
     "trading-bot",
     "real-time",
-    "data-feeds"
+    "market-data"
   ],
   "templating": {
     "list": []

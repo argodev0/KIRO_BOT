@@ -21,7 +21,7 @@ describe('Input Validation Middleware', () => {
   describe('preventSQLInjection', () => {
     beforeEach(() => {
       app.use(preventSQLInjection);
-      app.post('/test', (req, res) => res.json({ success: true }));
+      app.post('/test', (_req, res) => res.json({ success: true }));
     });
 
     const sqlInjectionPayloads = [
@@ -121,7 +121,7 @@ describe('Input Validation Middleware', () => {
   describe('preventPathTraversal', () => {
     beforeEach(() => {
       app.use(preventPathTraversal);
-      app.post('/test', (req, res) => res.json({ success: true }));
+      app.post('/test', (_req, res) => res.json({ success: true }));
     });
 
     const pathTraversalPayloads = [
@@ -155,7 +155,7 @@ describe('Input Validation Middleware', () => {
   describe('preventCommandInjection', () => {
     beforeEach(() => {
       app.use(preventCommandInjection);
-      app.post('/test', (req, res) => res.json({ success: true }));
+      app.post('/test', (_req, res) => res.json({ success: true }));
     });
 
     const commandInjectionPayloads = [
@@ -205,7 +205,7 @@ describe('Input Validation Middleware', () => {
 
     beforeEach(() => {
       app.use(validate(testSchema));
-      app.post('/test', (req, res) => res.json({ success: true }));
+      app.post('/test', (_req, res) => res.json({ success: true }));
     });
 
     it('should validate valid input', async () => {

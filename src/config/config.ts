@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { validateProductionConfig, performProductionStartupValidation } from './production';
+import { validateProductionConfig } from './production';
 
 // Load environment-specific configuration
 const envFile = process.env.NODE_ENV === 'production' ? '.env.production' : '.env';

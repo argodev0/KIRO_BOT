@@ -4,7 +4,7 @@
  */
 
 import request from 'supertest';
-import express from 'express';
+import express, { Express } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { applyProductionSecurity, SecurityIntegration } from '@/middleware/securityIntegration';
 import { config } from '@/config/config';
@@ -17,7 +17,7 @@ jest.mock('@/services/AuditLogService');
 jest.mock('@/services/NotificationService');
 
 describe('Security Integration E2E Tests', () => {
-  let app: express.Application;
+  let app: Express;
   let mockPrisma: jest.Mocked<PrismaClient>;
   let securityIntegration: SecurityIntegration;
 
@@ -389,7 +389,7 @@ describe('Security Integration E2E Tests', () => {
 
   describe('Security Metrics', () => {
     it('should collect security metrics', () => {
-      const metrics = securityIntegration.getSecurityMetrics();
+      const metrics = securityIntegration.getSecurityStatus();
       
       expect(metrics).toHaveProperty('configuration');
       expect(metrics).toHaveProperty('metrics');
@@ -402,7 +402,7 @@ describe('Security Integration E2E Tests', () => {
         .get('/wp-admin')
         .expect(403);
 
-      const metrics = securityIntegration.getSecurityMetrics();
+      const metrics = securityIntegration.getSecurityStatus();
       expect(metrics.metrics.blockedRequests).toBeGreaterThan(0);
     });
   });

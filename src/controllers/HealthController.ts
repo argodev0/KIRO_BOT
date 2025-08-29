@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { MonitoringService } from '../services/MonitoringService';
 import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
+import { SystemHealthService } from '../services/SystemHealthService';
 import { logger, logPerformanceMetric } from '../utils/logger';
 import { config } from '../config/config';
 import * as os from 'os';
@@ -10,10 +11,12 @@ import { promisify } from 'util';
 export class HealthController {
   private monitoring: MonitoringService;
   private performance: PerformanceMonitoringService;
+  private systemHealthService: SystemHealthService;
 
   constructor() {
     this.monitoring = MonitoringService.getInstance();
     this.performance = PerformanceMonitoringService.getInstance();
+    this.systemHealthService = SystemHealthService.getInstance();
   }
 
   /**
@@ -284,8 +287,507 @@ export class HealthController {
     }
   };
 
-  private async performDeepHealthChecks(): Promise<any> {
-    const checks: any = {};
+  /**
+   * Comprehensive system health endpoint
+   * Returns detailed health information for all services
+   */
+  public systemHealth = async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const startTime = Date.now();
+      const healthReport = await this.systemHealthService.getSystemHealth();
+      
+      // Log performance metric
+      logPerformanceMetric('system_health_check_duration', Date.now() - startTime, {
+        endpoint: 'system_health',
+        overall_status: healthReport.overall
+      });
+
+      const statusCode = healthReport.overall === 'healthy' ? 200 : 
+                        healthReport.overall === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json(healthReport);
+    } catch (error) {
+      logger.error('System health check failed:', error);
+      res.status(503).json({
+        overall: 'unhealthy',
+        error: 'System health check failed',
+        timestamp: new Date().toISOString(),
+        services: {},
+        metrics: {}
+      });
+    }
+  };
+
+  /**
+   * All services health check endpoint
+   * Returns health status for all monitored services
+   */
+  public allServicesHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const startTime = Date.now();
+      const healthReport = await this.systemHealthService.getSystemHealth();
+      
+      // Extract service statuses
+      const services = {
+        database: healthReport.services.database,
+        redis: healthReport.services.redis,
+        exchanges: healthReport.services.exchanges,
+        websocket: healthReport.services.websocket,
+        filesystem: healthReport.services.filesystem,
+        memory: healthReport.services.memory,
+        cpu: healthReport.services.cpu,
+        paperTradingSafety: healthReport.services.paperTradingSafety
+      };
+
+      // Calculate overall service health
+      const serviceStatuses = Object.values(services).map(s => s.status);
+      const hasUnhealthy = serviceStatuses.includes('unhealthy');
+      const hasDegraded = serviceStatuses.includes('degraded');
+      
+      let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+      if (hasUnhealthy) {
+        overallStatus = 'unhealthy';
+      } else if (hasDegraded) {
+        overallStatus = 'degraded';
+      }
+
+      const responseTime = Date.now() - startTime;
+      
+      // Log performance metric
+      logPerformanceMetric('all_services_health_check_duration', responseTime, {
+        endpoint: 'all_services_health',
+        overall_status: overallStatus,
+        service_count: Object.keys(services).length
+      });
+
+      const statusCode = overallStatus === 'healthy' ? 200 : 
+                        overallStatus === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        overall: overallStatus,
+        timestamp: new Date().toISOString(),
+        responseTime,
+        services,
+        summary: {
+          total: Object.keys(services).length,
+          healthy: serviceStatuses.filter(s => s === 'healthy').length,
+          degraded: serviceStatuses.filter(s => s === 'degraded').length,
+          unhealthy: serviceStatuses.filter(s => s === 'unhealthy').length
+        }
+      });
+    } catch (error) {
+      logger.error('All services health check failed:', error);
+      res.status(503).json({
+        overall: 'unhealthy',
+        error: 'All services health check failed',
+        timestamp: new Date().toISOString(),
+        services: {},
+        summary: { total: 0, healthy: 0, degraded: 0, unhealthy: 0 }
+      });
+    }
+  };
+
+  /**
+   * Infrastructure health check endpoint
+   * Checks core infrastructure components
+   */
+  public infrastructureHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const startTime = Date.now();
+      
+      // Check core infrastructure components
+      const [databaseResult, redisResult, filesystemResult] = await Promise.allSettled([
+        this.systemHealthService.checkDatabaseHealth(),
+        this.systemHealthService.checkRedisHealth(),
+        this.systemHealthService.checkFilesystemHealth()
+      ]);
+
+      const infrastructure = {
+        database: this.extractHealthResult(databaseResult, 'database'),
+        redis: this.extractHealthResult(redisResult, 'redis'),
+        filesystem: this.extractHealthResult(filesystemResult, 'filesystem')
+      };
+
+      // Determine overall infrastructure health
+      const infraStatuses = Object.values(infrastructure).map(s => s.status);
+      const hasUnhealthy = infraStatuses.includes('unhealthy');
+      const hasDegraded = infraStatuses.includes('degraded');
+      
+      let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+      if (hasUnhealthy) {
+        overallStatus = 'unhealthy';
+      } else if (hasDegraded) {
+        overallStatus = 'degraded';
+      }
+
+      const responseTime = Date.now() - startTime;
+      
+      // Log performance metric
+      logPerformanceMetric('infrastructure_health_check_duration', responseTime, {
+        endpoint: 'infrastructure_health',
+        overall_status: overallStatus
+      });
+
+      const statusCode = overallStatus === 'healthy' ? 200 : 
+                        overallStatus === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        overall: overallStatus,
+        timestamp: new Date().toISOString(),
+        responseTime,
+        infrastructure,
+        summary: {
+          total: Object.keys(infrastructure).length,
+          healthy: infraStatuses.filter(s => s === 'healthy').length,
+          degraded: infraStatuses.filter(s => s === 'degraded').length,
+          unhealthy: infraStatuses.filter(s => s === 'unhealthy').length
+        }
+      });
+    } catch (error) {
+      logger.error('Infrastructure health check failed:', error);
+      res.status(503).json({
+        overall: 'unhealthy',
+        error: 'Infrastructure health check failed',
+        timestamp: new Date().toISOString(),
+        infrastructure: {},
+        summary: { total: 0, healthy: 0, degraded: 0, unhealthy: 0 }
+      });
+    }
+  };
+
+  /**
+   * External services health check endpoint
+   * Checks external service connectivity (exchanges, APIs)
+   */
+  public externalServicesHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const startTime = Date.now();
+      
+      // Check external services
+      const exchangesResult = await this.systemHealthService.checkExchangesHealth();
+
+      const externalServices = {
+        exchanges: exchangesResult,
+        // Add other external services as needed
+      };
+
+      // Determine overall external services health
+      const extStatuses = Object.values(externalServices).map(s => s.status);
+      const hasUnhealthy = extStatuses.includes('unhealthy');
+      const hasDegraded = extStatuses.includes('degraded');
+      
+      let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+      if (hasUnhealthy) {
+        overallStatus = 'unhealthy';
+      } else if (hasDegraded) {
+        overallStatus = 'degraded';
+      }
+
+      const responseTime = Date.now() - startTime;
+      
+      // Log performance metric
+      logPerformanceMetric('external_services_health_check_duration', responseTime, {
+        endpoint: 'external_services_health',
+        overall_status: overallStatus
+      });
+
+      const statusCode = overallStatus === 'healthy' ? 200 : 
+                        overallStatus === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        overall: overallStatus,
+        timestamp: new Date().toISOString(),
+        responseTime,
+        externalServices,
+        summary: {
+          total: Object.keys(externalServices).length,
+          healthy: extStatuses.filter(s => s === 'healthy').length,
+          degraded: extStatuses.filter(s => s === 'degraded').length,
+          unhealthy: extStatuses.filter(s => s === 'unhealthy').length
+        }
+      });
+    } catch (error) {
+      logger.error('External services health check failed:', error);
+      res.status(503).json({
+        overall: 'unhealthy',
+        error: 'External services health check failed',
+        timestamp: new Date().toISOString(),
+        externalServices: {},
+        summary: { total: 0, healthy: 0, degraded: 0, unhealthy: 0 }
+      });
+    }
+  };
+
+  /**
+   * Application health check endpoint
+   * Checks application-specific health metrics
+   */
+  public applicationHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const startTime = Date.now();
+      
+      // Check application-specific components
+      const [memoryResult, cpuResult, paperTradingResult, websocketResult] = await Promise.allSettled([
+        this.systemHealthService.checkMemoryHealth(),
+        this.systemHealthService.checkCpuHealth(),
+        this.systemHealthService.checkPaperTradingSafety(),
+        this.systemHealthService.checkWebSocketHealth()
+      ]);
+
+      const application = {
+        memory: this.extractHealthResult(memoryResult, 'memory'),
+        cpu: this.extractHealthResult(cpuResult, 'cpu'),
+        paperTradingSafety: this.extractHealthResult(paperTradingResult, 'paperTradingSafety'),
+        websocket: this.extractHealthResult(websocketResult, 'websocket')
+      };
+
+      // Determine overall application health
+      const appStatuses = Object.values(application).map(s => s.status);
+      const hasUnhealthy = appStatuses.includes('unhealthy');
+      const hasDegraded = appStatuses.includes('degraded');
+      
+      let overallStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
+      if (hasUnhealthy) {
+        overallStatus = 'unhealthy';
+      } else if (hasDegraded) {
+        overallStatus = 'degraded';
+      }
+
+      const responseTime = Date.now() - startTime;
+      
+      // Log performance metric
+      logPerformanceMetric('application_health_check_duration', responseTime, {
+        endpoint: 'application_health',
+        overall_status: overallStatus
+      });
+
+      const statusCode = overallStatus === 'healthy' ? 200 : 
+                        overallStatus === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        overall: overallStatus,
+        timestamp: new Date().toISOString(),
+        responseTime,
+        application,
+        summary: {
+          total: Object.keys(application).length,
+          healthy: appStatuses.filter(s => s === 'healthy').length,
+          degraded: appStatuses.filter(s => s === 'degraded').length,
+          unhealthy: appStatuses.filter(s => s === 'unhealthy').length
+        }
+      });
+    } catch (error) {
+      logger.error('Application health check failed:', error);
+      res.status(503).json({
+        overall: 'unhealthy',
+        error: 'Application health check failed',
+        timestamp: new Date().toISOString(),
+        application: {},
+        summary: { total: 0, healthy: 0, degraded: 0, unhealthy: 0 }
+      });
+    }
+  };
+
+  /**
+   * Database health check endpoint
+   * Specific health check for database connectivity
+   */
+  public databaseHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.systemHealthService.checkDatabaseHealth();
+      
+      const statusCode = result.status === 'healthy' ? 200 : 
+                        result.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        service: 'database',
+        ...result,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Database health check failed:', error);
+      res.status(503).json({
+        service: 'database',
+        status: 'unhealthy',
+        error: 'Database health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  /**
+   * Redis health check endpoint
+   * Specific health check for Redis connectivity
+   */
+  public redisHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.systemHealthService.checkRedisHealth();
+      
+      const statusCode = result.status === 'healthy' ? 200 : 
+                        result.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        service: 'redis',
+        ...result,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Redis health check failed:', error);
+      res.status(503).json({
+        service: 'redis',
+        status: 'unhealthy',
+        error: 'Redis health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  /**
+   * Exchange APIs health check endpoint
+   * Specific health check for exchange API connectivity
+   */
+  public exchangesHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.systemHealthService.checkExchangesHealth();
+      
+      const statusCode = result.status === 'healthy' ? 200 : 
+                        result.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        service: 'exchanges',
+        ...result,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Exchanges health check failed:', error);
+      res.status(503).json({
+        service: 'exchanges',
+        status: 'unhealthy',
+        error: 'Exchanges health check failed',
+        timestamp: new Date().toISOString(),
+        exchangeDetails: {}
+      });
+    }
+  };
+
+  /**
+   * WebSocket health check endpoint
+   * Specific health check for WebSocket server
+   */
+  public websocketHealth = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.systemHealthService.checkWebSocketHealth();
+      
+      const statusCode = result.status === 'healthy' ? 200 : 
+                        result.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        service: 'websocket',
+        ...result,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('WebSocket health check failed:', error);
+      res.status(503).json({
+        service: 'websocket',
+        status: 'unhealthy',
+        error: 'WebSocket health check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  /**
+   * Paper trading safety check endpoint
+   * Validates paper trading safety configuration
+   */
+  public paperTradingSafety = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const result = await this.systemHealthService.checkPaperTradingSafety();
+      
+      const statusCode = result.status === 'healthy' ? 200 : 
+                        result.status === 'degraded' ? 200 : 503;
+      
+      res.status(statusCode).json({
+        service: 'paperTradingSafety',
+        ...result,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      logger.error('Paper trading safety check failed:', error);
+      res.status(503).json({
+        service: 'paperTradingSafety',
+        status: 'unhealthy',
+        error: 'Paper trading safety check failed',
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  /**
+   * Service status summary endpoint
+   * Returns status of all monitored services
+   */
+  public serviceStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const serviceStatuses = this.systemHealthService.getAllServiceStatuses();
+      const monitoringServices = this.monitoring.getServiceStatuses();
+      
+      // Combine both monitoring systems
+      const combinedStatuses = {
+        systemHealth: serviceStatuses.reduce((acc, service) => {
+          acc[service.name] = {
+            status: service.status,
+            lastCheck: service.lastCheck.toISOString(),
+            responseTime: service.responseTime,
+            error: service.error,
+            details: service.details
+          };
+          return acc;
+        }, {} as any),
+        monitoring: monitoringServices.reduce((acc, service) => {
+          acc[service.name] = {
+            status: service.status,
+            lastCheck: new Date(service.lastCheck).toISOString(),
+            responseTime: service.responseTime,
+            error: service.error
+          };
+          return acc;
+        }, {} as any)
+      };
+      
+      res.json({
+        timestamp: new Date().toISOString(),
+        services: combinedStatuses
+      });
+    } catch (error) {
+      logger.error('Error getting service statuses:', error);
+      res.status(500).json({ 
+        error: 'Failed to get service statuses',
+        timestamp: new Date().toISOString()
+      });
+    }
+  };
+
+  private extractHealthResult(
+    settledResult: PromiseSettledResult<any>,
+    serviceName: string
+  ): any {
+    if (settledResult.status === 'fulfilled') {
+      return settledResult.value;
+    } else {
+      logger.error(`Health check failed for ${serviceName}:`, settledResult.reason);
+      return {
+        status: 'unhealthy',
+        message: `Health check failed for ${serviceName}`,
+        responseTime: 0,
+        error: settledResult.reason?.message || 'Unknown error'
+      };
+    }
+  }
+
+  private async performDeepHealthChecks(): Promise<Record<string, { status: string; message: string; [key: string]: any }>> {
+    const checks: Record<string, { status: string; message: string; [key: string]: any }> = {};
 
     // File system check
     try {

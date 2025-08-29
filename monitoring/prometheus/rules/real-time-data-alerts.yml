@@ -1,245 +1,376 @@
-# Real-time Data Feed Alert Rules
-
 groups:
-  - name: real-time-data.critical
-    interval: 30s
+  - name: real-time-data-feeds
     rules:
-      # Critical Data Feed Alerts
-      - alert: AllExchangeConnectionsLost
-        expr: sum(exchange_connection_status) == 0
-        for: 1m
+      # Market Data Feed Alerts
+      - alert: BinanceWebSocketDisconnected
+        expr: kiro_bot_websocket_connections_active{exchange="binance",status="connected"} == 0
+        for: 30s
         labels:
           severity: critical
           service: market-data
-          category: connectivity
+          exchange: binance
         annotations:
-          summary: "CRITICAL: All exchange connections lost"
-          description: "No active connections to any exchanges"
-          runbook_url: "https://docs.yourdomain.com/runbooks/all-exchanges-down"
-          action_required: "Investigate network connectivity and exchange status"
+          summary: "Binance WebSocket connection lost"
+          description: "Binance WebSocket connection has been disconnected for more than 30 seconds"
 
-      - alert: PrimaryExchangeConnectionLost
-        expr: exchange_connection_status{exchange="binance"} == 0
-        for: 2m
+      - alert: KuCoinWebSocketDisconnected
+        expr: kiro_bot_websocket_connections_active{exchange="kucoin",status="connected"} == 0
+        for: 30s
         labels:
           severity: critical
           service: market-data
-          category: connectivity
+          exchange: kucoin
         annotations:
-          summary: "CRITICAL: Primary exchange (Binance) connection lost"
-          description: "Connection to Binance exchange has been lost"
-          runbook_url: "https://docs.yourdomain.com/runbooks/binance-connection-lost"
-          action_required: "Check Binance API status and network connectivity"
+          summary: "KuCoin WebSocket connection lost"
+          description: "KuCoin WebSocket connection has been disconnected for more than 30 seconds"
 
       - alert: MarketDataStale
-        expr: time() - market_data_last_update_timestamp > 300
+        expr: time() - kiro_bot_market_data_last_update_timestamp > 60
         for: 1m
         labels:
-          severity: critical
+          severity: warning
           service: market-data
-          category: data-freshness
         annotations:
-          summary: "CRITICAL: Market data is stale"
-          description: "No market data updates received for {{ $value }} seconds"
-          runbook_url: "https://docs.yourdomain.com/runbooks/stale-market-data"
-          action_required: "Check data feed connections and processing pipeline"
+          summary: "Market data is stale"
+          description: "No market data updates received for more than 60 seconds. Last update: {{ $value }} seconds ago"
 
-      - alert: WebSocketServerDown
-        expr: websocket_server_status == 0
-        for: 1m
+      - alert: MarketDataLatencyExtreme
+        expr: histogram_quantile(0.99, rate(kiro_bot_market_data_latency_seconds_bucket[2m])) > 5
+        for: 2m
         labels:
           severity: critical
           service: market-data
-          category: infrastructure
         annotations:
-          summary: "CRITICAL: WebSocket server is down"
-          description: "WebSocket server for real-time data distribution is not running"
-          runbook_url: "https://docs.yourdomain.com/runbooks/websocket-server-down"
-          action_required: "Restart WebSocket server and check for errors"
+          summary: "Extreme market data latency"
+          description: "99th percentile market data latency is above 5 seconds. Current latency: {{ $value }}s"
 
-      - alert: HighMarketDataLatency
-        expr: market_data_latency_ms > 1000
-        for: 5m
-        labels:
-          severity: critical
-          service: market-data
-          category: performance
-        annotations:
-          summary: "CRITICAL: High market data latency"
-          description: "Market data latency is {{ $value }}ms for {{ $labels.exchange }}"
-          runbook_url: "https://docs.yourdomain.com/runbooks/high-latency"
-          action_required: "Check network performance and exchange API status"
-
-  - name: real-time-data.warning
-    interval: 60s
-    rules:
-      # Warning Level Data Feed Alerts
-      - alert: SecondaryExchangeConnectionLost
-        expr: exchange_connection_status{exchange="kucoin"} == 0
+      - alert: MarketDataUpdateRateLow
+        expr: rate(kiro_bot_market_data_updates_total[5m]) < 0.1
         for: 5m
         labels:
           severity: warning
           service: market-data
-          category: connectivity
         annotations:
-          summary: "Secondary exchange (KuCoin) connection lost"
-          description: "Connection to KuCoin exchange has been lost"
-          runbook_url: "https://docs.yourdomain.com/runbooks/kucoin-connection-lost"
+          summary: "Low market data update rate"
+          description: "Market data update rate is below 0.1 updates per second. Current rate: {{ $value }}"
 
-      - alert: ReducedMarketDataUpdateRate
-        expr: rate(market_data_updates_total[5m]) < 1
-        for: 10m
-        labels:
-          severity: warning
-          service: market-data
-          category: data-flow
-        annotations:
-          summary: "Reduced market data update rate"
-          description: "Market data update rate is {{ $value }} updates per second for {{ $labels.exchange }}"
-          runbook_url: "https://docs.yourdomain.com/runbooks/low-update-rate"
-
-      - alert: WebSocketConnectionDrops
-        expr: rate(websocket_connection_drops_total[5m]) > 0.1
-        for: 5m
-        labels:
-          severity: warning
-          service: market-data
-          category: connectivity
-        annotations:
-          summary: "Frequent WebSocket connection drops"
-          description: "WebSocket connections dropping at {{ $value }} drops per second"
-          runbook_url: "https://docs.yourdomain.com/runbooks/websocket-drops"
-
-      - alert: MarketDataProcessingDelay
-        expr: market_data_processing_delay_ms > 500
-        for: 5m
-        labels:
-          severity: warning
-          service: market-data
-          category: performance
-        annotations:
-          summary: "Market data processing delay"
-          description: "Data processing delay is {{ $value }}ms"
-          runbook_url: "https://docs.yourdomain.com/runbooks/processing-delay"
-
-      - alert: APIRateLimitApproaching
-        expr: exchange_api_rate_limit_usage > 0.8
+      - alert: MarketDataUpdateRateHigh
+        expr: rate(kiro_bot_market_data_updates_total[1m]) > 1000
         for: 2m
         labels:
           severity: warning
           service: market-data
-          category: rate-limiting
         annotations:
-          summary: "API rate limit approaching for {{ $labels.exchange }}"
-          description: "API rate limit usage is {{ $value | humanizePercentage }}"
-          runbook_url: "https://docs.yourdomain.com/runbooks/rate-limit-approaching"
+          summary: "Extremely high market data update rate"
+          description: "Market data update rate is above 1000 updates per second. This may indicate data flooding. Current rate: {{ $value }}"
 
-  - name: real-time-data.performance
-    interval: 120s
+  - name: real-time-data-processing
     rules:
-      # Performance Monitoring
-      - alert: LowWebSocketThroughput
-        expr: rate(websocket_messages_sent_total[5m]) < 10
-        for: 10m
+      # Data Processing Alerts
+      - alert: MarketDataProcessingBacklog
+        expr: kiro_bot_market_data_processing_queue_size > 10000
+        for: 2m
         labels:
           severity: warning
-          service: market-data
-          category: performance
+          service: data-processing
         annotations:
-          summary: "Low WebSocket message throughput"
-          description: "WebSocket throughput is {{ $value }} messages per second"
-          runbook_url: "https://docs.yourdomain.com/runbooks/low-websocket-throughput"
+          summary: "Market data processing backlog"
+          description: "Market data processing queue size is above 10,000 items. Current size: {{ $value }}"
 
-      - alert: MarketDataBufferOverflow
-        expr: market_data_buffer_overflow_total > 0
+      - alert: MarketDataProcessingErrors
+        expr: rate(kiro_bot_market_data_processing_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: data-processing
+        annotations:
+          summary: "Market data processing errors"
+          description: "Market data processing error rate is above 0.1 errors per second. Current rate: {{ $value }}"
+
+      - alert: DataNormalizationFailures
+        expr: rate(kiro_bot_data_normalization_failures_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: data-processing
+        annotations:
+          summary: "Data normalization failures"
+          description: "Data normalization failure rate is above 0.05 failures per second. Current rate: {{ $value }}"
+
+      - alert: PriceDataInconsistency
+        expr: kiro_bot_price_data_inconsistency_detected == 1
         for: 1m
         labels:
           severity: warning
-          service: market-data
-          category: performance
+          service: data-processing
         annotations:
-          summary: "Market data buffer overflow detected"
-          description: "{{ $value }} buffer overflow events detected"
-          runbook_url: "https://docs.yourdomain.com/runbooks/buffer-overflow"
+          summary: "Price data inconsistency detected"
+          description: "Inconsistent price data has been detected between exchanges or timeframes"
 
-      - alert: HighMemoryUsageDataProcessor
-        expr: process_resident_memory_bytes{job="trading-bot-backend"} / 1024 / 1024 > 1000
+      - alert: VolumeDataAnomaly
+        expr: kiro_bot_volume_data_anomaly_score > 0.9
+        for: 2m
+        labels:
+          severity: warning
+          service: data-processing
+        annotations:
+          summary: "Volume data anomaly detected"
+          description: "Volume data anomaly score is above 0.9. Current score: {{ $value }}"
+
+  - name: real-time-data-caching
+    rules:
+      # Data Caching Alerts
+      - alert: MarketDataCacheMissRateHigh
+        expr: (rate(kiro_bot_market_data_cache_misses_total[5m]) / rate(kiro_bot_market_data_cache_requests_total[5m])) * 100 > 50
+        for: 5m
+        labels:
+          severity: warning
+          service: caching
+        annotations:
+          summary: "High market data cache miss rate"
+          description: "Market data cache miss rate is above 50%. Current rate: {{ $value }}%"
+
+      - alert: MarketDataCacheEvictionRateHigh
+        expr: rate(kiro_bot_market_data_cache_evictions_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: caching
+        annotations:
+          summary: "High market data cache eviction rate"
+          description: "Market data cache eviction rate is above 10 evictions per second. Current rate: {{ $value }}"
+
+      - alert: MarketDataCacheMemoryUsageHigh
+        expr: kiro_bot_market_data_cache_memory_usage_bytes > 1000000000
+        for: 5m
+        labels:
+          severity: warning
+          service: caching
+        annotations:
+          summary: "High market data cache memory usage"
+          description: "Market data cache memory usage is above 1GB. Current usage: {{ $value }} bytes"
+
+      - alert: MarketDataCacheConnectionFailure
+        expr: kiro_bot_market_data_cache_connection_active == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: caching
+        annotations:
+          summary: "Market data cache connection failure"
+          description: "Connection to market data cache (Redis) has been lost for more than 1 minute"
+
+  - name: real-time-technical-analysis
+    rules:
+      # Technical Analysis Alerts
+      - alert: TechnicalIndicatorCalculationBacklog
+        expr: kiro_bot_technical_indicator_calculation_queue_size > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: technical-analysis
+        annotations:
+          summary: "Technical indicator calculation backlog"
+          description: "Technical indicator calculation queue size is above 1000. Current size: {{ $value }}"
+
+      - alert: TechnicalIndicatorCalculationErrors
+        expr: rate(kiro_bot_technical_indicator_calculation_errors_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: technical-analysis
+        annotations:
+          summary: "Technical indicator calculation errors"
+          description: "Technical indicator calculation error rate is above 0.05 errors per second. Current rate: {{ $value }}"
+
+      - alert: TechnicalIndicatorLatencyHigh
+        expr: histogram_quantile(0.95, rate(kiro_bot_technical_indicator_latency_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: technical-analysis
+        annotations:
+          summary: "High technical indicator calculation latency"
+          description: "95th percentile technical indicator calculation latency is above 2 seconds. Current latency: {{ $value }}s"
+
+      - alert: RSICalculationFailure
+        expr: rate(kiro_bot_technical_indicator_calculation_errors_total{indicator="rsi"}[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          service: technical-analysis
+          indicator: rsi
+        annotations:
+          summary: "RSI calculation failures"
+          description: "RSI calculation failure rate is above 0.01 failures per second. Current rate: {{ $value }}"
+
+      - alert: MACDCalculationFailure
+        expr: rate(kiro_bot_technical_indicator_calculation_errors_total{indicator="macd"}[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          service: technical-analysis
+          indicator: macd
+        annotations:
+          summary: "MACD calculation failures"
+          description: "MACD calculation failure rate is above 0.01 failures per second. Current rate: {{ $value }}"
+
+      - alert: BollingerBandsCalculationFailure
+        expr: rate(kiro_bot_technical_indicator_calculation_errors_total{indicator="bollinger_bands"}[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          service: technical-analysis
+          indicator: bollinger_bands
+        annotations:
+          summary: "Bollinger Bands calculation failures"
+          description: "Bollinger Bands calculation failure rate is above 0.01 failures per second. Current rate: {{ $value }}"
+
+  - name: real-time-data-broadcasting
+    rules:
+      # Data Broadcasting Alerts
+      - alert: WebSocketBroadcastLatencyHigh
+        expr: histogram_quantile(0.95, rate(kiro_bot_websocket_broadcast_latency_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: broadcasting
+        annotations:
+          summary: "High WebSocket broadcast latency"
+          description: "95th percentile WebSocket broadcast latency is above 1 second. Current latency: {{ $value }}s"
+
+      - alert: WebSocketBroadcastErrors
+        expr: rate(kiro_bot_websocket_broadcast_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: broadcasting
+        annotations:
+          summary: "WebSocket broadcast errors"
+          description: "WebSocket broadcast error rate is above 0.1 errors per second. Current rate: {{ $value }}"
+
+      - alert: WebSocketClientDisconnectionRateHigh
+        expr: rate(kiro_bot_websocket_client_disconnections_total[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: broadcasting
+        annotations:
+          summary: "High WebSocket client disconnection rate"
+          description: "WebSocket client disconnection rate is above 1 per second. Current rate: {{ $value }}"
+
+      - alert: WebSocketMessageQueueBacklog
+        expr: kiro_bot_websocket_message_queue_size > 10000
+        for: 2m
+        labels:
+          severity: warning
+          service: broadcasting
+        annotations:
+          summary: "WebSocket message queue backlog"
+          description: "WebSocket message queue size is above 10,000 messages. Current size: {{ $value }}"
+
+      - alert: WebSocketBroadcastRateHigh
+        expr: rate(kiro_bot_websocket_messages_total{direction="outbound"}[1m]) > 10000
+        for: 2m
+        labels:
+          severity: warning
+          service: broadcasting
+        annotations:
+          summary: "Extremely high WebSocket broadcast rate"
+          description: "WebSocket outbound message rate is above 10,000 messages per second. Current rate: {{ $value }}"
+
+  - name: real-time-data-quality
+    rules:
+      # Data Quality Alerts
+      - alert: MarketDataGapsDetected
+        expr: kiro_bot_market_data_gaps_detected_total > 0
+        for: 1m
+        labels:
+          severity: warning
+          service: data-quality
+        annotations:
+          summary: "Market data gaps detected"
+          description: "Gaps in market data have been detected. Total gaps: {{ $value }}"
+
+      - alert: DuplicateMarketDataDetected
+        expr: rate(kiro_bot_duplicate_market_data_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: data-quality
+        annotations:
+          summary: "Duplicate market data detected"
+          description: "Duplicate market data rate is above 0.1 per second. Current rate: {{ $value }}"
+
+      - alert: MarketDataTimestampDrift
+        expr: abs(kiro_bot_market_data_timestamp_drift_seconds) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: data-quality
+        annotations:
+          summary: "Market data timestamp drift"
+          description: "Market data timestamp drift is above 5 seconds. Current drift: {{ $value }}s"
+
+      - alert: MarketDataValidationFailures
+        expr: rate(kiro_bot_market_data_validation_failures_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: data-quality
+        annotations:
+          summary: "Market data validation failures"
+          description: "Market data validation failure rate is above 0.05 failures per second. Current rate: {{ $value }}"
+
+      - alert: PriceSpikesDetected
+        expr: kiro_bot_price_spike_anomalies_detected > 0
+        for: 1m
+        labels:
+          severity: info
+          service: data-quality
+        annotations:
+          summary: "Price spikes detected"
+          description: "Unusual price spikes have been detected. Count: {{ $value }}"
+
+  - name: real-time-data-storage
+    rules:
+      # Data Storage Alerts
+      - alert: MarketDataStorageLatencyHigh
+        expr: histogram_quantile(0.95, rate(kiro_bot_market_data_storage_latency_seconds_bucket[5m])) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: data-storage
+        annotations:
+          summary: "High market data storage latency"
+          description: "95th percentile market data storage latency is above 1 second. Current latency: {{ $value }}s"
+
+      - alert: MarketDataStorageErrors
+        expr: rate(kiro_bot_market_data_storage_errors_total[5m]) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+          service: data-storage
+        annotations:
+          summary: "Market data storage errors"
+          description: "Market data storage error rate is above 0.01 errors per second. Current rate: {{ $value }}"
+
+      - alert: MarketDataStorageSpaceRunningLow
+        expr: kiro_bot_market_data_storage_space_available_bytes < 1000000000
         for: 10m
         labels:
           severity: warning
-          service: market-data
-          category: resource-usage
+          service: data-storage
         annotations:
-          summary: "High memory usage in data processor"
-          description: "Data processor using {{ $value }}MB of memory"
-          runbook_url: "https://docs.yourdomain.com/runbooks/high-memory-usage"
+          summary: "Market data storage space running low"
+          description: "Available market data storage space is below 1GB. Current available: {{ $value }} bytes"
 
-      - alert: DataFeedReconnectionFrequency
-        expr: rate(exchange_reconnections_total[1h]) > 5
-        for: 30m
-        labels:
-          severity: warning
-          service: market-data
-          category: stability
-        annotations:
-          summary: "Frequent data feed reconnections"
-          description: "{{ $labels.exchange }} reconnecting {{ $value }} times per hour"
-          runbook_url: "https://docs.yourdomain.com/runbooks/frequent-reconnections"
-
-  - name: real-time-data.business
-    interval: 300s
-    rules:
-      # Business Impact Monitoring
-      - alert: MarketDataGaps
-        expr: increase(market_data_gaps_total[15m]) > 0
+      - alert: MarketDataRetentionPolicyViolation
+        expr: kiro_bot_market_data_retention_policy_violations > 0
         for: 5m
         labels:
           severity: warning
-          service: market-data
-          category: data-quality
+          service: data-storage
         annotations:
-          summary: "Market data gaps detected"
-          description: "{{ $value }} data gaps detected in the last 15 minutes"
-          runbook_url: "https://docs.yourdomain.com/runbooks/data-gaps"
-
-      - alert: InconsistentPriceData
-        expr: abs(binance_price - kucoin_price) / binance_price > 0.05
-        for: 5m
-        labels:
-          severity: warning
-          service: market-data
-          category: data-quality
-        annotations:
-          summary: "Inconsistent price data between exchanges"
-          description: "Price difference between exchanges exceeds 5%"
-          runbook_url: "https://docs.yourdomain.com/runbooks/price-inconsistency"
-
-      - alert: NoActiveDataSubscriptions
-        expr: active_market_data_subscriptions == 0
-        for: 5m
-        labels:
-          severity: warning
-          service: market-data
-          category: subscriptions
-        annotations:
-          summary: "No active market data subscriptions"
-          description: "No clients are subscribed to market data feeds"
-          runbook_url: "https://docs.yourdomain.com/runbooks/no-subscriptions"
-
-      - alert: DataFeedHealthCheck
-        expr: |
-          (
-            sum(exchange_connection_status) > 0 and
-            rate(market_data_updates_total[5m]) > 0 and
-            websocket_connections_active > 0 and
-            market_data_latency_ms < 2000
-          ) or 0
-        for: 0s
-        labels:
-          severity: info
-          service: market-data
-          category: health-check
-        annotations:
-          summary: "Real-time data feed health check"
-          description: "Periodic health verification of real-time data feeds"
-          runbook_url: "https://docs.yourdomain.com/runbooks/data-feed-health"
+          summary: "Market data retention policy violations"
+          description: "Market data retention policy violations detected. Count: {{ $value }}"

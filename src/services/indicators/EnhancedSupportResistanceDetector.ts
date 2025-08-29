@@ -337,7 +337,7 @@ export class EnhancedSupportResistanceDetector {
     touches: number,
     lastTouch: number,
     candles: CandleData[],
-    pivotIndex?: number
+    _pivotIndex?: number
   ): Promise<EnhancedSRLevel> {
     const baseLevel: SupportResistanceLevel = {
       price,
@@ -399,7 +399,7 @@ export class EnhancedSupportResistanceDetector {
   /**
    * Calculate time-based strength score
    */
-  private calculateTimeStrength(level: SupportResistanceLevel, candles: CandleData[]): number {
+  private calculateTimeStrength(level: SupportResistanceLevel, _candles: CandleData[]): number {
     const currentTime = Date.now();
     const levelAge = (currentTime - level.lastTouch) / (1000 * 60 * 60 * 24); // Days
     
@@ -540,7 +540,7 @@ export class EnhancedSupportResistanceDetector {
   /**
    * Create adaptive price clusters based on market conditions
    */
-  private createAdaptivePriceClusters(candles: CandleData[], tolerance: number): Array<{
+  private createAdaptivePriceClusters(candles: CandleData[], _tolerance: number): Array<{
     price: number;
     touches: number;
     type: 'support' | 'resistance';

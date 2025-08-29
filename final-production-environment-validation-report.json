@@ -1,0 +1,46 @@
+{
+  "timestamp": "2025-08-26T15:50:15.003Z",
+  "overallStatus": false,
+  "safetyScore": 98,
+  "validationResults": {
+    "comprehensiveValidation": {
+      "passed": true,
+      "output": "🔍 Comprehensive Production Environment Validation\n================================================\n\n📖 Loading production configuration...\n✅ Loaded 110 configuration values\n\n🔒 Validating paper trading safety...\n✅ Paper trading safety validation passed\n\n📊 Validating monitoring configuration...\n✅ Monitoring configuration validation passed\n\n🔒 Validating SSL configuration...\n✅ SSL certificate file found: cert.pem\n✅ SSL certificate file found: private.key\n✅ SSL certificate file found: ca.pem\n✅ SSL configuration validation passed\n\n🗄️  Validating database configuration...\n✅ Database configuration validation passed\n\n🛡️  Validating security compliance...\n✅ Security compliance validation passed\n\n🔑 Validating exchange API configuration...\nℹ️  BINANCE API not configured (will be disabled)\nℹ️  KUCOIN API not configured (will be disabled)\n✅ Exchange API configuration validation passed\n\n🔍 Validating comprehensive environment variables...\n✅ Environment variable validation passed\n\n📋 Comprehensive Validation Report\n==================================\n\nOverall Status: 7/7 checks passed\nSafety Score: 98%\n\nDetailed Results:\n  ✅ paper trading safety\n  ✅ monitoring configuration\n  ✅ ssl configuration\n  ✅ database configuration\n  ✅ security compliance\n  ✅ exchange configuration\n  ✅ environment variable validation\n\n⚠️  Warnings (recommended fixes):\n  1. No exchange APIs configured - market data will be limited\n\n🔒 Paper Trading Safety Summary:\n  Paper Trading Mode: ✅ ENFORCED\n  Real Trading Blocked: ✅ BLOCKED\n  Force Paper Trading: ✅ ENABLED\n  Trading Simulation Only: ✅ ENFORCED\n  Monitoring Enabled: ✅ ENABLED\n  SSL Enabled: ✅ ENABLED\n  Database SSL: ✅ ENABLED\n\n📄 Comprehensive report saved to: /home/trader/Kiro/KIRO_BOT/comprehensive-production-validation-report.json\n\n📊 Overall Safety Score: 98%\n\n✅ All validations passed! Production environment is ready for deployment.\n",
+      "safetyScore": 98
+    },
+    "databaseValidation": {
+      "passed": true,
+      "output": "🗄️  Database Configuration Validation\n====================================\n\n📖 Loading database configuration...\n✅ Loaded database configuration\n\n🔗 Validating database connection string...\n✅ DATABASE_URL format is valid\n  Attempting manual parsing of PostgreSQL connection string...\n  Host: V18#9v2g*oPENS^B}M$Y-l@postgres\n  Port: 5432\n  Database: trading_bot\n  Username: postgres\n✅ Manual parsing successful - connection string is valid\n✅ POSTGRES_PASSWORD meets security requirements\n✅ Database connection string validation passed\n\n🔒 Validating database SSL configuration...\n✅ Database SSL is enabled\n✅ Database SSL configuration validation passed\n\n🏊 Validating database connection pool configuration...\n✅ DATABASE_POOL_SIZE (20) is optimal for production\n✅ DATABASE_CONNECTION_TIMEOUT (30000ms) is appropriate\n✅ Database connection pool configuration validation passed\n\n🛡️  Validating database security settings...\n✅ Database password meets security requirements\n✅ Database connections will be encrypted\n✅ Database security settings validation passed\n\n🔌 Validating database connectivity configuration...\n✅ DATABASE_URL is configured\n  Attempting manual parsing of PostgreSQL connection string...\n✅ All required connection parameters are present\n✅ Using Docker service name for database host\n✅ Using standard PostgreSQL port (5432)\nℹ️  Note: Actual database connectivity testing requires PostgreSQL client (pg module)\nℹ️  Configuration validation completed - connection parameters appear valid\n✅ Database connectivity configuration validation passed\n\n📋 Database Configuration Validation Report\n==========================================\n\nOverall Status: 5/5 checks passed\n\nDetailed Results:\n  ✅ connection string\n  ✅ ssl configuration\n  ✅ pool configuration\n  ✅ security settings\n  ✅ connectivity\n\n⚠️  Warnings (recommended fixes):\n  1. SSL mode not explicitly set in DATABASE_URL - consider adding sslmode=require\n  2. DATABASE_IDLE_TIMEOUT not set - consider setting for better resource management\n\n🗄️  Database Configuration Summary:\n  Connection String: [INVALID FORMAT]\n  SSL Enabled: ✅ YES\n  Pool Size: 20\n  Connection Timeout: 30000ms\n\n📄 Detailed report saved to: /home/trader/Kiro/KIRO_BOT/database-configuration-validation-report.json\n\n✅ All database validations passed! Configuration is ready for production.\n"
+    },
+    "sslConfiguration": {
+      "passed": true,
+      "status": [
+        "✅ cert.pem exists",
+        "✅ private.key exists",
+        "✅ ca.pem exists",
+        "✅ SSL_ENABLED=true in environment"
+      ]
+    },
+    "environmentValidation": {
+      "passed": true,
+      "status": [
+        "✅ MONITORING_ENABLED=true",
+        "✅ PAPER_TRADING_MODE=true",
+        "✅ ALLOW_REAL_TRADES=false",
+        "✅ TRADING_SIMULATION_ONLY=true",
+        "✅ SSL_ENABLED=true",
+        "✅ DATABASE_SSL=true"
+      ],
+      "configCount": 110
+    }
+  },
+  "errors": [],
+  "warnings": [],
+  "productionReadiness": {
+    "paperTradingSafety": true,
+    "databaseConfiguration": true,
+    "sslConfiguration": true,
+    "environmentVariables": true,
+    "monitoringEnabled": true
+  }
+}

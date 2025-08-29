@@ -1,0 +1,109 @@
+{
+  "timestamp": "2025-08-28T19:05:48.917Z",
+  "duration": "33.28s",
+  "config": {
+    "baseUrl": "http://localhost:3000",
+    "wsUrl": "ws://localhost:3000",
+    "duration": 60000,
+    "concurrentUsers": 25,
+    "rampUpTime": 10000,
+    "targetLatency": 500,
+    "targetThroughput": 100
+  },
+  "summary": {
+    "totalTests": 7,
+    "passed": 6,
+    "failed": 1,
+    "successRate": "85.71%"
+  },
+  "loadTests": {
+    "Health Check": {
+      "endpoint": "/health",
+      "requests": 100,
+      "responses": 100,
+      "errors": 0,
+      "avgLatency": "28.97",
+      "errorRate": "0.00",
+      "expectedLatency": 100,
+      "passed": true
+    },
+    "Paper Trading Status": {
+      "endpoint": "/api/v1/paper-trading/status",
+      "requests": 100,
+      "responses": 100,
+      "errors": 0,
+      "avgLatency": "26.92",
+      "errorRate": "0.00",
+      "expectedLatency": 200,
+      "passed": true
+    },
+    "Market Data": {
+      "endpoint": "/api/v1/market/ticker/BTCUSDT",
+      "requests": 100,
+      "responses": 100,
+      "errors": 0,
+      "avgLatency": "21.55",
+      "errorRate": "0.00",
+      "expectedLatency": 300,
+      "passed": true
+    },
+    "Positions": {
+      "endpoint": "/api/v1/positions",
+      "requests": 100,
+      "responses": 100,
+      "errors": 0,
+      "avgLatency": "10.67",
+      "errorRate": "0.00",
+      "expectedLatency": 400,
+      "passed": true
+    },
+    "Configuration": {
+      "endpoint": "/api/v1/config",
+      "requests": 100,
+      "responses": 100,
+      "errors": 0,
+      "avgLatency": "10.08",
+      "errorRate": "0.00",
+      "expectedLatency": 200,
+      "passed": true
+    },
+    "WebSocket Connections": {
+      "connections": 10,
+      "connectionsEstablished": 0,
+      "messagesReceived": 0,
+      "messageRate": "0.00",
+      "avgLatency": "0.00",
+      "errorRate": "100.00",
+      "passed": false
+    }
+  },
+  "stressTests": {
+    "High Load Test": {
+      "concurrentRequests": 50,
+      "duration": "31.83",
+      "throughput": "1570.75",
+      "errorRate": "0.00",
+      "avgLatency": "19.02",
+      "passed": true
+    }
+  },
+  "assessment": {
+    "grade": "B",
+    "status": "Good - Minor Optimizations Needed",
+    "successRate": "85.71%",
+    "readyForProduction": true
+  },
+  "recommendations": [
+    {
+      "category": "WebSocket Performance",
+      "priority": "Medium",
+      "issue": "WebSocket connections failed performance tests",
+      "suggestions": [
+        "Optimize WebSocket message handling",
+        "Implement connection pooling",
+        "Add message queuing for high load",
+        "Review WebSocket server configuration"
+      ]
+    }
+  ]
+}

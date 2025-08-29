@@ -52,7 +52,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
     <Box>
       <Grid container spacing={3}>
         {/* Strategy Type */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <FormControl fullWidth>
             <InputLabel>Strategy Type</InputLabel>
             <Select
@@ -69,7 +69,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
         </Grid>
 
         {/* Max Concurrent Trades */}
-        <Grid item xs={12} md={6}>
+        <Grid size={{ xs: 12, md: 6 }}>
           <TextField
             fullWidth
             type="number"
@@ -81,7 +81,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
         </Grid>
 
         {/* Timeframes */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant="subtitle2" gutterBottom>
             Trading Timeframes
           </Typography>
@@ -104,7 +104,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
         </Grid>
 
         {/* Symbols */}
-        <Grid item xs={12}>
+        <Grid size={{ xs: 12 }}>
           <Typography variant="subtitle2" gutterBottom>
             Trading Symbols
           </Typography>
@@ -142,10 +142,10 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
             <AccordionDetails>
               <Grid container spacing={3}>
                 {/* RSI Settings */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>RSI Indicator</Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={3}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -164,7 +164,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                         label="Enabled"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                       <TextField
                         fullWidth
                         type="number"
@@ -182,7 +182,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                         inputProps={{ min: 2, max: 100 }}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                       <TextField
                         fullWidth
                         type="number"
@@ -200,7 +200,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                         inputProps={{ min: 50, max: 100 }}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={3}>
+                    <Grid size={{ xs: 12, sm: 3 }}>
                       <TextField
                         fullWidth
                         type="number"
@@ -222,10 +222,10 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                 </Grid>
 
                 {/* Wave Trend Settings */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>Wave Trend Indicator</Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -244,7 +244,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                         label="Enabled"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <TextField
                         fullWidth
                         type="number"
@@ -262,7 +262,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                         inputProps={{ min: 1, max: 50 }}
                       />
                     </Grid>
-                    <Grid item xs={12} sm={4}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
                       <TextField
                         fullWidth
                         type="number"
@@ -284,10 +284,10 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                 </Grid>
 
                 {/* Pattern Recognition Settings */}
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>Pattern Recognition</Typography>
                   <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <FormControlLabel
                         control={
                           <Switch
@@ -303,7 +303,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                         label="Enable Pattern Recognition"
                       />
                     </Grid>
-                    <Grid item xs={12} sm={6}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
                       <Typography gutterBottom>
                         Minimum Confidence: {strategy.parameters.technicalAnalysis.patterns.minConfidence}%
                       </Typography>
@@ -337,7 +337,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -350,7 +350,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     label="Enable Elliott Wave Analysis"
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography gutterBottom>
                     Minimum Wave Validity: {strategy.parameters.elliottWave.minWaveValidity}%
                   </Typography>
@@ -366,7 +366,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     valueLabelDisplay="auto"
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -379,7 +379,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     label="Use Wave Targets"
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -392,7 +392,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     label="Fibonacci Projections"
                   />
                 </Grid>
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -418,7 +418,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Grid Strategy</InputLabel>
                     <Select
@@ -434,7 +434,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -446,7 +446,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     inputProps={{ min: 2, max: 50 }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <Typography gutterBottom>
                     Grid Spacing: {(strategy.parameters.gridTrading.spacing * 100).toFixed(1)}%
                   </Typography>
@@ -462,7 +462,7 @@ export const StrategyConfigPanel: React.FC<StrategyConfigPanelProps> = ({
                     valueLabelFormat={(value) => `${(value * 100).toFixed(1)}%`}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch

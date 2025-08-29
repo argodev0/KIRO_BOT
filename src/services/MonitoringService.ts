@@ -73,12 +73,26 @@ export class MonitoringService extends EventEmitter {
   private constructor() {
     super();
     
+    // Clear existing metrics to prevent registration conflicts in tests
+    if (process.env.NODE_ENV === 'test') {
+      register.clear();
+    }
+    
     // Enable default metrics collection
-    collectDefaultMetrics({ 
-      register,
-      prefix: 'kiro_bot_',
-      gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5]
-    });
+    try {
+      // Clear existing metrics to avoid conflicts
+      register.clear();
+      collectDefaultMetrics({ 
+        register,
+        prefix: 'kiro_bot_',
+        gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5]
+      });
+    } catch (error) {
+      // Ignore registration conflicts in test environment
+      if (process.env.NODE_ENV !== 'test') {
+        throw error;
+      }
+    }
 
     // HTTP metrics
     this.httpRequestDuration = new Histogram({

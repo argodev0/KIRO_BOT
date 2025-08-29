@@ -3,7 +3,7 @@ import Joi from 'joi';
 import { logger } from '@/utils/logger';
 
 /**
- * Validation middleware factory
+ * Enhanced validation middleware factory with better error handling
  */
 export const validate = (schema: {
   body?: Joi.ObjectSchema;
@@ -13,60 +13,176 @@ export const validate = (schema: {
 }) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const errors: string[] = [];
+    const warnings: string[] = [];
 
-    // Validate request body
-    if (schema.body) {
-      const { error } = schema.body.validate(req.body);
-      if (error) {
-        errors.push(`Body: ${error.details.map(d => d.message).join(', ')}`);
+    try {
+      // Validate request body
+      if (schema.body && req.body !== undefined) {
+        const { error, value, warning } = schema.body.validate(req.body, { 
+          abortEarly: false,
+          allowUnknown: false,
+          stripUnknown: true
+        });
+        
+        if (error) {
+          errors.push(...error.details.map(d => `Body.${d.path.join('.')}: ${d.message}`));
+        } else {
+          req.body = value; // Use validated and sanitized value
+        }
+        
+        if (warning) {
+          warnings.push(...warning.details.map(d => `Body.${d.path.join('.')}: ${d.message}`));
+        }
       }
-    }
 
-    // Validate query parameters
-    if (schema.query) {
-      const { error } = schema.query.validate(req.query);
-      if (error) {
-        errors.push(`Query: ${error.details.map(d => d.message).join(', ')}`);
+      // Validate query parameters
+      if (schema.query && Object.keys(req.query).length > 0) {
+        const { error, value, warning } = schema.query.validate(req.query, { 
+          abortEarly: false,
+          allowUnknown: false,
+          stripUnknown: true
+        });
+        
+        if (error) {
+          errors.push(...error.details.map(d => `Query.${d.path.join('.')}: ${d.message}`));
+        } else {
+          req.query = value; // Use validated and sanitized value
+        }
+        
+        if (warning) {
+          warnings.push(...warning.details.map(d => `Query.${d.path.join('.')}: ${d.message}`));
+        }
       }
-    }
 
-    // Validate path parameters
-    if (schema.params) {
-      const { error } = schema.params.validate(req.params);
-      if (error) {
-        errors.push(`Params: ${error.details.map(d => d.message).join(', ')}`);
+      // Validate path parameters
+      if (schema.params && Object.keys(req.params).length > 0) {
+        const { error, value, warning } = schema.params.validate(req.params, { 
+          abortEarly: false,
+          allowUnknown: false,
+          stripUnknown: true
+        });
+        
+        if (error) {
+          errors.push(...error.details.map(d => `Params.${d.path.join('.')}: ${d.message}`));
+        } else {
+          req.params = value; // Use validated and sanitized value
+        }
+        
+        if (warning) {
+          warnings.push(...warning.details.map(d => `Params.${d.path.join('.')}: ${d.message}`));
+        }
       }
-    }
 
-    // Validate headers
-    if (schema.headers) {
-      const { error } = schema.headers.validate(req.headers);
-      if (error) {
-        errors.push(`Headers: ${error.details.map(d => d.message).join(', ')}`);
+      // Validate headers
+      if (schema.headers) {
+        const { error, warning } = schema.headers.validate(req.headers, { 
+          abortEarly: false,
+          allowUnknown: true // Headers can have unknown fields
+        });
+        
+        if (error) {
+          errors.push(...error.details.map(d => `Headers.${d.path.join('.')}: ${d.message}`));
+        }
+        
+        if (warning) {
+          warnings.push(...warning.details.map(d => `Headers.${d.path.join('.')}: ${d.message}`));
+        }
       }
-    }
 
-    if (errors.length > 0) {
-      logger.warn('Validation failed:', {
-        path: req.path,
-        method: req.method,
-        errors,
-        body: req.body,
-        query: req.query,
-        params: req.params
+      // Log warnings if present
+      if (warnings.length > 0) {
+        logger.warn('Validation warnings:', {
+          path: req.path,
+          method: req.method,
+          warnings,
+          requestId: req.headers['x-request-id']
+        });
+      }
+
+      if (errors.length > 0) {
+        const requestId = req.headers['x-request-id'] as string || 
+                         `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        logger.warn('Validation failed:', {
+          path: req.path,
+          method: req.method,
+          errors,
+          requestId,
+          body: sanitizeForLogging(req.body),
+          query: req.query,
+          params: req.params
+        });
+
+        res.status(400).json({
+          error: 'VALIDATION_ERROR',
+          message: 'Request validation failed',
+          details: errors,
+          timestamp: new Date().toISOString(),
+          path: req.originalUrl,
+          method: req.method,
+          requestId
+        });
+        return;
+      }
+
+      next();
+    } catch (validationError) {
+      logger.error('Validation middleware error:', validationError);
+      
+      res.status(500).json({
+        error: 'VALIDATION_SYSTEM_ERROR',
+        message: 'Validation system error',
+        timestamp: new Date().toISOString(),
+        path: req.originalUrl,
+        method: req.method
       });
-
-      res.status(400).json({
-        error: 'VALIDATION_ERROR',
-        message: 'Request validation failed',
-        details: errors
-      });
-      return;
     }
-
-    next();
   };
 };
+
+/**
+ * Validation middleware that only validates without modifying request
+ */
+export const validateRequest = (schema: Joi.ObjectSchema) => {
+  return validate({ body: schema });
+};
+
+/**
+ * Query parameter validation middleware
+ */
+export const validateQuery = (schema: Joi.ObjectSchema) => {
+  return validate({ query: schema });
+};
+
+/**
+ * Path parameter validation middleware
+ */
+export const validateParams = (schema: Joi.ObjectSchema) => {
+  return validate({ params: schema });
+};
+
+/**
+ * Header validation middleware
+ */
+export const validateHeaders = (schema: Joi.ObjectSchema) => {
+  return validate({ headers: schema });
+};
+
+// Helper function to sanitize sensitive data for logging
+function sanitizeForLogging(obj: any): any {
+  if (!obj || typeof obj !== 'object') return obj;
+  
+  const sanitized = { ...obj };
+  const sensitiveFields = ['password', 'token', 'secret', 'key', 'apiKey', 'apiSecret', 'passphrase'];
+  
+  for (const field of sensitiveFields) {
+    if (sanitized[field]) {
+      sanitized[field] = '[REDACTED]';
+    }
+  }
+  
+  return sanitized;
+}
 
 // Common validation schemas
 export const commonSchemas = {

@@ -30,7 +30,7 @@ const MarketDataWidget: React.FC<MarketDataWidgetProps> = ({
   symbols = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'ADAUSDT', 'SOLUSDT']
 }) => {
   const dispatch = useDispatch();
-  const { tickers, selectedSymbol, isConnected, lastUpdate } = useSelector(
+  const { tickers, selectedSymbol, lastUpdate } = useSelector(
     (state: RootState) => state.marketData
   );
 
@@ -116,7 +116,7 @@ const MarketDataWidget: React.FC<MarketDataWidgetProps> = ({
             const isSelected = symbol === selectedSymbol;
 
             return (
-              <Grid xs={12} sm={6} md={4} key={symbol}>
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={symbol}>
                 <Card
                   variant={isSelected ? 'elevation' : 'outlined'}
                   sx={{

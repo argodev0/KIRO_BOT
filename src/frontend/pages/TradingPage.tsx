@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store/store';
-import EnhancedTradingViewChart from '../components/charts/EnhancedTradingViewChart';
+import { RealTimeChart, TradingViewIntegration } from '../components/charts';
 import VirtualPortfolioDisplay from '../components/dashboard/VirtualPortfolioDisplay';
 import PaperTradingIndicator from '../components/common/PaperTradingIndicator';
 import LiveDataIndicator from '../components/common/LiveDataIndicator';
@@ -125,11 +125,13 @@ const TradingPage: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Trading Chart */}
-        <Grid item xs={12} lg={8}>
+        <Grid size={{ xs: 12, lg: 8 }}>
           <Box sx={{ mb: 2 }}>
-            <EnhancedTradingViewChart 
+            <RealTimeChart 
               symbol={selectedSymbol}
               height={500}
+              showControls={true}
+              showTechnicalIndicators={true}
             />
           </Box>
 
@@ -186,7 +188,7 @@ const TradingPage: React.FC = () => {
                 Paper Trading Statistics
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="body2" color="text.secondary">
                     Total Paper Trades
                   </Typography>
@@ -194,7 +196,7 @@ const TradingPage: React.FC = () => {
                     {paperTrading.totalPaperTrades}
                   </Typography>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid size={{ xs: 6 }}>
                   <Typography variant="body2" color="text.secondary">
                     Virtual Balance
                   </Typography>
@@ -208,7 +210,7 @@ const TradingPage: React.FC = () => {
         </Grid>
 
         {/* Sidebar */}
-        <Grid item xs={12} lg={4}>
+        <Grid size={{ xs: 12, lg: 4 }}>
           <Stack spacing={3}>
             {/* Virtual Portfolio */}
             <VirtualPortfolioDisplay />

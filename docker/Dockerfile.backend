@@ -1,11 +1,12 @@
 # Multi-stage Dockerfile for Backend Services
-# Optimized for production deployment
+# Optimized for production deployment with enhanced security
 
 # Build stage
 FROM node:20-alpine AS builder
 
-# Install build dependencies
-RUN apk add --no-cache python3 make g++
+# Install build dependencies and security updates
+RUN apk update && apk upgrade && \
+    apk add --no-cache python3 make g++ git openssl
 
 WORKDIR /app
 
@@ -14,7 +15,8 @@ COPY package*.json ./
 COPY tsconfig.json ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm ci
+RUN npm ci --audit && \
+    npm cache clean --force
 
 # Copy source code
 COPY src/ ./src/
@@ -23,40 +25,55 @@ COPY prisma/ ./prisma/
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application
+# Build the application with optimizations
+ENV NODE_ENV=production
 RUN npm run build:backend
+
+# Verify build output
+RUN ls -la dist/ && \
+    test -f dist/index.js
 
 # Production stage
 FROM node:20-alpine AS production
 
-# Install runtime dependencies
-RUN apk add --no-cache \
+# Install runtime dependencies and security updates
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
     dumb-init \
     curl \
     ca-certificates \
+    tzdata \
+    tini \
     && update-ca-certificates
 
-# Create app user for security
+# Create app user for security with specific UID/GID
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nodejs -u 1001 -G nodejs
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production && \
+# Install only production dependencies with security audit
+RUN npm ci --only=production --audit && \
     npm cache clean --force
 
-# Copy built application and necessary files
+# Copy built application and necessary files with proper ownership
 COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 
-# Create necessary directories
-RUN mkdir -p logs tmp && \
-    chown -R nodejs:nodejs logs tmp
+# Create necessary directories with proper permissions
+RUN mkdir -p logs tmp config && \
+    chown -R nodejs:nodejs logs tmp config && \
+    chmod 750 logs tmp config
+
+# Set environment variables for security
+ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+ENV PAPER_TRADING_MODE=true
+ENV ALLOW_REAL_TRADES=false
 
 # Switch to non-root user
 USER nodejs
@@ -64,12 +81,13 @@ USER nodejs
 # Expose port
 EXPOSE 3000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD curl -f http://localhost:3000/health || exit 1
+# Enhanced health check with paper trading validation
+HEALTHCHECK --interval=30s --timeout=15s --start-period=60s --retries=5 \
+  CMD curl -f http://localhost:3000/health && \
+      curl -f http://localhost:3000/api/health/paper-trading || exit 1
 
-# Use dumb-init for proper signal handling
-ENTRYPOINT ["dumb-init", "--"]
+# Use tini for proper signal handling and zombie reaping
+ENTRYPOINT ["tini", "--"]
 
-# Start the application
+# Start the application with proper error handling
 CMD ["node", "dist/index.js"]

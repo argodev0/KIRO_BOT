@@ -5,7 +5,7 @@ import { AnomalyDetectionService } from '../services/AnomalyDetectionService';
 import { LogAggregationService } from '../services/LogAggregationService';
 import { AutoRecoveryService } from '../services/AutoRecoveryService';
 import { NotificationService } from '../services/NotificationService';
-import { auth } from '../middleware/auth';
+import { authenticate } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -38,7 +38,7 @@ router.get('/health', async (req: Request, res: Response) => {
 });
 
 // Performance metrics (requires authentication)
-router.get('/performance', auth, async (req: Request, res: Response) => {
+router.get('/performance', authenticate, async (req: Request, res: Response) => {
   try {
     const performance = PerformanceMonitoringService.getInstance();
     const metrics = performance.getPerformanceMetrics();
@@ -51,7 +51,7 @@ router.get('/performance', auth, async (req: Request, res: Response) => {
 });
 
 // Update performance thresholds
-router.put('/performance/thresholds', auth, async (req: Request, res: Response) => {
+router.put('/performance/thresholds', authenticate, async (req: Request, res: Response) => {
   try {
     const performance = PerformanceMonitoringService.getInstance();
     performance.updateThresholds(req.body);
@@ -64,7 +64,7 @@ router.put('/performance/thresholds', auth, async (req: Request, res: Response) 
 });
 
 // Get anomaly detection thresholds
-router.get('/anomaly/thresholds', auth, async (req: Request, res: Response) => {
+router.get('/anomaly/thresholds', authenticate, async (req: Request, res: Response) => {
   try {
     const anomaly = AnomalyDetectionService.getInstance();
     const thresholds = anomaly.getThresholds();
@@ -77,7 +77,7 @@ router.get('/anomaly/thresholds', auth, async (req: Request, res: Response) => {
 });
 
 // Update anomaly detection thresholds
-router.put('/anomaly/thresholds', auth, async (req: Request, res: Response) => {
+router.put('/anomaly/thresholds', authenticate, async (req: Request, res: Response) => {
   try {
     const anomaly = AnomalyDetectionService.getInstance();
     anomaly.updateThresholds(req.body);
@@ -90,7 +90,7 @@ router.put('/anomaly/thresholds', auth, async (req: Request, res: Response) => {
 });
 
 // Query logs
-router.post('/logs/query', auth, async (req: Request, res: Response) => {
+router.post('/logs/query', authenticate, async (req: Request, res: Response) => {
   try {
     const logService = LogAggregationService.getInstance();
     const logs = await logService.queryLogs(req.body);
@@ -103,7 +103,7 @@ router.post('/logs/query', auth, async (req: Request, res: Response) => {
 });
 
 // Search logs
-router.post('/logs/search', auth, async (req: Request, res: Response) => {
+router.post('/logs/search', authenticate, async (req: Request, res: Response) => {
   try {
     const { searchTerm, filters } = req.body;
     const logService = LogAggregationService.getInstance();
@@ -117,7 +117,7 @@ router.post('/logs/search', auth, async (req: Request, res: Response) => {
 });
 
 // Analyze logs
-router.post('/logs/analyze', auth, async (req: Request, res: Response) => {
+router.post('/logs/analyze', authenticate, async (req: Request, res: Response) => {
   try {
     const { timeRange } = req.body;
     const logService = LogAggregationService.getInstance();
@@ -131,7 +131,7 @@ router.post('/logs/analyze', auth, async (req: Request, res: Response) => {
 });
 
 // Get log statistics
-router.get('/logs/stats', auth, async (req: Request, res: Response) => {
+router.get('/logs/stats', authenticate, async (req: Request, res: Response) => {
   try {
     const logService = LogAggregationService.getInstance();
     const stats = await logService.getLogStats();
@@ -144,7 +144,7 @@ router.get('/logs/stats', auth, async (req: Request, res: Response) => {
 });
 
 // Get recovery actions
-router.get('/recovery/actions', auth, async (req: Request, res: Response) => {
+router.get('/recovery/actions', authenticate, async (req: Request, res: Response) => {
   try {
     const recovery = AutoRecoveryService.getInstance();
     const actions = Array.from(recovery.getRecoveryActions().values());
@@ -157,7 +157,7 @@ router.get('/recovery/actions', auth, async (req: Request, res: Response) => {
 });
 
 // Get failure history
-router.get('/recovery/history', auth, async (req: Request, res: Response) => {
+router.get('/recovery/history', authenticate, async (req: Request, res: Response) => {
   try {
     const recovery = AutoRecoveryService.getInstance();
     const history = Array.from(recovery.getFailureHistory().values());
@@ -170,7 +170,7 @@ router.get('/recovery/history', auth, async (req: Request, res: Response) => {
 });
 
 // Trigger manual recovery
-router.post('/recovery/trigger', auth, async (req: Request, res: Response) => {
+router.post('/recovery/trigger', authenticate, async (req: Request, res: Response) => {
   try {
     const { errorType, errorData } = req.body;
     const recovery = AutoRecoveryService.getInstance();
@@ -188,7 +188,7 @@ router.post('/recovery/trigger', auth, async (req: Request, res: Response) => {
 });
 
 // Get notification preferences
-router.get('/notifications/preferences/:userId', auth, async (req: Request, res: Response) => {
+router.get('/notifications/preferences/:userId', authenticate, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const notification = NotificationService.getInstance();
@@ -202,7 +202,7 @@ router.get('/notifications/preferences/:userId', auth, async (req: Request, res:
 });
 
 // Update notification preferences
-router.put('/notifications/preferences/:userId', auth, async (req: Request, res: Response) => {
+router.put('/notifications/preferences/:userId', authenticate, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const notification = NotificationService.getInstance();
@@ -217,7 +217,7 @@ router.put('/notifications/preferences/:userId', auth, async (req: Request, res:
 });
 
 // Get notification history
-router.get('/notifications/history/:userId', auth, async (req: Request, res: Response) => {
+router.get('/notifications/history/:userId', authenticate, async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { limit } = req.query;
@@ -233,7 +233,7 @@ router.get('/notifications/history/:userId', auth, async (req: Request, res: Res
 });
 
 // Send test notification
-router.post('/notifications/test', auth, async (req: Request, res: Response) => {
+router.post('/notifications/test', authenticate, async (req: Request, res: Response) => {
   try {
     const { userId, templateId, data, channels } = req.body;
     const notification = NotificationService.getInstance();
@@ -254,7 +254,7 @@ router.post('/notifications/test', auth, async (req: Request, res: Response) => 
 });
 
 // System status dashboard
-router.get('/dashboard', auth, async (req: Request, res: Response) => {
+router.get('/dashboard', authenticate, async (req: Request, res: Response) => {
   try {
     const monitoring = MonitoringService.getInstance();
     const performance = PerformanceMonitoringService.getInstance();

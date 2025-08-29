@@ -6,7 +6,7 @@
 // Base market data interfaces
 export interface CandleData {
   symbol: string;
-  timeframe: string;
+  timeframe: Timeframe;
   timestamp: number;
   open: number;
   high: number;
@@ -49,7 +49,7 @@ export interface TradeData {
 // Market analysis types
 export interface MarketContext {
   symbol: string;
-  timeframe: string;
+  timeframe: Timeframe;
   trend: 'bullish' | 'bearish' | 'sideways';
   volatility: 'low' | 'medium' | 'high';
   volume: 'low' | 'medium' | 'high';

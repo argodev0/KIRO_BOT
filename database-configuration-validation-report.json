@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-08-26T15:50:14.987Z",
+  "overallStatus": true,
+  "checksPassedRatio": "5/5",
+  "validationResults": {
+    "connectionString": true,
+    "sslConfiguration": true,
+    "poolConfiguration": true,
+    "securitySettings": true,
+    "connectivity": true
+  },
+  "errors": [],
+  "warnings": [
+    "SSL mode not explicitly set in DATABASE_URL - consider adding sslmode=require",
+    "DATABASE_IDLE_TIMEOUT not set - consider setting for better resource management"
+  ],
+  "configuration": {
+    "sslEnabled": true,
+    "poolSize": "20",
+    "connectionTimeout": "30000",
+    "hasConnectionString": true
+  }
+}

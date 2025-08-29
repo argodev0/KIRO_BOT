@@ -76,7 +76,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography gutterBottom>
                 Max Risk Per Trade: {riskManagement.maxRiskPerTrade}%
               </Typography>
@@ -97,7 +97,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography gutterBottom>
                 Max Daily Loss: {riskManagement.maxDailyLoss}%
               </Typography>
@@ -118,7 +118,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography gutterBottom>
                 Max Total Exposure: {riskManagement.maxTotalExposure}x
               </Typography>
@@ -139,7 +139,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography gutterBottom>
                 Max Drawdown: {riskManagement.maxDrawdown}%
               </Typography>
@@ -160,7 +160,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -172,7 +172,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -194,7 +194,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -208,13 +208,13 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
 
             {riskManagement.emergencyStop.enabled && (
               <>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Trigger Conditions
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -229,7 +229,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -244,7 +244,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -280,7 +280,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   )}
                 </Grid>
 
-                <Grid item xs={12} sm={6}>
+                <Grid size={{ xs: 12, sm: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -316,13 +316,13 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   )}
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Emergency Actions
                   </Typography>
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -337,7 +337,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -352,7 +352,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} sm={4}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -379,7 +379,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Sizing Method</InputLabel>
                 <Select
@@ -394,7 +394,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -405,7 +405,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 type="number"
@@ -416,7 +416,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -428,7 +428,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -450,7 +450,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -464,7 +464,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
 
             {riskManagement.drawdownProtection.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography gutterBottom>
                     Max Drawdown: {riskManagement.drawdownProtection.maxDrawdown}%
                   </Typography>
@@ -484,7 +484,7 @@ export const RiskManagementPanel: React.FC<RiskManagementPanelProps> = ({
                   />
                 </Grid>
 
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <Typography gutterBottom>
                     Recovery Threshold: {riskManagement.drawdownProtection.recoveryThreshold}%
                   </Typography>

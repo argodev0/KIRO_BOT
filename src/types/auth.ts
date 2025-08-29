@@ -39,6 +39,25 @@ export interface JwtPayload {
 
 export interface AuthenticatedRequest extends Request {
   user?: JwtPayload;
+  session?: {
+    id: string;
+    userId: string;
+    ipAddress: string;
+    userAgent: string;
+    createdAt: Date;
+    lastActivity: Date;
+    expiresAt: Date;
+    isActive: boolean;
+    metadata?: Record<string, any>;
+  };
+  authMethod?: 'jwt' | 'session' | 'apikey';
+  securityContext?: {
+    ipAddress: string;
+    userAgent: string;
+    riskScore: number;
+    isNewDevice: boolean;
+    isSuspicious: boolean;
+  };
 }
 
 export interface MfaSetupResponse {

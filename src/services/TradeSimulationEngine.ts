@@ -360,36 +360,7 @@ export class TradeSimulationEngine extends EventEmitter {
     return 'new';
   }
 
-  /**
-   * Simulate partial fills for large orders
-   */
-  private simulatePartialFill(orderRequest: OrderRequest, marketConditions: MarketConditions): {
-    filledQuantity: number;
-    remainingQuantity: number;
-    status: OrderStatus;
-  } {
-    const orderValue = orderRequest.quantity * (orderRequest.price || 50000);
-    
-    // Large orders are more likely to be partially filled
-    if (orderValue > this.config.liquidityImpactThreshold * 2) {
-      const fillRatio = 0.3 + Math.random() * 0.4; // 30-70% fill
-      const filledQuantity = orderRequest.quantity * fillRatio;
-      
-      return {
-        filledQuantity,
-        remainingQuantity: orderRequest.quantity - filledQuantity,
-        status: 'partially_filled'
-      };
-    }
-    
-    // Normal orders fill completely or not at all
-    const shouldFill = this.determineOrderStatus(orderRequest) === 'filled';
-    return {
-      filledQuantity: shouldFill ? orderRequest.quantity : 0,
-      remainingQuantity: shouldFill ? 0 : orderRequest.quantity,
-      status: shouldFill ? 'filled' : 'new'
-    };
-  }
+
 
   /**
    * Simulate current market price with some volatility
@@ -426,87 +397,9 @@ export class TradeSimulationEngine extends EventEmitter {
     };
   }
 
-  /**
-   * Simulate order book depth and liquidity
-   */
-  private simulateOrderBookImpact(
-    orderRequest: OrderRequest,
-    marketConditions: MarketConditions
-  ): {
-    priceImpact: number;
-    liquidityConsumed: number;
-    averageExecutionPrice: number;
-  } {
-    const basePrice = orderRequest.price || 50000;
-    const orderValue = orderRequest.quantity * basePrice;
-    
-    // Calculate how much of the order book this order would consume
-    const availableLiquidity = marketConditions.liquidity * 1000000; // $1M max liquidity
-    const liquidityConsumed = Math.min(orderValue / availableLiquidity, 1.0);
-    
-    // Price impact increases exponentially with liquidity consumption
-    const priceImpact = liquidityConsumed * liquidityConsumed * marketConditions.spread * 100;
-    
-    // Calculate average execution price considering order book depth
-    const priceImpactAmount = basePrice * (priceImpact / 100);
-    const averageExecutionPrice = orderRequest.side === 'buy' 
-      ? basePrice + priceImpactAmount 
-      : basePrice - priceImpactAmount;
-    
-    return {
-      priceImpact,
-      liquidityConsumed,
-      averageExecutionPrice: Math.max(averageExecutionPrice, 0.01)
-    };
-  }
 
-  /**
-   * Simulate realistic execution timing based on market conditions
-   */
-  private simulateExecutionTiming(
-    orderRequest: OrderRequest,
-    marketConditions: MarketConditions
-  ): {
-    executionDelay: number;
-    executionProbability: number;
-    estimatedFillTime: number;
-  } {
-    let baseDelay = 50; // 50ms base delay
-    
-    // Market orders execute faster
-    if (orderRequest.type === 'market') {
-      baseDelay = 20;
-    }
-    
-    // Adjust for market conditions
-    baseDelay *= (2 - marketConditions.liquidity); // Lower liquidity = longer delay
-    baseDelay *= (1 + marketConditions.volatility * 0.5); // Higher volatility = longer delay
-    
-    // Large orders take longer
-    const orderValue = orderRequest.quantity * (orderRequest.price || 50000);
-    if (orderValue > 50000) {
-      baseDelay *= 1.5;
-    }
-    
-    const executionDelay = Math.min(baseDelay, this.config.maxExecutionDelayMs);
-    
-    // Calculate execution probability
-    let executionProbability = 0.95; // 95% base probability
-    if (orderRequest.type === 'limit') {
-      executionProbability = 0.7 + marketConditions.liquidity * 0.25;
-    }
-    
-    // Estimate fill time for limit orders
-    const estimatedFillTime = orderRequest.type === 'limit' 
-      ? executionDelay * (2 - marketConditions.liquidity) * 10
-      : executionDelay;
-    
-    return {
-      executionDelay,
-      executionProbability,
-      estimatedFillTime
-    };
-  }
+
+
 
   /**
    * Initialize default market conditions for common symbols
@@ -912,25 +805,314 @@ export class TradeSimulationEngine extends EventEmitter {
    * Validate paper trading mode is active
    */
   public validatePaperTradingMode(): boolean {
-    const isPaperTradingActive = true; // Always true for simulation engine
+    const tradingSimulationOnly = process.env.TRADING_SIMULATION_ONLY;
+    const paperTradingMode = process.env.PAPER_TRADING_MODE;
     
-    if (!isPaperTradingActive) {
-      const error = new Error('CRITICAL: Paper trading mode is not active');
-      logger.error('Paper trading validation failed', error);
-      productionLogger.logSecurityEvent({
-        type: 'configuration_change',
-        severity: 'critical',
-        details: {
-          component: 'TradeSimulationEngine',
-          issue: 'paper_trading_mode_disabled',
-          action: 'validate_paper_trading_mode'
-        }
-      });
-      throw error;
+    if (tradingSimulationOnly !== 'true' && paperTradingMode !== 'true') {
+      throw new Error('Paper trading mode is not active. Real trading is blocked.');
     }
-
+    
     return true;
   }
+
+  /**
+   * Get virtual balance integration
+   */
+  public async getVirtualBalance(userId: string): Promise<{
+    totalBalance: number;
+    availableBalance: number;
+    lockedBalance: number;
+    currency: string;
+  }> {
+    // Import VirtualPortfolioManager dynamically to avoid circular dependencies
+    const { virtualPortfolioManager } = await import('./VirtualPortfolioManager');
+    
+    let balance = virtualPortfolioManager.getVirtualBalance(userId);
+    if (!balance) {
+      balance = await virtualPortfolioManager.initializeUserPortfolio(userId);
+    }
+    
+    return {
+      totalBalance: balance.totalBalance,
+      availableBalance: balance.availableBalance,
+      lockedBalance: balance.lockedBalance,
+      currency: balance.currency
+    };
+  }
+
+  /**
+   * Execute trade with virtual portfolio integration
+   */
+  public async executeTradeWithPortfolio(
+    userId: string,
+    orderRequest: OrderRequest
+  ): Promise<{
+    simulatedOrder: SimulatedOrderResponse;
+    updatedBalance: any;
+    portfolioSummary: any;
+  }> {
+    try {
+      // Validate paper trading mode
+      this.validatePaperTradingMode();
+
+      // Import VirtualPortfolioManager dynamically
+      const { virtualPortfolioManager } = await import('./VirtualPortfolioManager');
+
+      // Simulate the order execution
+      const simulatedOrder = await this.simulateOrderExecution(orderRequest);
+
+      // Execute the trade in virtual portfolio if order was filled
+      let updatedBalance = null;
+      let portfolioSummary = null;
+
+      if (simulatedOrder.status === 'filled') {
+        const simulatedTrade = await virtualPortfolioManager.executeSimulatedTrade(
+          userId,
+          simulatedOrder.symbol,
+          simulatedOrder.side.toUpperCase() as 'BUY' | 'SELL',
+          simulatedOrder.quantity,
+          simulatedOrder.price || 0,
+          simulatedOrder.orderId,
+          orderRequest.clientOrderId
+        );
+
+        // Get updated balance and portfolio summary
+        updatedBalance = virtualPortfolioManager.getVirtualBalance(userId);
+        portfolioSummary = virtualPortfolioManager.getPortfolioSummary(userId);
+
+        logger.info('Trade executed with virtual portfolio integration', {
+          userId,
+          orderId: simulatedOrder.orderId,
+          tradeId: simulatedTrade.id,
+          isPaperTrade: true
+        });
+      }
+
+      return {
+        simulatedOrder,
+        updatedBalance,
+        portfolioSummary
+      };
+
+    } catch (error) {
+      logger.error('Failed to execute trade with portfolio integration:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Calculate comprehensive P&L for a position
+   */
+  public calculatePositionPnL(
+    entryPrice: number,
+    currentPrice: number,
+    quantity: number,
+    side: 'long' | 'short',
+    fees: number = 0
+  ): {
+    unrealizedPnL: number;
+    unrealizedPnLPercent: number;
+    totalCost: number;
+    currentValue: number;
+    netPnL: number;
+  } {
+    const totalCost = entryPrice * quantity + fees;
+    const currentValue = currentPrice * quantity;
+    
+    let unrealizedPnL: number;
+    if (side === 'long') {
+      unrealizedPnL = currentValue - totalCost;
+    } else {
+      unrealizedPnL = totalCost - currentValue;
+    }
+    
+    const unrealizedPnLPercent = totalCost > 0 ? (unrealizedPnL / totalCost) * 100 : 0;
+    const netPnL = unrealizedPnL - fees;
+
+    return {
+      unrealizedPnL,
+      unrealizedPnLPercent,
+      totalCost,
+      currentValue,
+      netPnL
+    };
+  }
+
+  /**
+   * Simulate portfolio performance over time
+   */
+  public simulatePortfolioPerformance(
+    initialBalance: number,
+    trades: Array<{
+      symbol: string;
+      side: 'buy' | 'sell';
+      quantity: number;
+      price: number;
+      timestamp: number;
+    }>,
+    currentPrices: Map<string, number>
+  ): {
+    finalBalance: number;
+    totalReturn: number;
+    totalReturnPercent: number;
+    maxDrawdown: number;
+    sharpeRatio: number;
+    winRate: number;
+    profitFactor: number;
+    equityCurve: Array<{ timestamp: number; equity: number; drawdown: number }>;
+  } {
+    let currentBalance = initialBalance;
+    const positions = new Map<string, { quantity: number; avgPrice: number; side: 'long' | 'short' }>();
+    const equityCurve: Array<{ timestamp: number; equity: number; drawdown: number }> = [];
+    let maxEquity = initialBalance;
+    let maxDrawdown = 0;
+    let totalWins = 0;
+    let totalLosses = 0;
+    let winningTrades = 0;
+    let losingTrades = 0;
+
+    // Process each trade
+    for (const trade of trades) {
+      const tradeCost = trade.quantity * trade.price;
+      const fee = tradeCost * this.config.baseFeePercent / 100;
+      
+      if (trade.side === 'buy') {
+        currentBalance -= (tradeCost + fee);
+        
+        // Update position
+        const existing = positions.get(trade.symbol);
+        if (existing) {
+          const totalQuantity = existing.quantity + trade.quantity;
+          const totalValue = existing.quantity * existing.avgPrice + tradeCost;
+          existing.avgPrice = totalValue / totalQuantity;
+          existing.quantity = totalQuantity;
+        } else {
+          positions.set(trade.symbol, {
+            quantity: trade.quantity,
+            avgPrice: trade.price,
+            side: 'long'
+          });
+        }
+      } else {
+        // Sell trade
+        const position = positions.get(trade.symbol);
+        if (position && position.quantity >= trade.quantity) {
+          const pnl = (trade.price - position.avgPrice) * trade.quantity - fee;
+          currentBalance += tradeCost - fee;
+          
+          // Track wins/losses
+          if (pnl > 0) {
+            totalWins += pnl;
+            winningTrades++;
+          } else {
+            totalLosses += Math.abs(pnl);
+            losingTrades++;
+          }
+          
+          // Update position
+          position.quantity -= trade.quantity;
+          if (position.quantity === 0) {
+            positions.delete(trade.symbol);
+          }
+        }
+      }
+
+      // Calculate current equity including unrealized PnL
+      let unrealizedPnL = 0;
+      for (const [symbol, position] of positions) {
+        const currentPrice = currentPrices.get(symbol) || position.avgPrice;
+        unrealizedPnL += (currentPrice - position.avgPrice) * position.quantity;
+      }
+      
+      const currentEquity = currentBalance + unrealizedPnL;
+      maxEquity = Math.max(maxEquity, currentEquity);
+      const currentDrawdown = (maxEquity - currentEquity) / maxEquity * 100;
+      maxDrawdown = Math.max(maxDrawdown, currentDrawdown);
+      
+      equityCurve.push({
+        timestamp: trade.timestamp,
+        equity: currentEquity,
+        drawdown: currentDrawdown
+      });
+    }
+
+    // Calculate final metrics
+    const finalBalance = currentBalance;
+    const totalReturn = finalBalance - initialBalance;
+    const totalReturnPercent = (totalReturn / initialBalance) * 100;
+    const winRate = (winningTrades + losingTrades) > 0 ? winningTrades / (winningTrades + losingTrades) : 0;
+    const profitFactor = totalLosses > 0 ? totalWins / totalLosses : 0;
+    
+    // Simple Sharpe ratio calculation (would need risk-free rate and volatility in reality)
+    const sharpeRatio = totalReturnPercent / Math.max(maxDrawdown, 1);
+
+    return {
+      finalBalance,
+      totalReturn,
+      totalReturnPercent,
+      maxDrawdown,
+      sharpeRatio,
+      winRate,
+      profitFactor,
+      equityCurve
+    };
+  }
+
+  /**
+   * Get detailed simulation report
+   */
+  public getDetailedSimulationReport(): {
+    engineStatus: {
+      isActive: boolean;
+      paperTradingMode: boolean;
+      totalOrdersSimulated: number;
+      uptime: number;
+    };
+    configuration: SimulationConfig;
+    statistics: {
+      totalOrders: number;
+      filledOrders: number;
+      cancelledOrders: number;
+      averageSlippage: number;
+      averageFee: number;
+      averageExecutionDelay: number;
+    };
+    marketConditions: Array<{
+      symbol: string;
+      volatility: number;
+      liquidity: number;
+      spread: number;
+      volume: number;
+    }>;
+    recentOrders: SimulatedOrderResponse[];
+  } {
+    const stats = this.getSimulationStats();
+    const marketConditionsArray = Array.from(this.marketConditions.entries()).map(([symbol, conditions]) => ({
+      symbol,
+      ...conditions
+    }));
+    
+    const recentOrders = Array.from(this.simulatedOrders.values())
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(0, 10);
+
+    return {
+      engineStatus: {
+        isActive: true,
+        paperTradingMode: this.validatePaperTradingMode(),
+        totalOrdersSimulated: stats.totalOrders,
+        uptime: Date.now() - (this.simulatedOrders.size > 0 ? 
+          Math.min(...Array.from(this.simulatedOrders.values()).map(o => o.timestamp)) : 
+          Date.now())
+      },
+      configuration: this.getConfig(),
+      statistics: stats,
+      marketConditions: marketConditionsArray,
+      recentOrders
+    };
+  }
+
+
 }
 
 // Export singleton instance

@@ -135,7 +135,7 @@ const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({ children }) =
 
       <Grid container spacing={2}>
         {/* Main Chart Area */}
-        <Grid xs={12} lg={8}>
+        <Grid item xs={12} lg={8}>
           <Box
             sx={{
               position: 'relative',
@@ -175,7 +175,7 @@ const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({ children }) =
         </Grid>
 
         {/* Sidebar */}
-        <Grid xs={12} lg={4}>
+        <Grid item xs={12} lg={4}>
           <Box display="flex" flexDirection="column" gap={2}>
             {/* Virtual Portfolio Overview */}
             <VirtualPortfolioDisplay />
@@ -190,7 +190,7 @@ const ResponsiveDashboard: React.FC<ResponsiveDashboardProps> = ({ children }) =
 
         {/* Mobile-only Alerts at bottom */}
         {isMobile && (
-          <Grid xs={12}>
+          <Grid item xs={12}>
             <AlertsNotifications />
           </Grid>
         )}

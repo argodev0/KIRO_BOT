@@ -310,7 +310,7 @@ describe('WebSocket Integration Tests', () => {
       
       clientSocket.on('connect', () => {
         const stats = wsServer.getServerStats();
-        expect(stats.connectedClients).toBeGreaterThan(0);
+        expect(stats.connections.total).toBeGreaterThan(0);
         done();
       });
     });

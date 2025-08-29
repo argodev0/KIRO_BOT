@@ -1,5 +1,14 @@
 import { AnomalyDetectionService } from '../../services/AnomalyDetectionService';
-import { TradingSignal } from '../../types/trading';
+import { TradingSignal, SignalReasoning } from '../../types/trading';
+
+const createMockReasoning = (): SignalReasoning => ({
+  technical: { indicators: ['RSI', 'MACD'], confluence: 0.8, trend: 'bullish' },
+  patterns: { detected: ['hammer'], strength: 0.7 },
+  elliottWave: { currentWave: 'wave3', wavePosition: 'impulse', validity: 0.8 },
+  fibonacci: { levels: [0.618, 0.786], confluence: 0.8 },
+  volume: { profile: 'increasing', strength: 0.7 },
+  summary: 'Strong bullish signal with high confluence'
+});
 
 describe('AnomalyDetectionService', () => {
   let anomalyService: AnomalyDetectionService;
@@ -21,7 +30,7 @@ describe('AnomalyDetectionService', () => {
         entryPrice: 50000,
         stopLoss: 49000,
         takeProfit: [52000],
-        reasoning: { technical: 0.4, patterns: 0.3, elliottWave: 0.5, fibonacci: 0.4, volume: 0.3 },
+        reasoning: createMockReasoning(),
         timestamp: Date.now()
       };
 
@@ -44,7 +53,7 @@ describe('AnomalyDetectionService', () => {
           entryPrice: 3000 + (i * 10), // Normal price progression
           stopLoss: 2900,
           takeProfit: [3200],
-          reasoning: { technical: 0.8, patterns: 0.7, elliottWave: 0.8, fibonacci: 0.8, volume: 0.7 },
+          reasoning: createMockReasoning(),
           timestamp: Date.now()
         };
         anomalyService.analyzeSignal(signal);
@@ -58,7 +67,7 @@ describe('AnomalyDetectionService', () => {
         entryPrice: 5000, // Significantly higher than normal
         stopLoss: 4900,
         takeProfit: [5200],
-        reasoning: { technical: 0.8, patterns: 0.7, elliottWave: 0.8, fibonacci: 0.8, volume: 0.7 },
+        reasoning: createMockReasoning(),
         timestamp: Date.now()
       };
 
@@ -82,7 +91,7 @@ describe('AnomalyDetectionService', () => {
           entryPrice: 50000,
           stopLoss: 49000,
           takeProfit: [52000],
-          reasoning: { technical: 0.8, patterns: 0.7, elliottWave: 0.8, fibonacci: 0.8, volume: 0.7 },
+          reasoning: createMockReasoning(),
           timestamp: Date.now()
         };
         
@@ -208,7 +217,8 @@ describe('AnomalyDetectionService', () => {
         totalUnrealizedPnl: -500,
         totalRealizedPnl: -1000,
         maxDrawdown: 1500,
-        currentDrawdown: 1200 // 12% drawdown
+        currentDrawdown: 1200, // 12% drawdown
+        equity: 8500
       };
 
       const anomalies = anomalyService.analyzePortfolio(portfolio);
@@ -231,13 +241,15 @@ describe('AnomalyDetectionService', () => {
             entryPrice: 50000,
             currentPrice: 51000,
             unrealizedPnl: 60,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            exchange: 'binance'
           }
         ],
         totalUnrealizedPnl: 60,
         totalRealizedPnl: 0,
         maxDrawdown: 0,
-        currentDrawdown: 0
+        currentDrawdown: 0,
+        equity: 10060
       };
 
       const anomalies = anomalyService.analyzePortfolio(portfolio);
@@ -260,7 +272,8 @@ describe('AnomalyDetectionService', () => {
             entryPrice: 50000,
             currentPrice: 51000,
             unrealizedPnl: 20,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            exchange: 'binance'
           },
           {
             id: 'pos2',
@@ -270,7 +283,8 @@ describe('AnomalyDetectionService', () => {
             entryPrice: 3000,
             currentPrice: 3100,
             unrealizedPnl: 100,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            exchange: 'binance'
           },
           {
             id: 'pos3',
@@ -280,13 +294,15 @@ describe('AnomalyDetectionService', () => {
             entryPrice: 1,
             currentPrice: 1.05,
             unrealizedPnl: 50,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            exchange: 'binance'
           }
         ],
         totalUnrealizedPnl: 170,
         totalRealizedPnl: 0,
         maxDrawdown: 0,
-        currentDrawdown: 0
+        currentDrawdown: 0,
+        equity: 10170
       };
 
       const anomalies = anomalyService.analyzePortfolio(portfolio);

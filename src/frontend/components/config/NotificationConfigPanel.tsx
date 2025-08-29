@@ -71,7 +71,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -85,7 +85,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
 
             {notifications.email.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     type="email"
@@ -96,7 +96,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Email Events
                   </Typography>
@@ -125,7 +125,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -139,7 +139,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
 
             {notifications.webhook.enabled && (
               <>
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     label="Webhook URL"
@@ -149,7 +149,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Webhook Events
                   </Typography>
@@ -166,7 +166,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
                   </Box>
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Custom Headers (Optional)
                   </Typography>
@@ -200,7 +200,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
         </AccordionSummary>
         <AccordionDetails>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <FormControlLabel
                 control={
                   <Switch
@@ -214,7 +214,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
 
             {notifications.inApp.enabled && (
               <>
-                <Grid item xs={12} md={6}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControlLabel
                     control={
                       <Switch
@@ -226,7 +226,7 @@ export const NotificationConfigPanel: React.FC<NotificationConfigPanelProps> = (
                   />
                 </Grid>
 
-                <Grid item xs={12}>
+                <Grid size={{ xs: 12 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     In-App Events
                   </Typography>

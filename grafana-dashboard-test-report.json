@@ -1,0 +1,107 @@
+{
+  "timestamp": "2025-08-27T11:48:49.274Z",
+  "summary": {
+    "totalTests": 9,
+    "passedTests": 8,
+    "failedTests": 1,
+    "successRate": "88.89"
+  },
+  "results": {
+    "dashboardValidation": [
+      {
+        "test": "Dashboard Validation: paper-trading-safety.json",
+        "status": "PASS",
+        "details": [
+          "Title: Paper Trading Safety Dashboard",
+          "UID: paper-trading-safety",
+          "Panels: 9",
+          "Panel validation completed for 9 panels",
+          "Datasources used: prometheus"
+        ],
+        "errors": []
+      },
+      {
+        "test": "Dashboard Validation: performance-analytics.json",
+        "status": "PASS",
+        "details": [
+          "Title: Performance Analytics Dashboard",
+          "UID: performance-analytics",
+          "Panels: 10",
+          "Panel validation completed for 10 panels",
+          "Datasources used: prometheus"
+        ],
+        "errors": []
+      },
+      {
+        "test": "Dashboard Validation: real-time-data-feeds.json",
+        "status": "PASS",
+        "details": [
+          "Title: Real-time Data Feeds Dashboard",
+          "UID: real-time-data-feeds",
+          "Panels: 10",
+          "Panel validation completed for 10 panels",
+          "Datasources used: prometheus"
+        ],
+        "errors": []
+      },
+      {
+        "test": "Dashboard Validation: system-metrics.json",
+        "status": "PASS",
+        "details": [
+          "Title: System Metrics Dashboard",
+          "UID: system-metrics",
+          "Panels: 6",
+          "Panel validation completed for 6 panels",
+          "Datasources used: prometheus"
+        ],
+        "errors": []
+      },
+      {
+        "test": "Dashboard Validation: trading-bot-overview.json",
+        "status": "PASS",
+        "details": [
+          "Title: Trading Bot - Overview",
+          "UID: trading-bot-overview",
+          "Panels: 4",
+          "Panel validation completed for 4 panels",
+          "Datasources used: prometheus"
+        ],
+        "errors": []
+      },
+      {
+        "test": "Dashboard Validation: trading-metrics.json",
+        "status": "PASS",
+        "details": [
+          "Title: Trading Metrics Dashboard",
+          "UID: trading-metrics",
+          "Panels: 10",
+          "Panel validation completed for 10 panels",
+          "Datasources used: prometheus"
+        ],
+        "errors": []
+      }
+    ],
+    "connectivityTest": {
+      "test": "Grafana Connectivity",
+      "status": "FAIL",
+      "details": [],
+      "errors": [
+        "Connectivity error: connect ECONNREFUSED 127.0.0.1:3001"
+      ]
+    },
+    "alertingTest": {
+      "test": "Alerting Configuration",
+      "status": "PASS",
+      "details": [
+        "Found: alert-rules.yml",
+        "Found: contact-points.yml",
+        "Found: notification-policies.yml",
+        "Paper trading safety alerts configured"
+      ],
+      "errors": []
+    },
+    "totalTests": 9,
+    "passedTests": 8,
+    "failedTests": 1
+  }
+}

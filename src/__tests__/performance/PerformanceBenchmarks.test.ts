@@ -8,14 +8,13 @@ import { FibonacciService } from '../../services/FibonacciService';
 
 describe('Performance Benchmarks', () => {
   let technicalAnalysis: TechnicalAnalysisService;
-  let patternRecognition: PatternRecognitionService;
+
   let signalEngine: SignalEngine;
   let elliottWave: ElliottWaveService;
   let fibonacci: FibonacciService;
 
   beforeEach(() => {
     technicalAnalysis = new TechnicalAnalysisService();
-    patternRecognition = new PatternRecognitionService();
     signalEngine = new SignalEngine();
     elliottWave = new ElliottWaveService();
     fibonacci = new FibonacciService();
@@ -82,7 +81,7 @@ describe('Performance Benchmarks', () => {
       });
       
       const startTime = performance.now();
-      await patternRecognition.detectCandlestickPatterns(candles);
+      await PatternRecognitionService.detectPatterns(candles);
       const endTime = performance.now();
       
       const executionTime = endTime - startTime;
@@ -101,7 +100,7 @@ describe('Performance Benchmarks', () => {
         const candles = MarketDataFactory.createCandles({ count: size });
         
         const startTime = performance.now();
-        await patternRecognition.detectCandlestickPatterns(candles);
+        await PatternRecognitionService.detectPatterns(candles);
         const endTime = performance.now();
         
         times.push(endTime - startTime);
@@ -147,7 +146,7 @@ describe('Performance Benchmarks', () => {
       
       // Calculate multiple fibonacci scenarios
       for (let i = 0; i < 100; i++) {
-        fibonacci.calculateRetracements(high + i * 10, low + i * 5);
+        fibonacci.calculateRetracements({ high: high + i * 10, low: low + i * 5 });
         fibonacci.calculateExtensions({ startPrice: low, endPrice: high } as any, { startPrice: high, endPrice: low } as any);
       }
       
@@ -166,7 +165,7 @@ describe('Performance Benchmarks', () => {
       const analysisResults = TradingDataFactory.createAnalysisResults();
       
       const startTime = performance.now();
-      await signalEngine.generateSignal(analysisResults);
+      await signalEngine.generateSignal('BTCUSDT', analysisResults, MarketDataFactory.createCandles({ count: 100 }));
       const endTime = performance.now();
       
       const executionTime = endTime - startTime;
@@ -185,7 +184,7 @@ describe('Performance Benchmarks', () => {
       const startTime = performance.now();
       
       const promises = analysisResults.map(analysis => 
-        signalEngine.generateSignal(analysis)
+        signalEngine.generateSignal('BTCUSDT', analysis, MarketDataFactory.createCandles({ count: 100 }))
       );
       
       await Promise.all(promises);
@@ -260,7 +259,7 @@ describe('Performance Benchmarks', () => {
       
       const promises = Array.from({ length: signalCount }, async () => {
         const analysis = TradingDataFactory.createAnalysisResults();
-        return signalEngine.generateSignal(analysis);
+        return signalEngine.generateSignal('BTCUSDT', analysis, MarketDataFactory.createCandles({ count: 100 }));
       });
       
       await Promise.all(promises);

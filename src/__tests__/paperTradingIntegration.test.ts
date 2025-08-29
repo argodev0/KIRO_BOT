@@ -61,11 +61,11 @@ describe('Paper Trading Integration', () => {
     virtualPortfolioManager.resetUserPortfolio(testUserId);
   }, 10000); // 10 second timeout
 
-  test('should validate API key permissions', () => {
+  test('should validate API key permissions', async () => {
     const paperTradingGuard = PaperTradingGuard.getInstance();
 
     // Safe API key should pass
-    const safeResult = paperTradingGuard.validateApiPermissions('readonly_key_123', 'binance');
+    const safeResult = await paperTradingGuard.validateApiPermissions('readonly_key_123', 'binance');
     expect(safeResult.isValid).toBe(true);
     expect(safeResult.riskLevel).toBe('low');
 

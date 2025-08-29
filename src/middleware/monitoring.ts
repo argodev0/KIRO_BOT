@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { MonitoringService } from '../services/MonitoringService';
+import { PrometheusMetricsService } from '../services/PrometheusMetricsService';
 import { PerformanceMonitoringService } from '../services/PerformanceMonitoringService';
 import { logger, logPerformanceMetric } from '../utils/logger';
 // Simple UUID v4 generator
@@ -27,10 +28,12 @@ declare global {
 
 export class MonitoringMiddleware {
   private monitoring: MonitoringService;
+  private prometheusMetrics: PrometheusMetricsService;
   private performance: PerformanceMonitoringService;
 
   constructor() {
     this.monitoring = MonitoringService.getInstance();
+    this.prometheusMetrics = PrometheusMetricsService.getInstance();
     this.performance = PerformanceMonitoringService.getInstance();
   }
 
@@ -88,7 +91,7 @@ export class MonitoringMiddleware {
       return originalJson.call(this, body);
     };
 
-    res.end = function(chunk, encoding) {
+    res.end = function(chunk?: any, encoding?: any) {
       recordResponseMetrics();
       return originalEnd.call(this, chunk, encoding);
     };
@@ -102,6 +105,7 @@ export class MonitoringMiddleware {
 
         // Record HTTP metrics
         this.monitoring.recordHttpRequest(method, route, statusCode, duration / 1000);
+        this.prometheusMetrics.recordHttpRequest(method, route, statusCode, duration / 1000);
 
         // Record performance metrics
         this.performance.recordLatency('http_request', duration);
@@ -113,8 +117,10 @@ export class MonitoringMiddleware {
           
           if (statusCode >= 500) {
             this.monitoring.recordError('http', 'server_error', 'high');
+            this.prometheusMetrics.recordError('http', 'server_error', 'high');
           } else if (statusCode >= 400) {
             this.monitoring.recordError('http', 'client_error', 'medium');
+            this.prometheusMetrics.recordError('http', 'client_error', 'medium');
           }
         }
 
@@ -154,6 +160,7 @@ export class MonitoringMiddleware {
     
     // Record error metrics
     this.monitoring.recordError('application', error.name || 'UnknownError', 'high');
+    this.prometheusMetrics.recordError('application', error.name || 'UnknownError', 'high');
     this.performance.recordError('application', error.name || 'UnknownError');
 
     // Log error with context
@@ -192,6 +199,7 @@ export class MonitoringMiddleware {
     for (const pattern of suspiciousPatterns) {
       if (pattern.test(url) || pattern.test(body) || pattern.test(query)) {
         this.monitoring.recordSecurityEvent('suspicious_request', 'medium', req.ip || 'unknown');
+        this.prometheusMetrics.recordSecurityEvent('suspicious_request', 'medium', req.ip || 'unknown');
         
         logger.warn('Suspicious request detected', {
           requestId: req.requestId,
@@ -210,6 +218,7 @@ export class MonitoringMiddleware {
     const userAgent = req.get('User-Agent') || '';
     if (userAgent.includes('bot') || userAgent.includes('crawler')) {
       this.monitoring.recordSecurityEvent('bot_request', 'low', req.ip || 'unknown');
+      this.prometheusMetrics.recordSecurityEvent('bot_request', 'low', req.ip || 'unknown');
     }
 
     next();
@@ -228,10 +237,17 @@ export class MonitoringMiddleware {
         // Record paper trading metrics if this is a trading operation
         if (body && body.type === 'paper_trade') {
           const monitoring = MonitoringService.getInstance();
+          const prometheusMetrics = PrometheusMetricsService.getInstance();
           monitoring.recordPaperTrade(
             body.symbol || 'unknown',
             body.side || 'unknown',
             body.exchange || 'unknown'
+          );
+          prometheusMetrics.recordPaperTrade(
+            body.symbol || 'unknown',
+            body.side || 'unknown',
+            body.exchange || 'unknown',
+            body.strategy || 'unknown'
           );
         }
         
