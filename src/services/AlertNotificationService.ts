@@ -316,7 +316,8 @@ export class AlertNotificationService extends EventEmitter {
   }
 
   private async sendSlackNotification(alert: Alert, channel: AlertChannel, template: NotificationTemplate): Promise<void> {
-    if (!config.notifications?.slack?.webhookUrl) {
+    const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+    if (!webhookUrl) {
       logger.warn('Slack webhook URL not configured');
       return;
     }
@@ -339,7 +340,7 @@ export class AlertNotificationService extends EventEmitter {
       }]
     };
 
-    await axios.post(config.notifications.slack.webhookUrl, payload);
+    await axios.post(webhookUrl, payload);
     
     this.emit('notification_sent', {
       alertId: alert.id,

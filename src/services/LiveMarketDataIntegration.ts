@@ -445,6 +445,7 @@ export class LiveMarketDataIntegration extends EventEmitter {
           timestamp: Date.now()
         });
         this.dataStats.websocket.broadcasts++;
+        }
       }
     });
     
@@ -547,6 +548,7 @@ export class LiveMarketDataIntegration extends EventEmitter {
           timestamp: Date.now()
         });
         this.dataStats.websocket.broadcasts++;
+        }
       }
       
       // Emit event
@@ -587,6 +589,7 @@ export class LiveMarketDataIntegration extends EventEmitter {
           timestamp: Date.now()
         });
         this.dataStats.websocket.broadcasts++;
+        }
       }
       
       // Emit event
@@ -619,6 +622,7 @@ export class LiveMarketDataIntegration extends EventEmitter {
           timestamp: Date.now()
         });
         this.dataStats.websocket.broadcasts++;
+        }
       }
       
       // Emit event
@@ -646,6 +650,7 @@ export class LiveMarketDataIntegration extends EventEmitter {
           timestamp: Date.now()
         });
         this.dataStats.websocket.broadcasts++;
+        }
       }
       
       // Emit event

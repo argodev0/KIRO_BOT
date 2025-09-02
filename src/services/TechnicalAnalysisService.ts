@@ -654,6 +654,78 @@ export class TechnicalAnalysisService {
     };
   }
 
+  // Additional methods for grid bot integration
+  async analyzeElliottWave(symbol: string, timeframe: string): Promise<any> {
+    // Mock Elliott Wave analysis
+    return {
+      currentWave: 'Wave 3',
+      waves: [
+        { label: 'Wave 1', price: 49000, probability: 0.8 },
+        { label: 'Wave 2', price: 49500, probability: 0.6 },
+        { label: 'Wave 3', price: 50500, probability: 0.9 }
+      ],
+      trendDirection: 'up',
+      confidence: 0.85
+    };
+  }
+
+  async analyzeWithNKN(symbol: string, params: any): Promise<any> {
+    // Mock NKN analysis
+    return {
+      probability: 0.75,
+      confidence: 0.8,
+      direction: 'up',
+      signals: []
+    };
+  }
+
+  async calculateLinearRegression(symbol: string, timeframe: string, periods: number): Promise<any> {
+    // Mock linear regression analysis
+    return {
+      slope: 0.5,
+      intercept: 49000,
+      rSquared: 0.85,
+      predictedValue: 50000,
+      trendStrength: 0.7,
+      volatility: 0.02
+    };
+  }
+
+  async getMarketData(symbol: string): Promise<any> {
+    // Mock market data
+    return {
+      price: 50000,
+      volume: 1000000,
+      timestamp: new Date()
+    };
+  }
+
+  async getVolumeAnalysis(symbol: string, timeframe: string, periods: number): Promise<any> {
+    // Mock volume analysis
+    return {
+      currentVolume: 1000000,
+      averageVolume: 800000,
+      volumeSpike: false,
+      volumeTrend: 'increasing'
+    };
+  }
+
+  async getPriceHistory(symbol: string, timeframe: string, periods: number): Promise<number[]> {
+    // Mock price history for correlation and analysis
+    const basePrice = 50000;
+    const prices: number[] = [];
+    
+    for (let i = 0; i < periods; i++) {
+      // Generate realistic price movement
+      const randomChange = (Math.random() - 0.5) * 0.02; // ±1% random change
+      const trendComponent = Math.sin(i * 0.1) * 0.005; // Small trend component
+      const price = basePrice * (1 + randomChange + trendComponent);
+      prices.push(price);
+    }
+    
+    return prices;
+  }
+
   /**
    * Calculate individual indicator scores
    */

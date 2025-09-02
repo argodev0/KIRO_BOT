@@ -527,6 +527,16 @@ export class RiskManagementService {
     // Implementation would send notifications via email, SMS, etc.
     logger.info('Emergency notifications sent', { reason });
   }
+
+  // Additional method for grid bot integration
+  async checkRiskLimits(params: any): Promise<any> {
+    // Mock risk limit checking
+    return {
+      withinLimits: true,
+      violations: [],
+      recommendations: []
+    };
+  }
 }
 
 export default RiskManagementService;

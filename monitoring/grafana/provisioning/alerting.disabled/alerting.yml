@@ -1,0 +1,32 @@
+apiVersion: 1
+
+# List of contact point configurations
+contactPoints:
+  - orgId: 1
+    name: default-receiver
+    receivers:
+      - uid: default-receiver
+        type: email
+        settings:
+          addresses: admin@test.com
+          subject: "Grafana Alert: {{ .GroupLabels.alertname }}"
+          body: |
+            {{ range .Alerts }}
+            Alert: {{ .Annotations.summary }}
+            Description: {{ .Annotations.description }}
+            {{ end }}
+
+# List of notification policy configurations  
+policies:
+  - orgId: 1
+    receiver: default-receiver
+    group_by: ['alertname']
+    group_wait: 10s
+    group_interval: 10s
+    repeat_interval: 1h
+
+# List of mute timing configurations
+muteTimes: []
+
+# List of templates
+templates: []

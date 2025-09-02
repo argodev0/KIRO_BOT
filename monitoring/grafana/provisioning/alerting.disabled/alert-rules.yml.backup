@@ -1,0 +1,519 @@
+apiVersion: 1
+
+groups:
+  - name: trading-bot-critical
+    orgId: 1
+    folder: Trading Bot Alerts
+    interval: 30s
+    rules:
+      - uid: paper-trading-mode-disabled
+        title: Paper Trading Mode Disabled
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: paper_trading_mode_enabled
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params:
+                      - 1
+                    type: lt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                      - A
+                  reducer:
+                    params: []
+                    type: last
+                  type: query
+              datasource:
+                type: __expr__
+                uid: __expr__
+              expression: A < 1
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 0s
+        annotations:
+          description: 'CRITICAL: Paper trading mode has been disabled! Real trading may be active.'
+          summary: 'Paper trading safety violation detected'
+        labels:
+          severity: critical
+          team: trading
+          
+      - uid: safety-score-low
+        title: Paper Trading Safety Score Too Low
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: paper_trading_safety_score
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A < 90
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          description: 'Paper trading safety score is {{ $value }}%, below the required 90% threshold'
+          summary: 'Paper trading safety score critically low'
+        labels:
+          severity: critical
+          team: trading
+
+      - uid: real-trading-attempts
+        title: Real Trading Attempts Detected
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: rate(security_events{event_type="real_trading_attempt"}[5m])
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A > 0
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: NoData
+        execErrState: Alerting
+        for: 0s
+        annotations:
+          description: 'CRITICAL: Real trading attempts detected at {{ $value }} attempts/sec'
+          summary: 'Unauthorized real trading attempts blocked'
+        labels:
+          severity: critical
+          team: security
+
+  - name: trading-bot-system-health
+    orgId: 1
+    folder: Trading Bot Alerts
+    interval: 30s
+    rules:
+      - uid: service-down
+        title: Trading Bot Service Down
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: up{job=~"trading-bot.*"}
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A < 1
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          description: 'Trading bot service {{ $labels.instance }} is down'
+          summary: 'Trading bot service unavailable'
+        labels:
+          severity: critical
+          team: infrastructure
+
+      - uid: high-memory-usage
+        title: High Memory Usage
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: (memory_usage{type="heap_used"} / memory_usage{type="heap_total"}) * 100
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A > 85
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: NoData
+        execErrState: Alerting
+        for: 5m
+        annotations:
+          description: 'Memory usage is {{ $value }}%, exceeding 85% threshold'
+          summary: 'High memory usage detected'
+        labels:
+          severity: warning
+          team: infrastructure
+
+      - uid: websocket-disconnected
+        title: WebSocket Connection Lost
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: websocket_connections{status="connected"}
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A < 1
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 30s
+        annotations:
+          description: 'WebSocket connection to {{ $labels.exchange }} is disconnected'
+          summary: 'Market data feed interrupted'
+        labels:
+          severity: warning
+          team: trading
+
+  - name: trading-bot-performance
+    orgId: 1
+    folder: Trading Bot Alerts
+    interval: 1m
+    rules:
+      - uid: high-api-latency
+        title: High API Response Time
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) * 1000
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A > 1000
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: NoData
+        execErrState: NoData
+        for: 2m
+        annotations:
+          description: '95th percentile API response time is {{ $value }}ms, exceeding 1000ms threshold'
+          summary: 'API performance degraded'
+        labels:
+          severity: warning
+          team: performance
+
+      - uid: high-market-data-latency
+        title: High Market Data Latency
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: histogram_quantile(0.95, rate(market_data_latency_bucket[5m]))
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A > 500
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: NoData
+        execErrState: NoData
+        for: 2m
+        annotations:
+          description: '95th percentile market data latency is {{ $value }}ms from {{ $labels.exchange }}'
+          summary: 'Market data feed latency high'
+        labels:
+          severity: warning
+          team: trading
+
+      - uid: low-cache-hit-rate
+        title: Low Cache Hit Rate
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: cache_hit_rate{cache_type="redis"}
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A < 80
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: NoData
+        execErrState: NoData
+        for: 5m
+        annotations:
+          description: 'Redis cache hit rate is {{ $value }}%, below 80% threshold'
+          summary: 'Cache performance degraded'
+        labels:
+          severity: warning
+          team: performance
+
+  - name: trading-bot-business
+    orgId: 1
+    folder: Trading Bot Alerts
+    interval: 1m
+    rules:
+      - uid: no-market-data-updates
+        title: No Market Data Updates
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: rate(market_data_updates[5m])
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A < 0.1
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 2m
+        annotations:
+          description: 'Market data updates from {{ $labels.exchange }} have stopped'
+          summary: 'Market data feed stalled'
+        labels:
+          severity: critical
+          team: trading
+
+      - uid: high-error-rate
+        title: High Error Rate
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: rate(errors_total[5m])
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A > 1
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: NoData
+        execErrState: NoData
+        for: 2m
+        annotations:
+          description: 'Error rate is {{ $value }} errors/sec in {{ $labels.service }}'
+          summary: 'High error rate detected'
+        labels:
+          severity: warning
+          team: development
+
+      - uid: database-connection-issues
+        title: Database Connection Issues
+        condition: C
+        data:
+          - refId: A
+            queryType: ''
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasource:
+              type: prometheus
+              uid: prometheus
+            model:
+              expr: database_connections{state="active"}
+              interval: ''
+              refId: A
+          - refId: C
+            queryType: ''
+            relativeTimeRange:
+              from: 0
+              to: 0
+            datasource:
+              type: __expr__
+              uid: __expr__
+            model:
+              expression: A < 1
+              hide: false
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+        noDataState: Alerting
+        execErrState: Alerting
+        for: 1m
+        annotations:
+          description: 'No active database connections available'
+          summary: 'Database connectivity lost'
+        labels:
+          severity: critical
+          team: infrastructure

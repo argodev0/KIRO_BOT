@@ -234,7 +234,8 @@ export class TechnicalIndicatorScoringMatrix {
   ): Promise<IndicatorScore> {
     const reasoning: string[] = [];
     let score = 0;
-    let signal: 'bullish' | 'bearish' | 'neutral' = currentWT.signal;
+    let signal: 'bullish' | 'bearish' | 'neutral' = currentWT.signal === 'buy' ? 'bullish' : 
+      currentWT.signal === 'sell' ? 'bearish' : 'neutral';
     let strength: 'weak' | 'moderate' | 'strong' = 'weak';
 
     // Calculate Wave Trend momentum
@@ -347,7 +348,7 @@ export class TechnicalIndicatorScoringMatrix {
     const reasoning: string[] = [];
     let score = 0;
     let signal: 'bullish' | 'bearish' | 'neutral' = 'neutral';
-    let strength: 'weak' | 'moderate' | 'strong' = momentum;
+    let strength: 'weak' | 'moderate' | 'strong' = momentum === 'neutral' ? 'moderate' : momentum;
 
     // Analyze momentum persistence
     const recentMomentum = historical.slice(-5).map(h => h.momentum);

@@ -219,7 +219,7 @@ groups:
               maxDataPoints: 43200
               refId: C
         noDataState: NoData
-        execErrState: NoData
+        execErrState: Alerting
         for: 5m
         annotations:
           description: 'Memory usage is {{ $value }}%, exceeding 85% threshold'
@@ -304,7 +304,7 @@ groups:
               maxDataPoints: 43200
               refId: C
         noDataState: NoData
-        execErrState: NoData
+        execErrState: Alerting
         for: 2m
         annotations:
           description: '95th percentile API response time is {{ $value }}ms, exceeding 1000ms threshold'
@@ -344,7 +344,7 @@ groups:
               maxDataPoints: 43200
               refId: C
         noDataState: NoData
-        execErrState: NoData
+        execErrState: Alerting
         for: 2m
         annotations:
           description: '95th percentile market data latency is {{ $value }}ms from {{ $labels.exchange }}'
@@ -384,7 +384,7 @@ groups:
               maxDataPoints: 43200
               refId: C
         noDataState: NoData
-        execErrState: NoData
+        execErrState: Alerting
         for: 5m
         annotations:
           description: 'Redis cache hit rate is {{ $value }}%, below 80% threshold'
@@ -469,7 +469,7 @@ groups:
               maxDataPoints: 43200
               refId: C
         noDataState: NoData
-        execErrState: NoData
+        execErrState: Alerting
         for: 2m
         annotations:
           description: 'Error rate is {{ $value }} errors/sec in {{ $labels.service }}'

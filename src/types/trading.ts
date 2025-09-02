@@ -7,14 +7,20 @@
 export interface TradingSignal {
   id?: string;
   symbol: string;
-  direction: 'long' | 'short';
+  direction?: 'long' | 'short';
   confidence: number;
   entryPrice: number;
   stopLoss?: number;
-  takeProfit: number[];
-  reasoning: SignalReasoning;
+  takeProfit?: number[];
+  reasoning?: SignalReasoning;
   timestamp: number;
   status?: SignalStatus;
+  
+  // Legacy compatibility fields
+  type?: 'buy' | 'sell' | 'long' | 'short' | 'grid';
+  quantity?: number;
+  source?: string;
+  exchange?: string;
   
   // Analysis scores
   technicalScore?: number;
@@ -25,29 +31,29 @@ export interface TradingSignal {
 }
 
 export interface SignalReasoning {
-  technical: {
+  technical?: {
     indicators: string[];
     confluence: number;
     trend: string;
   };
-  patterns: {
+  patterns?: {
     detected: string[];
     strength: number;
   };
-  elliottWave: {
+  elliottWave?: {
     currentWave: string;
     wavePosition: string;
     validity: number;
   };
-  fibonacci: {
+  fibonacci?: {
     levels: number[];
     confluence: number;
   };
-  volume: {
+  volume?: {
     profile: string;
     strength: number;
   };
-  summary: string;
+  summary?: string;
 }
 
 export type SignalStatus = 'pending' | 'active' | 'executed' | 'cancelled' | 'expired' | 'closed';

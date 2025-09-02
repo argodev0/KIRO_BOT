@@ -152,7 +152,7 @@ export class AuditLogService {
    */
   public extractRequestContext(req: Request): Partial<AuditEvent> {
     return {
-      requestId: req.headers['x-request-id'] as string || req.id,
+      requestId: req.headers['x-request-id'] as string || 'unknown',
       sourceIp: req.ip || req.connection.remoteAddress,
       userAgent: req.headers['user-agent'],
       userId: (req as any).user?.id || (req as any).userId

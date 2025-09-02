@@ -1,0 +1,57 @@
+# Hummingbot Docker Container
+# Optimized for AI Crypto Trading Bot integration
+
+FROM hummingbot/hummingbot:latest
+
+# Set environment variables
+ENV HUMMINGBOT_ENV=production
+ENV HUMMINGBOT_LOG_LEVEL=INFO
+ENV HUMMINGBOT_GATEWAY_ENABLED=true
+ENV HUMMINGBOT_GATEWAY_PORT=5000
+
+# Create necessary directories
+RUN mkdir -p /home/hummingbot/conf \
+    && mkdir -p /home/hummingbot/logs \
+    && mkdir -p /home/hummingbot/data \
+    && mkdir -p /home/hummingbot/scripts
+
+# Copy configuration templates
+COPY ./config/templates/ /home/hummingbot/conf/templates/
+COPY ./scripts/ /home/hummingbot/scripts/
+
+# Set proper permissions
+RUN chown -R hummingbot:hummingbot /home/hummingbot/conf \
+    && chown -R hummingbot:hummingbot /home/hummingbot/logs \
+    && chown -R hummingbot:hummingbot /home/hummingbot/data \
+    && chown -R hummingbot:hummingbot /home/hummingbot/scripts
+
+# Install additional dependencies for integration
+RUN pip install --no-cache-dir \
+    fastapi==0.104.1 \
+    uvicorn==0.24.0 \
+    pydantic==2.5.0 \
+    aioredis==2.0.1 \
+    asyncpg==0.29.0 \
+    prometheus-client==0.19.0
+
+# Copy integration API server
+COPY ./integration-api/ /home/hummingbot/integration-api/
+RUN chown -R hummingbot:hummingbot /home/hummingbot/integration-api
+
+# Expose ports
+EXPOSE 5000 8080 9090
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:5000/health || exit 1
+
+# Switch to hummingbot user
+USER hummingbot
+WORKDIR /home/hummingbot
+
+# Copy startup script
+COPY --chown=hummingbot:hummingbot ./scripts/start-hummingbot.sh /home/hummingbot/start-hummingbot.sh
+RUN chmod +x /home/hummingbot/start-hummingbot.sh
+
+# Start command
+CMD ["/home/hummingbot/start-hummingbot.sh"]

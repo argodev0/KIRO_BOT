@@ -18,6 +18,9 @@ export * from './analytics';
 // Grid trading types
 export * from './grid';
 
+// Hummingbot integration types
+export * from './hummingbot';
+
 // Common utility types
 export interface ApiResponse<T = any> {
   success: boolean;

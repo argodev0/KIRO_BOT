@@ -471,11 +471,498 @@ model SecurityThreat {
   @@map("security_threats")
 }
 
+// Hummingbot Integration Tables
+model HummingbotInstance {
+  id            String            @id @default(cuid())
+  name          String
+  description   String?
+  status        InstanceStatus    @default(STARTING)
+  config        Json              // HBConfig object
+  dockerContainerId String?       @map("docker_container_id")
+  endpoint      String
+  authToken     String?           @map("auth_token") // encrypted
+  
+  // Resource allocation
+  resourceLimits Json             @map("resource_limits") // ResourceLimits object
+  resourceUsage  Json?            @map("resource_usage")  // ResourceUsage object
+  
+  // Performance metrics
+  performance   Json?             // InstancePerformance object
+  
+  // Health monitoring
+  lastHealthCheck DateTime?       @map("last_health_check")
+  healthScore     Int?            @map("health_score") // 0-100
+  healthIssues    Json?           @map("health_issues") // HealthIssue[] array
+  
+  // Timestamps
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  lastStarted   DateTime?         @map("last_started")
+  lastStopped   DateTime?         @map("last_stopped")
+  
+  // Relations
+  strategies    HummingbotStrategy[]
+  deployments   StrategyDeployment[]
+  
+  @@map("hummingbot_instances")
+}
+
+model HummingbotStrategy {
+  id            String              @id @default(cuid())
+  instanceId    String              @map("instance_id")
+  signalId      String?             @map("signal_id")
+  userId        String              @map("user_id")
+  
+  // Strategy configuration
+  strategyType  HBStrategyType      @map("strategy_type")
+  name          String
+  description   String?
+  exchange      String
+  tradingPair   String              @map("trading_pair")
+  parameters    Json                // Strategy parameters
+  riskLimits    Json                @map("risk_limits") // RiskLimits object
+  executionSettings Json            @map("execution_settings") // ExecutionSettings object
+  
+  // Status and lifecycle
+  status        HBStrategyStatus    @default(PENDING)
+  startTime     DateTime?           @map("start_time")
+  endTime       DateTime?           @map("end_time")
+  
+  // Performance tracking
+  performanceMetrics Json?          @map("performance_metrics") // StrategyPerformance object
+  
+  // Translation metadata
+  translationMetadata Json?         @map("translation_metadata") // TranslationMetadata object
+  confidence    Decimal?            @db.Decimal(5,2)
+  
+  // Timestamps
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  
+  // Relations
+  instance      HummingbotInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  signal        TradingSignal?      @relation(fields: [signalId], references: [id])
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions    StrategyExecution[]
+  orders        HummingbotOrder[]
+  trades        HummingbotTrade[]
+  deployments   StrategyDeployment[]
+  
+  @@map("hummingbot_strategies")
+}
+
+model StrategyExecution {
+  id            String              @id @default(cuid())
+  strategyId    String              @map("strategy_id")
+  executionType String              @map("execution_type") // 'start', 'stop', 'pause', 'resume', 'update'
+  
+  // Execution details
+  parameters    Json?               // Execution parameters
+  result        Json?               // Execution result
+  success       Boolean             @default(true)
+  errorMessage  String?             @map("error_message")
+  
+  // Performance data
+  performanceSnapshot Json?         @map("performance_snapshot") // ExecutionPerformance object
+  
+  // Timestamps
+  executedAt    DateTime            @default(now()) @map("executed_at")
+  completedAt   DateTime?           @map("completed_at")
+  
+  // Relations
+  strategy      HummingbotStrategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  
+  @@map("strategy_executions")
+}
+
+model HummingbotOrder {
+  id            String              @id @default(cuid())
+  strategyId    String              @map("strategy_id")
+  orderId       String              @map("order_id") // External order ID from exchange
+  clientOrderId String?             @map("client_order_id")
+  
+  // Order details
+  symbol        String
+  side          OrderSide
+  type          OrderType
+  quantity      Decimal             @db.Decimal(20,8)
+  price         Decimal?            @db.Decimal(20,8)
+  stopPrice     Decimal?            @db.Decimal(20,8) @map("stop_price")
+  
+  // Order status
+  status        OrderStatus         @default(PENDING)
+  filledQuantity Decimal            @default(0) @db.Decimal(20,8) @map("filled_quantity")
+  remainingQuantity Decimal         @default(0) @db.Decimal(20,8) @map("remaining_quantity")
+  averagePrice  Decimal?            @db.Decimal(20,8) @map("average_price")
+  
+  // Fees and costs
+  fee           Decimal?            @db.Decimal(20,8)
+  feeCurrency   String?             @map("fee_currency")
+  
+  // Exchange information
+  exchange      String
+  exchangeOrderId String?           @map("exchange_order_id")
+  
+  // Timestamps
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  filledAt      DateTime?           @map("filled_at")
+  cancelledAt   DateTime?           @map("cancelled_at")
+  
+  // Relations
+  strategy      HummingbotStrategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  trades        HummingbotTrade[]
+  
+  @@unique([orderId, exchange])
+  @@map("hummingbot_orders")
+}
+
+model HummingbotTrade {
+  id            String              @id @default(cuid())
+  strategyId    String              @map("strategy_id")
+  orderId       String              @map("order_id")
+  tradeId       String              @map("trade_id") // External trade ID from exchange
+  
+  // Trade details
+  symbol        String
+  side          TradeSide
+  quantity      Decimal             @db.Decimal(20,8)
+  price         Decimal             @db.Decimal(20,8)
+  
+  // Fees and costs
+  fee           Decimal             @db.Decimal(20,8)
+  feeCurrency   String              @map("fee_currency")
+  
+  // P&L calculation
+  pnl           Decimal?            @db.Decimal(20,8)
+  pnlCurrency   String?             @map("pnl_currency")
+  
+  // Exchange information
+  exchange      String
+  exchangeTradeId String?           @map("exchange_trade_id")
+  
+  // Timestamps
+  executedAt    DateTime            @default(now()) @map("executed_at")
+  
+  // Relations
+  strategy      HummingbotStrategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  order         HummingbotOrder     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@unique([tradeId, exchange])
+  @@map("hummingbot_trades")
+}
+
+model StrategyDeployment {
+  id            String              @id @default(cuid())
+  strategyId    String              @map("strategy_id")
+  instanceId    String              @map("instance_id")
+  userId        String              @map("user_id")
+  
+  // Deployment details
+  deploymentType String             @map("deployment_type") // 'new', 'update', 'migration'
+  status        DeploymentStatus    @default(PENDING)
+  
+  // Configuration
+  deploymentConfig Json             @map("deployment_config") // DeploymentConfig object
+  
+  // Results
+  result        Json?               // Deployment result
+  errorMessage  String?             @map("error_message")
+  
+  // Timestamps
+  createdAt     DateTime            @default(now()) @map("created_at")
+  deployedAt    DateTime?           @map("deployed_at")
+  completedAt   DateTime?           @map("completed_at")
+  
+  // Relations
+  strategy      HummingbotStrategy  @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  instance      HummingbotInstance  @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("strategy_deployments")
+}
+
+model HummingbotConfiguration {
+  id            String              @id @default(cuid())
+  userId        String              @map("user_id")
+  name          String
+  description   String?
+  
+  // Configuration data
+  configType    String              @map("config_type") // 'instance', 'strategy', 'global'
+  configData    Json                @map("config_data") // Configuration object
+  
+  // Template information
+  isTemplate    Boolean             @default(false) @map("is_template")
+  templateCategory String?          @map("template_category")
+  
+  // Version control
+  version       String              @default("1.0.0")
+  parentId      String?             @map("parent_id") // For versioning
+  
+  // Status
+  isActive      Boolean             @default(true) @map("is_active")
+  
+  // Timestamps
+  createdAt     DateTime            @default(now()) @map("created_at")
+  updatedAt     DateTime            @updatedAt @map("updated_at")
+  
+  // Relations
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent        HummingbotConfiguration? @relation("ConfigVersions", fields: [parentId], references: [id])
+  versions      HummingbotConfiguration[] @relation("ConfigVersions")
+  
+  @@map("hummingbot_configurations")
+}
+
+model HummingbotMetrics {
+  id            String              @id @default(cuid())
+  instanceId    String?             @map("instance_id")
+  strategyId    String?             @map("strategy_id")
+  
+  // Metric details
+  metricType    String              @map("metric_type") // 'performance', 'health', 'resource', 'execution'
+  metricName    String              @map("metric_name")
+  metricValue   Decimal             @db.Decimal(20,8) @map("metric_value")
+  metricUnit    String?             @map("metric_unit")
+  
+  // Labels and metadata
+  labels        Json?               // Prometheus-style labels
+  metadata      Json?               // Additional metric data
+  
+  // Aggregation info
+  aggregationType String?           @map("aggregation_type") // 'sum', 'avg', 'min', 'max', 'count'
+  timeWindow    Int?                @map("time_window") // seconds
+  
+  // Timestamps
+  timestamp     DateTime            @default(now())
+  
+  @@index([instanceId, metricType, timestamp])
+  @@index([strategyId, metricType, timestamp])
+  @@map("hummingbot_metrics")
+}
+
+model HummingbotAlert {
+  id            String              @id @default(cuid())
+  instanceId    String?             @map("instance_id")
+  strategyId    String?             @map("strategy_id")
+  userId        String?             @map("user_id")
+  
+  // Alert details
+  alertType     String              @map("alert_type")
+  severity      AlertSeverity
+  title         String
+  message       String
+  
+  // Alert data
+  alertData     Json?               @map("alert_data") // Additional alert context
+  
+  // Status
+  acknowledged  Boolean             @default(false)
+  acknowledgedAt DateTime?          @map("acknowledged_at")
+  acknowledgedBy String?            @map("acknowledged_by")
+  resolved      Boolean             @default(false)
+  resolvedAt    DateTime?           @map("resolved_at")
+  
+  // Timestamps
+  createdAt     DateTime            @default(now()) @map("created_at")
+  
+  // Relations
+  user          User?               @relation(fields: [userId], references: [id])
+  
+  @@map("hummingbot_alerts")
+}
+
+model HummingbotAuditLog {
+  id            String              @id @default(cuid())
+  instanceId    String?             @map("instance_id")
+  strategyId    String?             @map("strategy_id")
+  userId        String?             @map("user_id")
+  
+  // Action details
+  action        String              // 'create', 'update', 'delete', 'start', 'stop', etc.
+  resourceType  String              @map("resource_type") // 'instance', 'strategy', 'order', etc.
+  resourceId    String?             @map("resource_id")
+  
+  // Change details
+  oldValues     Json?               @map("old_values")
+  newValues     Json?               @map("new_values")
+  
+  // Context
+  ipAddress     String?             @map("ip_address")
+  userAgent     String?             @map("user_agent")
+  sessionId     String?             @map("session_id")
+  
+  // Result
+  success       Boolean             @default(true)
+  errorMessage  String?             @map("error_message")
+  
+  // Timestamps
+  timestamp     DateTime            @default(now())
+  
+  // Relations
+  user          User?               @relation(fields: [userId], references: [id])
+  
+  @@map("hummingbot_audit_logs")
+}
+
+// Add relations to existing User model
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  firstName     String?  @map("first_name")
+  lastName      String?  @map("last_name")
+  isActive      Boolean  @default(true) @map("is_active")
+  isVerified    Boolean  @default(false) @map("is_verified")
+  role          UserRole @default(USER)
+  
+  // Security fields
+  requireMfaReset Boolean @default(false) @map("require_mfa_reset")
+  mfaEnabled      Boolean @default(false) @map("mfa_enabled")
+  
+  // API Keys (encrypted) - deprecated, use ApiKey table
+  legacyApiKeys Json?    @map("legacy_api_keys")
+  
+  // Risk Management Settings
+  riskSettings  Json?    @map("risk_settings")
+  
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+  
+  // Relations
+  tradingSignals TradingSignal[]
+  tradeExecutions TradeExecution[]
+  grids         Grid[]
+  portfolios    Portfolio[]
+  performanceMetrics PerformanceMetric[]
+  auditLogs     AuditLog[]
+  botConfigs    BotConfig[]
+  configBackups ConfigBackup[]
+  
+  // Security relations
+  userApiKeys   UserApiKeys?
+  userSettings  UserSettings?
+  accountLock   AccountLock?
+  apiKeys       ApiKey[]
+  mfaSettings   MfaSettings?
+  trustedDevices TrustedDevice[]
+  
+  // Hummingbot relations
+  hummingbotStrategies HummingbotStrategy[]
+  hummingbotConfigurations HummingbotConfiguration[]
+  hummingbotAlerts HummingbotAlert[]
+  hummingbotAuditLogs HummingbotAuditLog[]
+  strategyDeployments StrategyDeployment[]
+  
+  @@map("users")
+}
+
+// Add Hummingbot relation to TradingSignal
+model TradingSignal {
+  id          String        @id @default(cuid())
+  userId      String        @map("user_id")
+  symbol      String
+  direction   SignalDirection
+  confidence  Decimal       @db.Decimal(5,2)
+  entryPrice  Decimal       @db.Decimal(20,8) @map("entry_price")
+  stopLoss    Decimal?      @db.Decimal(20,8) @map("stop_loss")
+  takeProfit  Json?         @map("take_profit") // Array of take profit levels
+  reasoning   Json          // Analysis reasoning and confluence factors
+  status      SignalStatus  @default(PENDING)
+  
+  // Analysis metadata
+  technicalScore    Decimal? @db.Decimal(5,2) @map("technical_score")
+  patternScore      Decimal? @db.Decimal(5,2) @map("pattern_score")
+  elliottWaveScore  Decimal? @db.Decimal(5,2) @map("elliott_wave_score")
+  fibonacciScore    Decimal? @db.Decimal(5,2) @map("fibonacci_score")
+  volumeScore       Decimal? @db.Decimal(5,2) @map("volume_score")
+  
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  executedAt  DateTime? @map("executed_at")
+  closedAt    DateTime? @map("closed_at")
+  
+  // Relations
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  executions  TradeExecution[]
+  hummingbotStrategies HummingbotStrategy[]
+  
+  @@map("trading_signals")
+}
+
 // Enums
 enum UserRole {
   USER
   ADMIN
   SUPER_ADMIN
+}
+
+enum InstanceStatus {
+  STARTING
+  RUNNING
+  STOPPING
+  STOPPED
+  ERROR
+  UNHEALTHY
+}
+
+enum HBStrategyType {
+  PURE_MARKET_MAKING
+  CROSS_EXCHANGE_MARKET_MAKING
+  ARBITRAGE
+  GRID_TRADING
+  PERPETUAL_MARKET_MAKING
+  LIQUIDITY_MINING
+  SPOT_PERPETUAL_ARBITRAGE
+}
+
+enum HBStrategyStatus {
+  PENDING
+  ACTIVE
+  PAUSED
+  STOPPED
+  ERROR
+  COMPLETED
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+  STOP
+  STOP_LIMIT
+}
+
+enum OrderStatus {
+  PENDING
+  OPEN
+  FILLED
+  CANCELLED
+  REJECTED
+  EXPIRED
+}
+
+enum DeploymentStatus {
+  PENDING
+  DEPLOYING
+  DEPLOYED
+  FAILED
+  CANCELLED
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
 }
 
 enum SignalDirection {

@@ -1,0 +1,245 @@
+version: '3.8'
+
+services:
+  # Hummingbot Instance 1
+  hummingbot-1:
+    build:
+      context: .
+      dockerfile: docker/hummingbot/Dockerfile.hummingbot
+    container_name: hummingbot-instance-1
+    hostname: hummingbot-1
+    restart: unless-stopped
+    environment:
+      - HUMMINGBOT_INSTANCE_ID=hb-001
+      - HUMMINGBOT_INSTANCE_NAME=Primary Trading Instance
+      - HUMMINGBOT_LOG_LEVEL=INFO
+      - HUMMINGBOT_GATEWAY_ENABLED=true
+      - HUMMINGBOT_GATEWAY_PORT=5000
+      - REDIS_URL=redis://redis:6379/1
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/trading_bot
+      - AUTH_TOKEN=${HUMMINGBOT_AUTH_TOKEN_1}
+      - EXCHANGE_BINANCE_API_KEY=${BINANCE_API_KEY}
+      - EXCHANGE_BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - EXCHANGE_KUCOIN_API_KEY=${KUCOIN_API_KEY}
+      - EXCHANGE_KUCOIN_API_SECRET=${KUCOIN_API_SECRET}
+      - EXCHANGE_KUCOIN_PASSPHRASE=${KUCOIN_PASSPHRASE}
+      - PAPER_TRADING_MODE=${PAPER_TRADING_MODE:-true}
+    ports:
+      - "5001:5000"  # Gateway API
+      - "8081:8080"  # Web UI
+      - "9091:9090"  # Metrics
+    volumes:
+      - hummingbot-1-conf:/home/hummingbot/conf
+      - hummingbot-1-logs:/home/hummingbot/logs
+      - hummingbot-1-data:/home/hummingbot/data
+      - ./docker/hummingbot/config/instance-1:/home/hummingbot/conf/templates
+    networks:
+      - hummingbot-network
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # Hummingbot Instance 2
+  hummingbot-2:
+    build:
+      context: .
+      dockerfile: docker/hummingbot/Dockerfile.hummingbot
+    container_name: hummingbot-instance-2
+    hostname: hummingbot-2
+    restart: unless-stopped
+    environment:
+      - HUMMINGBOT_INSTANCE_ID=hb-002
+      - HUMMINGBOT_INSTANCE_NAME=Secondary Trading Instance
+      - HUMMINGBOT_LOG_LEVEL=INFO
+      - HUMMINGBOT_GATEWAY_ENABLED=true
+      - HUMMINGBOT_GATEWAY_PORT=5000
+      - REDIS_URL=redis://redis:6379/2
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/trading_bot
+      - AUTH_TOKEN=${HUMMINGBOT_AUTH_TOKEN_2}
+      - EXCHANGE_BINANCE_API_KEY=${BINANCE_API_KEY}
+      - EXCHANGE_BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - EXCHANGE_KUCOIN_API_KEY=${KUCOIN_API_KEY}
+      - EXCHANGE_KUCOIN_API_SECRET=${KUCOIN_API_SECRET}
+      - EXCHANGE_KUCOIN_PASSPHRASE=${KUCOIN_PASSPHRASE}
+      - PAPER_TRADING_MODE=${PAPER_TRADING_MODE:-true}
+    ports:
+      - "5002:5000"  # Gateway API
+      - "8082:8080"  # Web UI
+      - "9092:9090"  # Metrics
+    volumes:
+      - hummingbot-2-conf:/home/hummingbot/conf
+      - hummingbot-2-logs:/home/hummingbot/logs
+      - hummingbot-2-data:/home/hummingbot/data
+      - ./docker/hummingbot/config/instance-2:/home/hummingbot/conf/templates
+    networks:
+      - hummingbot-network
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # Hummingbot Instance 3 (Arbitrage focused)
+  hummingbot-3:
+    build:
+      context: .
+      dockerfile: docker/hummingbot/Dockerfile.hummingbot
+    container_name: hummingbot-instance-3
+    hostname: hummingbot-3
+    restart: unless-stopped
+    environment:
+      - HUMMINGBOT_INSTANCE_ID=hb-003
+      - HUMMINGBOT_INSTANCE_NAME=Arbitrage Trading Instance
+      - HUMMINGBOT_LOG_LEVEL=INFO
+      - HUMMINGBOT_GATEWAY_ENABLED=true
+      - HUMMINGBOT_GATEWAY_PORT=5000
+      - REDIS_URL=redis://redis:6379/3
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/trading_bot
+      - AUTH_TOKEN=${HUMMINGBOT_AUTH_TOKEN_3}
+      - EXCHANGE_BINANCE_API_KEY=${BINANCE_API_KEY}
+      - EXCHANGE_BINANCE_API_SECRET=${BINANCE_API_SECRET}
+      - EXCHANGE_KUCOIN_API_KEY=${KUCOIN_API_KEY}
+      - EXCHANGE_KUCOIN_API_SECRET=${KUCOIN_API_SECRET}
+      - EXCHANGE_KUCOIN_PASSPHRASE=${KUCOIN_PASSPHRASE}
+      - PAPER_TRADING_MODE=${PAPER_TRADING_MODE:-true}
+    ports:
+      - "5003:5000"  # Gateway API
+      - "8083:8080"  # Web UI
+      - "9093:9090"  # Metrics
+    volumes:
+      - hummingbot-3-conf:/home/hummingbot/conf
+      - hummingbot-3-logs:/home/hummingbot/logs
+      - hummingbot-3-data:/home/hummingbot/data
+      - ./docker/hummingbot/config/instance-3:/home/hummingbot/conf/templates
+    networks:
+      - hummingbot-network
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # Load Balancer for Hummingbot instances
+  hummingbot-lb:
+    image: nginx:alpine
+    container_name: hummingbot-load-balancer
+    restart: unless-stopped
+    ports:
+      - "5000:80"  # Load balanced Gateway API
+    volumes:
+      - ./docker/hummingbot/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/hummingbot/nginx/upstream.conf:/etc/nginx/conf.d/upstream.conf:ro
+    networks:
+      - hummingbot-network
+    depends_on:
+      - hummingbot-1
+      - hummingbot-2
+      - hummingbot-3
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  hummingbot-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: hummingbot-br0
+
+volumes:
+  hummingbot-1-conf:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-1/conf
+  hummingbot-1-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-1/logs
+  hummingbot-1-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-1/data
+  hummingbot-2-conf:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-2/conf
+  hummingbot-2-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-2/logs
+  hummingbot-2-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-2/data
+  hummingbot-3-conf:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-3/conf
+  hummingbot-3-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-3/logs
+  hummingbot-3-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/hummingbot/instance-3/data
